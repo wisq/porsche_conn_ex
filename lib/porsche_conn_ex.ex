@@ -1,18 +1,13 @@
 defmodule PorscheConnEx do
-  @moduledoc """
-  Documentation for `PorscheConnEx`.
-  """
+  use Application
+  require Logger
 
-  @doc """
-  Hello world.
+  def start(_type, _args) do
+    children = [
+      PorscheConnEx.CookieJar
+    ]
 
-  ## Examples
-
-      iex> PorscheConnEx.hello()
-      :world
-
-  """
-  def hello do
-    :world
+    opts = [strategy: :one_for_one, name: PorscheConnEx.Supervisor]
+    Supervisor.start_link(children, opts)
   end
 end
