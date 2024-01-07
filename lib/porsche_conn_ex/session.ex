@@ -5,6 +5,8 @@ defmodule PorscheConnEx.Session do
   alias PorscheConnEx.CookieJar
 
   @auth_server "identity.porsche.com"
+  @client_id "UYsK00My6bCqJdbQhTQ0PbWmcSdIAMig"
+  @redirect_uri "https://my.porsche.com/"
 
   defmodule Config do
     @derive {Inspect, except: [:password]}
@@ -23,8 +25,39 @@ defmodule PorscheConnEx.Session do
       config: nil,
       auth_state: nil,
       auth_code: nil,
-      cookies: %{}
+      token: nil
     )
+  end
+
+  defmodule Token do
+    @enforce_keys [:type, :full, :api_key, :expires]
+    defstruct(@enforce_keys)
+
+    def from_body(
+          %{
+            "access_token" => access_token,
+            "expires_in" => expires_in,
+            "token_type" => type
+          },
+          now
+        ) do
+      %{"azp" => api_key} = decode_token(access_token)
+
+      %Token{
+        type: type,
+        expires: now |> DateTime.add(expires_in),
+        full: access_token,
+        api_key: api_key
+      }
+    end
+
+    defp decode_token(token) do
+      [_, jwt, _] = String.split(token, ".")
+
+      jwt
+      |> :base64.decode(%{padding: false})
+      |> Jason.decode!()
+    end
   end
 
   def start_link(opts) do
@@ -40,8 +73,9 @@ defmodule PorscheConnEx.Session do
 
   defp authorize(%State{config: config} = state) do
     with {:ok, auth_state, auth_init_code} <- auth_init(config),
-         {:ok, auth_code} <- auth_login(config, auth_state, auth_init_code) do
-      {:ok, %State{state | auth_state: auth_state, auth_code: auth_code}}
+         {:ok, auth_code} <- auth_login(config, auth_state, auth_init_code),
+         {:ok, token} <- auth_token(auth_code) do
+      {:ok, %State{state | auth_state: auth_state, auth_code: auth_code, token: token}}
     end
   end
 
@@ -53,8 +87,8 @@ defmodule PorscheConnEx.Session do
       redirect: false,
       params: %{
         response_type: "code",
-        client_id: "UYsK00My6bCqJdbQhTQ0PbWmcSdIAMig",
-        redirect_uri: "https://my.porsche.com/",
+        client_id: @client_id,
+        redirect_uri: @redirect_uri,
         ui_locales: "#{config.language}-#{config.country}",
         audience: "https://api.porsche.com",
         scope:
@@ -157,6 +191,29 @@ defmodule PorscheConnEx.Session do
         [location] = Req.Response.get_header(resp, "location")
         auth = URI.parse(location).query |> URI.decode_query()
         {:ok, Map.fetch!(auth, "code")}
+    end)
+  end
+
+  defp auth_token(auth_code) do
+    Logger.debug("Auth token")
+    now = DateTime.utc_now()
+
+    Req.new(
+      url: "https://#{@auth_server}/oauth/token",
+      redirect: false,
+      form: %{
+        "client_id" => @client_id,
+        "grant_type" => "authorization_code",
+        "code" => auth_code,
+        "redirect_uri" => @redirect_uri
+      }
+    )
+    |> CookieJar.with_cookies()
+    |> Req.post()
+    |> then(fn
+      {:ok, %{status: 200, body: body} = resp} ->
+        IO.inspect(resp, label: "token")
+        {:ok, Token.from_body(body, now)}
     end)
   end
 end
