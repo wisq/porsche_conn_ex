@@ -17,13 +17,16 @@ defmodule PorscheConnEx.Session do
       username: nil,
       password: nil
     )
+
+    def locale(%Config{language: lang, country: ctry}) do
+      "#{String.downcase(lang)}_#{String.upcase(ctry)}"
+    end
   end
 
   defmodule State do
     @enforce_keys [:config]
     defstruct(
       config: nil,
-      auth_state: nil,
       auth_code: nil,
       token: nil
     )
@@ -51,6 +54,10 @@ defmodule PorscheConnEx.Session do
       }
     end
 
+    def authorization(%Token{full: token, type: type}) do
+      "#{type} #{token}"
+    end
+
     defp decode_token(token) do
       [_, jwt, _] = String.split(token, ".")
 
@@ -66,21 +73,46 @@ defmodule PorscheConnEx.Session do
     GenServer.start_link(__MODULE__, config, opts)
   end
 
+  def get(pid, url, params \\ %{}) do
+    GenServer.call(pid, {:get, url, params})
+  end
+
+  @impl true
   def init(%Config{} = config) do
     state = %State{config: config}
     {:ok, _state} = authorize(state) |> IO.inspect(label: "authorize")
   end
 
+  @impl true
+  def handle_call({:get, url, params}, _from, state) do
+    Req.new(
+      url: url,
+      headers: api_headers(state),
+      params: params
+    )
+    |> CookieJar.with_cookies()
+    |> Req.get()
+  end
+
+  defp api_headers(%State{token: token, config: config}) do
+    %{
+      "Authorization" => Token.authorization(token),
+      "origin" => "https://my.porsche.com",
+      "apikey" => token.api_key,
+      "x-vrs-url-country" => config.country |> String.downcase(),
+      "x-vrs-url-language" => config |> Config.locale()
+    }
+  end
+
   defp authorize(%State{config: config} = state) do
-    with {:ok, auth_state, auth_init_code} <- auth_init(config),
-         {:ok, auth_code} <- auth_login(config, auth_state, auth_init_code),
+    with {:ok, auth_code} <- auth_login(config),
          {:ok, token} <- auth_token(auth_code) do
-      {:ok, %State{state | auth_state: auth_state, auth_code: auth_code, token: token}}
+      {:ok, %State{state | auth_code: auth_code, token: token}}
     end
   end
 
-  defp auth_init(%Config{} = config) do
-    Logger.debug("Auth init")
+  defp auth_login(%Config{} = config) do
+    Logger.debug("Auth login")
 
     Req.new(
       url: "https://#{@auth_server}/authorize",
@@ -113,12 +145,18 @@ defmodule PorscheConnEx.Session do
     |> then(fn
       {:ok, %{status: 302} = resp} ->
         [location] = Req.Response.get_header(resp, "location")
-        auth = URI.parse(location).query |> URI.decode_query()
-        {:ok, Map.fetch!(auth, "state"), Map.get(auth, "code")}
+
+        case URI.parse(location).query |> URI.decode_query() do
+          %{"code" => auth_code} ->
+            {:ok, auth_code}
+
+          %{"state" => auth_state} ->
+            auth_continue(config, auth_state)
+        end
     end)
   end
 
-  defp auth_login(%Config{} = config, auth_state, nil) do
+  defp auth_continue(%Config{} = config, auth_state) do
     with :ok <- auth_post_username(auth_state, config),
          {:ok, resume_url} <- auth_post_password(auth_state, config),
          {:ok, auth_code} <- auth_login_final(resume_url) do
@@ -149,8 +187,7 @@ defmodule PorscheConnEx.Session do
       {:ok, %{status: 400}} ->
         {:error, :captcha_required}
 
-      {:ok, %{status: status} = resp} when status >= 200 and status < 400 ->
-        IO.inspect(resp, label: "username")
+      {:ok, %{status: 302}} ->
         :ok
     end)
   end
@@ -172,8 +209,7 @@ defmodule PorscheConnEx.Session do
     |> CookieJar.with_cookies()
     |> Req.post()
     |> then(fn
-      {:ok, %{status: _} = resp} ->
-        IO.inspect(resp, label: "password")
+      {:ok, %{status: 302} = resp} ->
         [location] = Req.Response.get_header(resp, "location")
         {:ok, location}
     end)
@@ -187,7 +223,6 @@ defmodule PorscheConnEx.Session do
     |> Req.get()
     |> then(fn
       {:ok, %{status: 302} = resp} ->
-        IO.inspect(resp, label: "final")
         [location] = Req.Response.get_header(resp, "location")
         auth = URI.parse(location).query |> URI.decode_query()
         {:ok, Map.fetch!(auth, "code")}
@@ -211,8 +246,7 @@ defmodule PorscheConnEx.Session do
     |> CookieJar.with_cookies()
     |> Req.post()
     |> then(fn
-      {:ok, %{status: 200, body: body} = resp} ->
-        IO.inspect(resp, label: "token")
+      {:ok, %{status: 200, body: body}} ->
         {:ok, Token.from_body(body, now)}
     end)
   end
