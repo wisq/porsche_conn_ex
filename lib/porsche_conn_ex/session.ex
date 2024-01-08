@@ -2,7 +2,7 @@ defmodule PorscheConnEx.Session do
   require Logger
   use GenServer
 
-  alias PorscheConnEx.CookieJar
+  alias PorscheConnEx.Cookies
 
   @auth_server "identity.porsche.com"
   @client_id "UYsK00My6bCqJdbQhTQ0PbWmcSdIAMig"
@@ -24,9 +24,10 @@ defmodule PorscheConnEx.Session do
   end
 
   defmodule State do
-    @enforce_keys [:config]
+    @enforce_keys [:config, :cookie_jar]
     defstruct(
       config: nil,
+      cookie_jar: nil,
       auth_code: nil,
       token: nil
     )
@@ -73,13 +74,14 @@ defmodule PorscheConnEx.Session do
     GenServer.start_link(__MODULE__, config, opts)
   end
 
-  def get(pid, url, params \\ %{}) do
-    GenServer.call(pid, {:get, url, params})
+  def get(pid, url, params \\ %{}, timeout \\ 10000) do
+    GenServer.call(pid, {:get, url, params}, timeout)
   end
 
   @impl true
   def init(%Config{} = config) do
-    state = %State{config: config}
+    {:ok, jar} = CookieJar.start_link()
+    state = %State{config: config, cookie_jar: jar}
     {:ok, _state} = authorize(state) |> IO.inspect(label: "authorize")
   end
 
@@ -90,8 +92,12 @@ defmodule PorscheConnEx.Session do
       headers: api_headers(state),
       params: params
     )
-    |> CookieJar.with_cookies()
+    |> Cookies.using_jar(state.cookie_jar)
+    |> Req.Request.prepend_response_steps(fix_api_404: &fix_api_404/1)
     |> Req.get()
+    |> then(fn rval ->
+      {:reply, rval, state}
+    end)
   end
 
   defp api_headers(%State{token: token, config: config}) do
@@ -105,13 +111,13 @@ defmodule PorscheConnEx.Session do
   end
 
   defp authorize(%State{config: config} = state) do
-    with {:ok, auth_code} <- auth_login(config),
-         {:ok, token} <- auth_token(auth_code) do
+    with {:ok, auth_code} <- auth_login(config, state.cookie_jar),
+         {:ok, token} <- auth_token(auth_code, state.cookie_jar) do
       {:ok, %State{state | auth_code: auth_code, token: token}}
     end
   end
 
-  defp auth_login(%Config{} = config) do
+  defp auth_login(%Config{} = config, cookie_jar) do
     Logger.debug("Auth login")
 
     Req.new(
@@ -140,7 +146,7 @@ defmodule PorscheConnEx.Session do
           |> Enum.join(" ")
       }
     )
-    |> CookieJar.with_cookies()
+    |> Cookies.using_jar(cookie_jar)
     |> Req.get()
     |> then(fn
       {:ok, %{status: 302} = resp} ->
@@ -151,20 +157,20 @@ defmodule PorscheConnEx.Session do
             {:ok, auth_code}
 
           %{"state" => auth_state} ->
-            auth_continue(config, auth_state)
+            auth_continue(config, auth_state, cookie_jar)
         end
     end)
   end
 
-  defp auth_continue(%Config{} = config, auth_state) do
-    with :ok <- auth_post_username(auth_state, config),
-         {:ok, resume_url} <- auth_post_password(auth_state, config),
-         {:ok, auth_code} <- auth_login_final(resume_url) do
+  defp auth_continue(%Config{} = config, auth_state, cookie_jar) do
+    with :ok <- auth_post_username(auth_state, config, cookie_jar),
+         {:ok, resume_url} <- auth_post_password(auth_state, config, cookie_jar),
+         {:ok, auth_code} <- auth_login_final(resume_url, cookie_jar) do
       {:ok, auth_code}
     end
   end
 
-  defp auth_post_username(auth_state, %Config{} = config) do
+  defp auth_post_username(auth_state, %Config{} = config, cookie_jar) do
     Logger.debug("Auth posting username")
 
     Req.new(
@@ -181,7 +187,7 @@ defmodule PorscheConnEx.Session do
         "action" => "default"
       }
     )
-    |> CookieJar.with_cookies()
+    |> Cookies.using_jar(cookie_jar)
     |> Req.post()
     |> then(fn
       {:ok, %{status: 400}} ->
@@ -192,7 +198,7 @@ defmodule PorscheConnEx.Session do
     end)
   end
 
-  defp auth_post_password(auth_state, %Config{} = config) do
+  defp auth_post_password(auth_state, %Config{} = config, cookie_jar) do
     Logger.debug("Auth posting password")
 
     Req.new(
@@ -206,7 +212,7 @@ defmodule PorscheConnEx.Session do
         "action" => "default"
       }
     )
-    |> CookieJar.with_cookies()
+    |> Cookies.using_jar(cookie_jar)
     |> Req.post()
     |> then(fn
       {:ok, %{status: 302} = resp} ->
@@ -215,11 +221,11 @@ defmodule PorscheConnEx.Session do
     end)
   end
 
-  defp auth_login_final(url) do
+  defp auth_login_final(url, cookie_jar) do
     Logger.debug("Auth finalizing")
 
     Req.new(url: url, base_url: "https://#{@auth_server}", redirect: false)
-    |> CookieJar.with_cookies()
+    |> Cookies.using_jar(cookie_jar)
     |> Req.get()
     |> then(fn
       {:ok, %{status: 302} = resp} ->
@@ -229,7 +235,7 @@ defmodule PorscheConnEx.Session do
     end)
   end
 
-  defp auth_token(auth_code) do
+  defp auth_token(auth_code, cookie_jar) do
     Logger.debug("Auth token")
     now = DateTime.utc_now()
 
@@ -243,11 +249,36 @@ defmodule PorscheConnEx.Session do
         "redirect_uri" => @redirect_uri
       }
     )
-    |> CookieJar.with_cookies()
+    |> Cookies.using_jar(cookie_jar)
     |> Req.post()
     |> then(fn
       {:ok, %{status: 200, body: body}} ->
         {:ok, Token.from_body(body, now)}
     end)
   end
+
+  # The Porsche Connect API has an issue whereby some 404s will return
+  # an HTML page, but with `Content-Type: application/json`.
+  #
+  # This breaks Req, which tries to decode HTML as JSON,
+  # crashing the entire Session.
+  #
+  # The easy fix is to just detect this case and rewrite the header.
+  defp fix_api_404(
+         {request,
+          %{
+            status: 404,
+            headers: %{"content-type" => ["application/json"]},
+            body: "<" <> _
+          } = response}
+       ) do
+    Logger.debug("Fixing API 404 content-type")
+
+    {
+      request,
+      response |> Req.Response.put_header("content-type", "text/html")
+    }
+  end
+
+  defp fix_api_404({request, response}), do: {request, response}
 end
