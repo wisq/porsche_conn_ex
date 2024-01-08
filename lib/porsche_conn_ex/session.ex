@@ -3,30 +3,30 @@ defmodule PorscheConnEx.Session do
   use GenServer
 
   alias PorscheConnEx.Cookies
+  alias PorscheConnEx.Config
 
   @auth_server "identity.porsche.com"
   @client_id "UYsK00My6bCqJdbQhTQ0PbWmcSdIAMig"
   @redirect_uri "https://my.porsche.com/"
 
-  defmodule Config do
+  defmodule Credentials do
     @derive {Inspect, except: [:password]}
     @enforce_keys [:username, :password]
     defstruct(
-      language: "en",
-      country: "US",
       username: nil,
       password: nil
     )
 
-    def locale(%Config{language: lang, country: ctry}) do
-      "#{String.downcase(lang)}_#{String.upcase(ctry)}"
+    def new(opts) do
+      struct!(__MODULE__, opts)
     end
   end
 
   defmodule State do
-    @enforce_keys [:config, :cookie_jar]
+    @enforce_keys [:config, :credentials, :cookie_jar]
     defstruct(
       config: nil,
+      credentials: nil,
       cookie_jar: nil,
       auth_code: nil,
       token: nil
@@ -34,29 +34,24 @@ defmodule PorscheConnEx.Session do
   end
 
   defmodule Token do
-    @enforce_keys [:type, :full, :api_key, :expires]
+    @enforce_keys [:authorization, :api_key, :expires]
     defstruct(@enforce_keys)
 
     def from_body(
           %{
             "access_token" => access_token,
             "expires_in" => expires_in,
-            "token_type" => type
+            "token_type" => token_type
           },
           now
         ) do
       %{"azp" => api_key} = decode_token(access_token)
 
       %Token{
-        type: type,
-        expires: now |> DateTime.add(expires_in),
-        full: access_token,
-        api_key: api_key
+        api_key: api_key,
+        authorization: "#{token_type} #{access_token}",
+        expires: now |> DateTime.add(expires_in)
       }
-    end
-
-    def authorization(%Token{full: token, type: type}) do
-      "#{type} #{token}"
     end
 
     defp decode_token(token) do
@@ -69,9 +64,9 @@ defmodule PorscheConnEx.Session do
   end
 
   def start_link(opts) do
-    {config, opts} = Keyword.pop!(opts, :config)
-    config = struct!(Config, config)
-    GenServer.start_link(__MODULE__, config, opts)
+    {config, opts} = Keyword.pop(opts, :config, [])
+    {creds, opts} = Keyword.pop!(opts, :credentials)
+    GenServer.start_link(__MODULE__, {Config.new(config), Credentials.new(creds)}, opts)
   end
 
   def headers(pid) do
@@ -79,9 +74,9 @@ defmodule PorscheConnEx.Session do
   end
 
   @impl true
-  def init(%Config{} = config) do
+  def init({%Config{} = config, %Credentials{} = creds}) do
     {:ok, jar} = CookieJar.start_link()
-    state = %State{config: config, cookie_jar: jar}
+    state = %State{config: config, credentials: creds, cookie_jar: jar}
     {:ok, _state} = authorize(state) |> IO.inspect(label: "authorize")
   end
 
@@ -90,24 +85,24 @@ defmodule PorscheConnEx.Session do
     {
       :reply,
       %{
-        "Authorization" => Token.authorization(state.token),
+        "Authorization" => state.token.authorization,
         "origin" => "https://my.porsche.com",
         "apikey" => state.token.api_key,
-        "x-vrs-url-country" => state.config.country |> String.downcase(),
-        "x-vrs-url-language" => state.config |> Config.locale()
+        "x-vrs-url-country" => Config.url_country(state.config),
+        "x-vrs-url-language" => Config.url_language(state.config)
       },
       state
     }
   end
 
-  defp authorize(%State{config: config} = state) do
-    with {:ok, auth_code} <- auth_login(config, state.cookie_jar),
+  defp authorize(%State{credentials: creds, config: config} = state) do
+    with {:ok, auth_code} <- auth_login(config, creds, state.cookie_jar),
          {:ok, token} <- auth_token(auth_code, state.cookie_jar) do
       {:ok, %State{state | auth_code: auth_code, token: token}}
     end
   end
 
-  defp auth_login(%Config{} = config, cookie_jar) do
+  defp auth_login(%Config{} = config, %Credentials{} = creds, cookie_jar) do
     Logger.debug("Auth login")
 
     Req.new(
@@ -117,7 +112,7 @@ defmodule PorscheConnEx.Session do
         response_type: "code",
         client_id: @client_id,
         redirect_uri: @redirect_uri,
-        ui_locales: "#{config.language}-#{config.country}",
+        ui_locales: Config.ui_locales(config),
         audience: "https://api.porsche.com",
         scope:
           ~w"""
@@ -147,20 +142,20 @@ defmodule PorscheConnEx.Session do
             {:ok, auth_code}
 
           %{"state" => auth_state} ->
-            auth_continue(config, auth_state, cookie_jar)
+            auth_continue(creds, auth_state, cookie_jar)
         end
     end)
   end
 
-  defp auth_continue(%Config{} = config, auth_state, cookie_jar) do
-    with :ok <- auth_post_username(auth_state, config, cookie_jar),
-         {:ok, resume_url} <- auth_post_password(auth_state, config, cookie_jar),
+  defp auth_continue(%Credentials{} = creds, auth_state, cookie_jar) do
+    with :ok <- auth_post_username(auth_state, creds, cookie_jar),
+         {:ok, resume_url} <- auth_post_password(auth_state, creds, cookie_jar),
          {:ok, auth_code} <- auth_login_final(resume_url, cookie_jar) do
       {:ok, auth_code}
     end
   end
 
-  defp auth_post_username(auth_state, %Config{} = config, cookie_jar) do
+  defp auth_post_username(auth_state, %Credentials{} = creds, cookie_jar) do
     Logger.debug("Auth posting username")
 
     Req.new(
@@ -169,7 +164,7 @@ defmodule PorscheConnEx.Session do
       params: %{"state" => auth_state},
       form: %{
         "state" => auth_state,
-        "username" => config.username,
+        "username" => creds.username,
         "js-available" => true,
         "webauthn-available" => false,
         "is-brave" => false,
@@ -188,7 +183,7 @@ defmodule PorscheConnEx.Session do
     end)
   end
 
-  defp auth_post_password(auth_state, %Config{} = config, cookie_jar) do
+  defp auth_post_password(auth_state, %Credentials{} = creds, cookie_jar) do
     Logger.debug("Auth posting password")
 
     Req.new(
@@ -197,8 +192,8 @@ defmodule PorscheConnEx.Session do
       params: %{"state" => auth_state},
       form: %{
         "state" => auth_state,
-        "username" => config.username,
-        "password" => config.password,
+        "username" => creds.username,
+        "password" => creds.password,
         "action" => "default"
       }
     )
