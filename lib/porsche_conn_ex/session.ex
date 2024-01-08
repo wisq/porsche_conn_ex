@@ -74,8 +74,8 @@ defmodule PorscheConnEx.Session do
     GenServer.start_link(__MODULE__, config, opts)
   end
 
-  def get(pid, url, params \\ %{}, timeout \\ 10000) do
-    GenServer.call(pid, {:get, url, params}, timeout)
+  def headers(pid) do
+    GenServer.call(pid, :headers)
   end
 
   @impl true
@@ -86,27 +86,17 @@ defmodule PorscheConnEx.Session do
   end
 
   @impl true
-  def handle_call({:get, url, params}, _from, state) do
-    Req.new(
-      url: url,
-      headers: api_headers(state),
-      params: params
-    )
-    |> Cookies.using_jar(state.cookie_jar)
-    |> Req.Request.prepend_response_steps(fix_api_404: &fix_api_404/1)
-    |> Req.get()
-    |> then(fn rval ->
-      {:reply, rval, state}
-    end)
-  end
-
-  defp api_headers(%State{token: token, config: config}) do
-    %{
-      "Authorization" => Token.authorization(token),
-      "origin" => "https://my.porsche.com",
-      "apikey" => token.api_key,
-      "x-vrs-url-country" => config.country |> String.downcase(),
-      "x-vrs-url-language" => config |> Config.locale()
+  def handle_call(:headers, _from, state) do
+    {
+      :reply,
+      %{
+        "Authorization" => Token.authorization(state.token),
+        "origin" => "https://my.porsche.com",
+        "apikey" => state.token.api_key,
+        "x-vrs-url-country" => state.config.country |> String.downcase(),
+        "x-vrs-url-language" => state.config |> Config.locale()
+      },
+      state
     }
   end
 
@@ -256,29 +246,4 @@ defmodule PorscheConnEx.Session do
         {:ok, Token.from_body(body, now)}
     end)
   end
-
-  # The Porsche Connect API has an issue whereby some 404s will return
-  # an HTML page, but with `Content-Type: application/json`.
-  #
-  # This breaks Req, which tries to decode HTML as JSON,
-  # crashing the entire Session.
-  #
-  # The easy fix is to just detect this case and rewrite the header.
-  defp fix_api_404(
-         {request,
-          %{
-            status: 404,
-            headers: %{"content-type" => ["application/json"]},
-            body: "<" <> _
-          } = response}
-       ) do
-    Logger.debug("Fixing API 404 content-type")
-
-    {
-      request,
-      response |> Req.Response.put_header("content-type", "text/html")
-    }
-  end
-
-  defp fix_api_404({request, response}), do: {request, response}
 end
