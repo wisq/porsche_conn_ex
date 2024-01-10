@@ -9,6 +9,11 @@ defmodule PorscheConnEx.Session do
   @client_id "UYsK00My6bCqJdbQhTQ0PbWmcSdIAMig"
   @redirect_uri "https://my.porsche.com/"
 
+  # Refresh tokens ten minutes before they're set to expire.
+  @refresh_margin {10, :minute}
+  # Retry the refresh each minute on failure.
+  @retry_delay {1, :minute}
+
   defmodule Credentials do
     @derive {Inspect, except: [:password]}
     @enforce_keys [:username, :password]
@@ -29,12 +34,13 @@ defmodule PorscheConnEx.Session do
       credentials: nil,
       cookie_jar: nil,
       auth_code: nil,
-      token: nil
+      token: nil,
+      refresh_at: nil
     )
   end
 
   defmodule Token do
-    @enforce_keys [:authorization, :api_key, :expires]
+    @enforce_keys [:authorization, :api_key, :expires_at]
     defstruct(@enforce_keys)
 
     def from_body(
@@ -50,7 +56,7 @@ defmodule PorscheConnEx.Session do
       %Token{
         api_key: api_key,
         authorization: "#{token_type} #{access_token}",
-        expires: now |> DateTime.add(expires_in)
+        expires_at: now |> DateTime.add(expires_in)
       }
     end
 
@@ -77,7 +83,9 @@ defmodule PorscheConnEx.Session do
   def init({%Config{} = config, %Credentials{} = creds}) do
     {:ok, jar} = CookieJar.start_link()
     state = %State{config: config, credentials: creds, cookie_jar: jar}
-    {:ok, _state} = authorize(state)
+
+    {:ok, state} = authorize(state)
+    {:ok, state, {:continue, :refresh}}
   end
 
   @impl true
@@ -91,14 +99,50 @@ defmodule PorscheConnEx.Session do
         "x-vrs-url-country" => Config.url_country(state.config),
         "x-vrs-url-language" => Config.url_language(state.config)
       },
-      state
+      state,
+      {:continue, :refresh}
     }
+  end
+
+  @impl true
+  def handle_continue(:refresh, state) do
+    now = DateTime.utc_now()
+
+    if DateTime.compare(state.token.expires_at, now) == :lt do
+      Logger.critical("Token has expired, unable to refresh in time.")
+      {:stop, :expired_token, state}
+    else
+      timeout = DateTime.diff(state.refresh_at, now, :millisecond) |> max(1)
+      {:noreply, state, timeout}
+    end
+  end
+
+  @impl true
+  def handle_info(:timeout, state) do
+    case authorize(state) do
+      {:ok, state} ->
+        {:noreply, state, {:continue, :refresh}}
+
+      _ ->
+        Logger.error("Auth refresh failed, will retry.")
+        {retry_amount, retry_units} = @retry_delay
+        refresh_at = state.refresh_at |> DateTime.add(retry_amount, retry_units)
+        {:ok, %State{state | refresh_at: refresh_at}, {:continue, :refresh}}
+    end
   end
 
   defp authorize(%State{credentials: creds, config: config} = state) do
     with {:ok, auth_code} <- auth_login(config, creds, state.cookie_jar),
          {:ok, token} <- auth_token(auth_code, state.cookie_jar) do
-      {:ok, %State{state | auth_code: auth_code, token: token}}
+      {refresh_amount, refresh_units} = @refresh_margin
+
+      {:ok,
+       %State{
+         state
+         | auth_code: auth_code,
+           token: token,
+           refresh_at: token.expires_at |> DateTime.add(-refresh_amount, refresh_units)
+       }}
     end
   end
 
