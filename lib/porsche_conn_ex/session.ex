@@ -77,7 +77,7 @@ defmodule PorscheConnEx.Session do
   def init({%Config{} = config, %Credentials{} = creds}) do
     {:ok, jar} = CookieJar.start_link()
     state = %State{config: config, credentials: creds, cookie_jar: jar}
-    {:ok, _state} = authorize(state) |> IO.inspect(label: "authorize")
+    {:ok, _state} = authorize(state)
   end
 
   @impl true
