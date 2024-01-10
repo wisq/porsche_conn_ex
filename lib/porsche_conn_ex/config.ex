@@ -2,8 +2,8 @@ defmodule PorscheConnEx.Config do
   alias __MODULE__
 
   defstruct(
-    language: "en",
-    country: "US",
+    language: "de",
+    country: "DE",
     timezone: "Etc/UTC"
   )
 
