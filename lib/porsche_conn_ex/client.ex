@@ -86,6 +86,16 @@ defmodule PorscheConnEx.Client do
     )
   end
 
+  def climate_set(session, vin, climate, config \\ %Config{}) when is_boolean(climate) do
+    base = "/e-mobility/#{Config.url(config)}/#{vin}/toggle-direct-climatisation"
+
+    post(session, "#{base}/#{climate}", json: %{})
+    |> and_wait(
+      session,
+      fn req_id -> "#{base}/status/#{req_id}" end
+    )
+  end
+
   defp get(session, url, opts \\ []) do
     req_new(session, url, opts)
     |> Req.get()
@@ -110,29 +120,38 @@ defmodule PorscheConnEx.Client do
     |> handle()
   end
 
-  defp and_wait({:ok, %{"requestId" => req_id}}, session, wait_url_fn, final_url_fn) do
-    1..@wait_secs
-    |> Enum.reduce_while(nil, fn _, _ ->
-      {:ok, %{"status" => status}} = get(session, wait_url_fn.(req_id))
-      {if(status == "IN_PROGRESS", do: :cont, else: :halt), nil}
-    end)
+  defp and_wait(req_result, session, wait_url_fn, final_url_fn \\ nil)
 
-    get(session, final_url_fn.(req_id))
+  defp and_wait({:ok, %{"requestId" => req_id}}, s, w, f) do
+    wait(req_id, s, w, f)
   end
 
-  defp and_wait({:ok, %{"actionId" => req_id}}, session, wait_url_fn) do
+  defp and_wait({:ok, %{"actionId" => req_id}}, s, w, f) do
+    wait(req_id, s, w, f)
+  end
+
+  defp wait(req_id, session, wait_url_fn, final_url_fn) do
+    wait_url = wait_url_fn.(req_id)
+    final_url = if final_url_fn, do: final_url_fn.(req_id)
+
     1..@wait_secs
     |> Enum.reduce_while(nil, fn _, _ ->
-      {:ok, %{"actionState" => status}} = get(session, wait_url_fn.(req_id))
+      {:ok, %{"status" => status}} = get(session, wait_url)
 
       case status do
         "IN_PROGRESS" -> {:cont, status}
         _ -> {:halt, status}
       end
     end)
-    |> then(fn
-      "SUCCESS" -> {:ok, "SUCCESS"}
-      other -> {:error, other}
+    |> then(fn status ->
+      if final_url do
+        get(session, final_url)
+      else
+        case status do
+          "SUCCESS" -> {:ok, status}
+          _ -> {:error, status}
+        end
+      end
     end)
   end
 
@@ -145,7 +164,8 @@ defmodule PorscheConnEx.Client do
     |> Req.new()
   end
 
-  defp handle({:ok, %{status: 200, body: body}}) when is_map(body) or is_list(body) do
+  defp handle({:ok, %{status: status, body: body}})
+       when status in [200, 202] and (is_map(body) or is_list(body)) do
     {:ok, body}
   end
 
