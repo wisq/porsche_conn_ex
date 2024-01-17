@@ -86,6 +86,16 @@ defmodule PorscheConnEx.Client do
     )
   end
 
+  def put_profile(session, vin, model, profile, config \\ %Config{}) do
+    base = "/e-mobility/#{Config.url(config)}/#{model}/#{vin}"
+
+    put(session, "#{base}/profile", json: profile)
+    |> and_wait(
+      session,
+      fn req_id -> "#{base}/action-status/#{req_id}?hasDX1=false" end
+    )
+  end
+
   def climate_set(session, vin, climate, config \\ %Config{}) when is_boolean(climate) do
     base = "/e-mobility/#{Config.url(config)}/#{vin}/toggle-direct-climatisation"
 
@@ -136,7 +146,13 @@ defmodule PorscheConnEx.Client do
 
     1..@wait_secs
     |> Enum.reduce_while(nil, fn _, _ ->
-      {:ok, %{"status" => status}} = get(session, wait_url)
+      {:ok, body} = get(session, wait_url)
+
+      status =
+        case body do
+          %{"status" => st} -> st
+          %{"actionState" => st} -> st
+        end
 
       case status do
         "IN_PROGRESS" -> {:cont, status}
