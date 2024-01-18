@@ -32,6 +32,7 @@ defmodule PorscheConnEx.MixProject do
       {:req, "~> 0.4.0"},
       {:cookie_jar, "~> 1.1.0"},
       {:jason, "~> 1.4"},
+      {:parameter, "~> 0.13"},
       {:bypass, "~> 2.1", only: :test},
       {:mix_test_watch, "~> 1.0", only: :dev, runtime: false},
       {:ex_git_test, "~> 0.1.2", only: [:dev, :test], runtime: false}

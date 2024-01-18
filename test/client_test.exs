@@ -3,6 +3,7 @@ defmodule PorscheConnEx.ClientTest do
 
   alias PorscheConnEx.Client
   alias PorscheConnEx.Config
+  alias PorscheConnEx.Struct
   alias PorscheConnEx.Test.{MockSession, ServerResponses, StatusCounter}
   alias Plug.Conn
 
@@ -23,10 +24,10 @@ defmodule PorscheConnEx.ClientTest do
     assert {:ok, [vehicle]} = Client.vehicles(session, config(bypass))
     assert MockSession.count(session) == 1
 
-    assert %{
-             "modelYear" => "2022",
-             "modelDescription" => "Taycan GTS",
-             "vin" => ^vin
+    assert %Struct.Vehicle{
+             model_year: 2022,
+             model_description: "Taycan GTS",
+             vin: ^vin
            } = vehicle
   end
 

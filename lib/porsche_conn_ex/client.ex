@@ -3,11 +3,13 @@ defmodule PorscheConnEx.Client do
 
   alias PorscheConnEx.Session
   alias PorscheConnEx.Config
+  alias PorscheConnEx.Struct
 
   @wait_secs 120
 
   def vehicles(session, config \\ %Config{}) do
     get(session, config, "/core/api/v3/#{Config.url(config)}/vehicles")
+    |> list_from_api(Struct.Vehicle)
   end
 
   def status(session, vin, config \\ %Config{}) do
@@ -196,4 +198,18 @@ defmodule PorscheConnEx.Client do
 
   defp handle({:ok, resp}), do: {:error, resp}
   defp handle({:error, err}), do: {:error, err}
+
+  defp list_from_api({:ok, list}, module) when is_list(list) do
+    list
+    |> Enum.flat_map_reduce(:ok, fn item, _ ->
+      case module.from_api(item) do
+        {:ok, struct} -> {[struct], :ok}
+        {:error, _} = err -> {:halt, err}
+      end
+    end)
+    |> then(fn
+      {list, :ok} -> {:ok, list}
+      {_, {:error, _} = err} -> err
+    end)
+  end
 end
