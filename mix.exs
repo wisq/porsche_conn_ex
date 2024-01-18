@@ -6,6 +6,7 @@ defmodule PorscheConnEx.MixProject do
       app: :porsche_conn_ex,
       version: "0.1.0",
       elixir: "~> 1.15",
+      elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       consolidate_protocols: Mix.env() != :dev,
       deps: deps()
@@ -19,6 +20,10 @@ defmodule PorscheConnEx.MixProject do
     ]
   end
 
+  # Specifies which paths to compile per environment.
+  defp elixirc_paths(:test), do: ["lib", "test/support"]
+  defp elixirc_paths(_), do: ["lib"]
+
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
@@ -26,7 +31,10 @@ defmodule PorscheConnEx.MixProject do
       # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}
       {:req, "~> 0.4.0"},
       {:cookie_jar, "~> 1.1.0"},
-      {:jason, "~> 1.4"}
+      {:jason, "~> 1.4"},
+      {:bypass, "~> 2.1", only: :test},
+      {:mix_test_watch, "~> 1.0", only: :dev, runtime: false},
+      {:ex_git_test, "~> 0.1.2", only: [:dev, :test], runtime: false}
     ]
   end
 end

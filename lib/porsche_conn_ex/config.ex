@@ -4,7 +4,9 @@ defmodule PorscheConnEx.Config do
   defstruct(
     language: "de",
     country: "DE",
-    timezone: "Etc/UTC"
+    timezone: "Etc/UTC",
+    api_url: "https://api.porsche.com",
+    status_delay: 1_000
   )
 
   def new(%Config{} = config), do: config
