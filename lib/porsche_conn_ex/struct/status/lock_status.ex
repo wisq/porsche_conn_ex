@@ -1,4 +1,4 @@
-defmodule PorscheConnEx.Struct.Status.OverallLockStatus do
+defmodule PorscheConnEx.Struct.Status.LockStatus do
   @enforce_keys [:open, :locked]
   defstruct(@enforce_keys)
 
@@ -9,7 +9,7 @@ defmodule PorscheConnEx.Struct.Status.OverallLockStatus do
          {:ok, locked} <- locked_from_api(locked) do
       {:ok, %__MODULE__{open: open, locked: locked}}
     else
-      :error -> {:error, "invalid OverallLockStatus: #{inspect(term)}"}
+      :error -> {:error, "invalid LockStatus: #{inspect(term)}"}
     end
   end
 
@@ -20,4 +20,17 @@ defmodule PorscheConnEx.Struct.Status.OverallLockStatus do
   defp locked_from_api("LOCKED"), do: {:ok, true}
   defp locked_from_api("UNLOCKED"), do: {:ok, false}
   defp locked_from_api(_), do: :error
+end
+
+defimpl Inspect, for: PorscheConnEx.Struct.Status.LockStatus do
+  def inspect(ls, _opts) do
+    inner =
+      [
+        if(ls.open, do: "open", else: "closed"),
+        if(ls.locked, do: "locked", else: "unlocked")
+      ]
+      |> Enum.join(",")
+
+    "#PCX:LockStatus<#{inner}>"
+  end
 end

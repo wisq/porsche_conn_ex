@@ -108,15 +108,21 @@ defmodule PorscheConnEx.ClientTest do
       end
     )
 
-    assert {:ok, overview} = Client.stored_overview(session, vin, config(bypass))
+    assert {:ok, %Struct.Overview{} = overview} =
+             Client.stored_overview(session, vin, config(bypass))
+
     assert MockSession.count(session) == 1
 
-    assert %{
-             "vin" => ^vin,
-             "mileage" => %{"value" => 9001},
-             "batteryLevel" => %{"value" => 80},
-             "remainingRanges" => %{"electricalRange" => %{"distance" => %{"value" => 247}}}
-           } = overview
+    assert overview.vin == vin
+    assert overview.mileage.value == 9001
+    assert overview.battery_level.value == 80
+
+    assert overview.remaining_ranges.electrical.distance.value == 247
+    assert overview.remaining_ranges.electrical.is_primary
+    refute overview.remaining_ranges.conventional.is_primary
+
+    assert overview.doors.front_left.locked
+    refute overview.doors.front_left.open
   end
 
   test "current_overview/3", %{session: session, bypass: bypass} do

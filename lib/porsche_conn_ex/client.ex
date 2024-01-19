@@ -24,6 +24,7 @@ defmodule PorscheConnEx.Client do
 
   def stored_overview(session, vin, config \\ %Config{}) do
     get(session, config, "/service-vehicle/#{Config.url(config)}/vehicle-data/#{vin}/stored")
+    |> from_api(Struct.Overview)
   end
 
   def current_overview(session, vin, config \\ %Config{}) do

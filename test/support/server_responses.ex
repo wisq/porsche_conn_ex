@@ -163,7 +163,7 @@ defmodule PorscheConnEx.Test.ServerResponses do
     """
   end
 
-  def overview(vin) do
+  def overview(vin, with_tires \\ true) do
     """
     {
       "vin" : "#{vin}",
@@ -237,6 +237,134 @@ defmodule PorscheConnEx.Test.ServerResponses do
           }
         }
       },
+      #{overview_tires(with_tires) |> String.trim()},
+      "windows" : {
+        "frontLeft" : "CLOSED",
+        "frontRight" : "CLOSED",
+        "backLeft" : "CLOSED",
+        "backRight" : "CLOSED",
+        "roof" : "UNSUPPORTED",
+        "maintenanceHatch" : "UNSUPPORTED",
+        "sunroof" : {
+          "status" : "UNSUPPORTED",
+          "positionInPercent" : null
+        }
+      },
+      "parkingTime" : "17.01.2024 21:48:10",
+      "overallOpenStatus" : "CLOSED",
+      "chargingStatus" : "CHARGING_COMPLETED",
+      "carModel" : "J1",
+      "engineType" : "BEV",
+      "chargingState" : "COMPLETED"
+    }
+    """
+  end
+
+  defp overview_tires(true) do
+    """
+      "tires" : {
+        "frontLeft" : {
+          "currentPressure" : {
+            "value" : 2.4,
+            "unit" : "BAR",
+            "valueInBar" : 2.4,
+            "unitTranslationKey" : "GRAY_SLICE_UNIT_BAR",
+            "unitTranslationKeyV2" : "TC.UNIT.BAR"
+          },
+          "optimalPressure" : {
+            "value" : 2.7,
+            "unit" : "BAR",
+            "valueInBar" : 2.7,
+            "unitTranslationKey" : "GRAY_SLICE_UNIT_BAR",
+            "unitTranslationKeyV2" : "TC.UNIT.BAR"
+          },
+          "differencePressure" : {
+            "value" : 0.3,
+            "unit" : "BAR",
+            "valueInBar" : 0.3,
+            "unitTranslationKey" : "GRAY_SLICE_UNIT_BAR",
+            "unitTranslationKeyV2" : "TC.UNIT.BAR"
+          },
+          "tirePressureDifferenceStatus" : "DIVERGENT"
+        },
+        "frontRight" : {
+          "currentPressure" : {
+            "value" : 2.4,
+            "unit" : "BAR",
+            "valueInBar" : 2.4,
+            "unitTranslationKey" : "GRAY_SLICE_UNIT_BAR",
+            "unitTranslationKeyV2" : "TC.UNIT.BAR"
+          },
+          "optimalPressure" : {
+            "value" : 2.7,
+            "unit" : "BAR",
+            "valueInBar" : 2.7,
+            "unitTranslationKey" : "GRAY_SLICE_UNIT_BAR",
+            "unitTranslationKeyV2" : "TC.UNIT.BAR"
+          },
+          "differencePressure" : {
+            "value" : 0.3,
+            "unit" : "BAR",
+            "valueInBar" : 0.3,
+            "unitTranslationKey" : "GRAY_SLICE_UNIT_BAR",
+            "unitTranslationKeyV2" : "TC.UNIT.BAR"
+          },
+          "tirePressureDifferenceStatus" : "DIVERGENT"
+        },
+        "backLeft" : {
+          "currentPressure" : {
+            "value" : 2.3,
+            "unit" : "BAR",
+            "valueInBar" : 2.3,
+            "unitTranslationKey" : "GRAY_SLICE_UNIT_BAR",
+            "unitTranslationKeyV2" : "TC.UNIT.BAR"
+          },
+          "optimalPressure" : {
+            "value" : 2.5,
+            "unit" : "BAR",
+            "valueInBar" : 2.5,
+            "unitTranslationKey" : "GRAY_SLICE_UNIT_BAR",
+            "unitTranslationKeyV2" : "TC.UNIT.BAR"
+          },
+          "differencePressure" : {
+            "value" : 0.2,
+            "unit" : "BAR",
+            "valueInBar" : 0.2,
+            "unitTranslationKey" : "GRAY_SLICE_UNIT_BAR",
+            "unitTranslationKeyV2" : "TC.UNIT.BAR"
+          },
+          "tirePressureDifferenceStatus" : "DIVERGENT"
+        },
+        "backRight" : {
+          "currentPressure" : {
+            "value" : 2.3,
+            "unit" : "BAR",
+            "valueInBar" : 2.3,
+            "unitTranslationKey" : "GRAY_SLICE_UNIT_BAR",
+            "unitTranslationKeyV2" : "TC.UNIT.BAR"
+          },
+          "optimalPressure" : {
+            "value" : 2.4,
+            "unit" : "BAR",
+            "valueInBar" : 2.4,
+            "unitTranslationKey" : "GRAY_SLICE_UNIT_BAR",
+            "unitTranslationKeyV2" : "TC.UNIT.BAR"
+          },
+          "differencePressure" : {
+            "value" : 0.1,
+            "unit" : "BAR",
+            "valueInBar" : 0.1,
+            "unitTranslationKey" : "GRAY_SLICE_UNIT_BAR",
+            "unitTranslationKeyV2" : "TC.UNIT.BAR"
+          },
+          "tirePressureDifferenceStatus" : "DIVERGENT"
+        }
+      }
+    """
+  end
+
+  defp overview_tires(false) do
+    """
       "tires" : {
         "frontLeft" : {
           "currentPressure" : null,
@@ -262,26 +390,7 @@ defmodule PorscheConnEx.Test.ServerResponses do
           "differencePressure" : null,
           "tirePressureDifferenceStatus" : "UNKNOWN"
         }
-      },
-      "windows" : {
-        "frontLeft" : "CLOSED",
-        "frontRight" : "CLOSED",
-        "backLeft" : "CLOSED",
-        "backRight" : "CLOSED",
-        "roof" : "UNSUPPORTED",
-        "maintenanceHatch" : "UNSUPPORTED",
-        "sunroof" : {
-          "status" : "UNSUPPORTED",
-          "positionInPercent" : null
-        }
-      },
-      "parkingTime" : "17.01.2024 21:48:10",
-      "overallOpenStatus" : "CLOSED",
-      "chargingStatus" : "CHARGING_COMPLETED",
-      "carModel" : "J1",
-      "engineType" : "BEV",
-      "chargingState" : "COMPLETED"
-    }
+      }
     """
   end
 

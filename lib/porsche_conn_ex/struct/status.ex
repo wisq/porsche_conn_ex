@@ -17,13 +17,13 @@ defmodule PorscheConnEx.Struct.Status do
       required: true
     )
 
-    field(:overall_lock_status, Type.Struct.Status.OverallLockStatus,
+    field(:overall_lock_status, Type.Struct.Status.LockStatus,
       key: "overallLockStatus",
       required: true
     )
 
     # Unknown datatypes (null for me):
-    #  - fuelLevel
-    #  - oilLevel
+    field(:oil_level, :any, key: "oilLevel")
+    field(:fuel_level, :any, key: "fuelLevel")
   end
 end

@@ -11,7 +11,13 @@ defmodule PorscheConnEx.Type.Struct.Status do
     use PorscheConnEx.Type.StructMap, of: PorscheConnEx.Struct.Status.ServiceInterval
   end
 
-  defmodule OverallLockStatus do
-    use PorscheConnEx.Type.Struct, for: PorscheConnEx.Struct.Status.OverallLockStatus
+  defmodule ServiceInterval.MapOrNull do
+    use PorscheConnEx.Type.StructMap,
+      of: PorscheConnEx.Struct.Status.ServiceInterval,
+      allow_null: true
+  end
+
+  defmodule LockStatus do
+    use PorscheConnEx.Type.Struct, for: PorscheConnEx.Struct.Status.LockStatus
   end
 end
