@@ -24,7 +24,7 @@ defmodule PorscheConnEx.Struct.Vehicle do
     field(:login_method, :string, key: "loginMethod", required: true)
     field(:ota_active, :boolean, key: "otaActive", required: true)
     field(:valid_from, :datetime, key: "validFrom", required: true)
-    field(:attributes, Type.list_of(Attribute), key: "attributes", required: true)
+    field(:attributes, Type.Struct.Vehicle.Attribute.List, key: "attributes", required: true)
 
     # Unknown datatypes (null for me):
     #  - pendingRelationshipTerminationAt

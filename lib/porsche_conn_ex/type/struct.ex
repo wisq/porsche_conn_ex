@@ -1,104 +1,71 @@
 defmodule PorscheConnEx.Type.Struct do
-  def struct(module) do
-    ["PorscheConnEx", "Struct" | rest] = Module.split(module)
+  alias Map, as: M
 
-    type_module = ["PorscheConnEx", "Type", "Struct" | rest] |> Module.concat()
+  defmacro __using__(for: module) do
+    quote do
+      use Parameter.Parametrizable
 
-    unless is_compiled?(type_module) do
-      quote do
-        defmodule unquote(type_module) do
-          use Parameter.Parametrizable
-
-          @impl true
-          def load(values) do
-            PorscheConnEx.Type.Struct.load(unquote(module), values)
-          end
-
-          @impl true
-          def validate(_value) do
-            :ok
-          end
-
-          @impl true
-          def dump(value) do
-            PorscheConnEx.Type.Struct.dump(unquote(module), value)
-          end
-        end
+      @impl true
+      def load(values) do
+        PorscheConnEx.Type.Struct.load(unquote(module), values)
       end
-      |> Code.compile_quoted()
-    end
 
-    type_module
+      @impl true
+      def validate(_value) do
+        :ok
+      end
+
+      @impl true
+      def dump(value) do
+        PorscheConnEx.Type.Struct.dump(unquote(module), value)
+      end
+    end
   end
 
-  def list_of(module) do
-    ["PorscheConnEx", "Struct" | rest] = Module.split(module)
-
-    type_module =
-      ["PorscheConnEx", "Type", "Struct", rest, "List"]
-      |> List.flatten()
-      |> Module.concat()
-
-    unless is_compiled?(type_module) do
+  defmodule List do
+    defmacro __using__(of: module) do
       quote do
-        defmodule unquote(type_module) do
-          use Parameter.Parametrizable
+        use Parameter.Parametrizable
 
-          @impl true
-          def load(values) do
-            PorscheConnEx.Type.Struct.load_list_of(unquote(module), values)
-          end
+        @impl true
+        def load(values) do
+          PorscheConnEx.Type.Struct.load_list_of(unquote(module), values)
+        end
 
-          @impl true
-          def validate(_value) do
-            :ok
-          end
+        @impl true
+        def validate(_value) do
+          :ok
+        end
 
-          @impl true
-          def dump(value) do
-            PorscheConnEx.Type.Struct.dump_list_of(unquote(module), value)
-          end
+        @impl true
+        def dump(value) do
+          PorscheConnEx.Type.Struct.dump_list_of(unquote(module), value)
         end
       end
-      |> Code.compile_quoted()
     end
-
-    type_module
   end
 
-  def map_of(module) do
-    ["PorscheConnEx", "Struct" | rest] = Module.split(module)
-
-    type_module =
-      ["PorscheConnEx", "Type", "Struct", rest, "Map"]
-      |> List.flatten()
-      |> Module.concat()
-
-    unless is_compiled?(type_module) do
+  defmodule Map do
+    defmacro __using__(of: module) do
       quote do
-        defmodule unquote(type_module) do
-          use Parameter.Parametrizable
+        use Parameter.Parametrizable
 
-          @impl true
-          def load(values) do
-            PorscheConnEx.Type.Struct.load_map_of(unquote(module), values)
-          end
+        @impl true
+        def load(values) do
+          PorscheConnEx.Type.Struct.load_map_of(unquote(module), values)
+        end
 
-          @impl true
-          def validate(_value) do
-            :ok
-          end
+        @impl true
+        def validate(_value) do
+          :ok
+        end
 
-          @impl true
-          def dump(value) do
-            PorscheConnEx.Type.Struct.dump_map_of(unquote(module), value)
-          end
+        @impl true
+        def dump(value) do
+          PorscheConnEx.Type.Struct.dump_map_of(unquote(module), value)
         end
       end
-      |> Code.compile_quoted()
     end
-
-    type_module
   end
 
   def load(module, item) do
@@ -119,6 +86,7 @@ defmodule PorscheConnEx.Type.Struct do
     end)
     |> then(fn
       {list, :ok} -> {:ok, list}
+      {_, {:error, _} = err} -> err
     end)
   end
 
@@ -135,15 +103,12 @@ defmodule PorscheConnEx.Type.Struct do
       end
     end)
     |> then(fn
-      {map, :ok} -> {:ok, Map.new(map)}
+      {map, :ok} -> {:ok, M.new(map)}
+      {_, {:error, _} = err} -> err
     end)
   end
 
   def dump_map_of(_module, _items) do
     {:error, :not_implemented}
-  end
-
-  defp is_compiled?(module) do
-    function_exported?(module, :__info__, 1)
   end
 end
