@@ -1,23 +1,23 @@
 defmodule PorscheConnEx.Struct.Status do
   use PorscheConnEx.Struct
-  alias PorscheConnEx.Type
+  alias PorscheConnEx.Struct
 
   param do
     field(:vin, :string, required: true)
-    field(:battery_level, Type.Struct.BatteryLevel, key: "batteryLevel", required: true)
-    field(:mileage, Type.Struct.Distance, required: true)
+    field(:battery_level, Struct.BatteryLevel, key: "batteryLevel", required: true)
+    field(:mileage, Struct.Distance, required: true)
 
-    field(:remaining_ranges, Type.Struct.Status.RemainingRanges,
+    field(:remaining_ranges, Struct.Status.RemainingRanges,
       key: "remainingRanges",
       required: true
     )
 
-    field(:service_intervals, Type.Struct.Status.ServiceInterval.Map,
+    field(:service_intervals, Struct.Status.ServiceIntervalMap,
       key: "serviceIntervals",
       required: true
     )
 
-    field(:overall_lock_status, Type.Struct.Status.LockStatus,
+    field(:overall_lock_status, Struct.Status.LockStatus,
       key: "overallLockStatus",
       required: true
     )

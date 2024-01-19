@@ -16,8 +16,6 @@ defmodule PorscheConnEx.Struct.Overview.Windows do
       field(:percent, :any, key: "positionInPercent")
       field(:status, OpenStatus, required: true)
     end
-
-    def load(x), do: from_api(x)
   end
 
   param do

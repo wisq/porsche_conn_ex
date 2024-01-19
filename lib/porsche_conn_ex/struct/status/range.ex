@@ -1,6 +1,6 @@
 defmodule PorscheConnEx.Struct.Status.Range do
   use PorscheConnEx.Struct
-  alias PorscheConnEx.Type
+  alias PorscheConnEx.Struct
 
   enum EngineType do
     value(:electric, key: "ELECTRIC")
@@ -12,7 +12,7 @@ defmodule PorscheConnEx.Struct.Status.Range do
 
   param do
     field(:engine_type, EngineType, key: "engineType", required: true)
-    field(:distance, Type.Struct.Distance, required: false)
+    field(:distance, Struct.Distance, required: false)
     # Only appears in `overview` requests, not `status` ones.
     field(:is_primary, :boolean, key: "isPrimary", required: false)
   end

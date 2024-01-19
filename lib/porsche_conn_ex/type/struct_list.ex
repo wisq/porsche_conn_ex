@@ -23,7 +23,7 @@ defmodule PorscheConnEx.Type.StructList do
   def load(module, items) do
     items
     |> Enum.flat_map_reduce(:ok, fn item, :ok ->
-      case module.from_api(item) do
+      case module.load(item) do
         {:ok, struct} -> {[struct], :ok}
         {:error, _} = err -> {:halt, err}
       end

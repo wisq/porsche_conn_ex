@@ -1,6 +1,5 @@
 defmodule PorscheConnEx.Struct.Vehicle do
   use PorscheConnEx.Struct
-  alias PorscheConnEx.Type
 
   defmodule Attribute do
     use PorscheConnEx.Struct
@@ -9,6 +8,10 @@ defmodule PorscheConnEx.Struct.Vehicle do
       field(:name, :string, required: true)
       field(:value, :string, required: true)
     end
+  end
+
+  defmodule AttributeList do
+    use PorscheConnEx.Type.StructList, of: Attribute
   end
 
   param do
@@ -24,9 +27,8 @@ defmodule PorscheConnEx.Struct.Vehicle do
     field(:login_method, :string, key: "loginMethod", required: true)
     field(:ota_active, :boolean, key: "otaActive", required: true)
     field(:valid_from, :datetime, key: "validFrom", required: true)
-    field(:attributes, Type.Struct.Vehicle.Attribute.List, key: "attributes", required: true)
-
-    # Unknown datatypes (null for me):
-    #  - pendingRelationshipTerminationAt
+    field(:attributes, AttributeList, key: "attributes", required: true)
+    # Unknown datatype (null for me):
+    field(:pending_relationship_termination_at, :any, key: "pendingRelationshipTerminationAt")
   end
 end

@@ -1,6 +1,6 @@
 defmodule PorscheConnEx.Struct.Overview do
   use PorscheConnEx.Struct
-  alias PorscheConnEx.Type
+  alias PorscheConnEx.{Struct, Type}
 
   enum OpenStatus do
     value(:open, key: "OPEN")
@@ -21,9 +21,9 @@ defmodule PorscheConnEx.Struct.Overview do
 
   param do
     field(:vin, :string, required: true)
-    field(:battery_level, Type.Struct.BatteryLevel, key: "batteryLevel", required: true)
+    field(:battery_level, Struct.BatteryLevel, key: "batteryLevel", required: true)
     field(:car_model, :string, key: "carModel", required: true)
-    field(:mileage, Type.Struct.Distance, required: true)
+    field(:mileage, Struct.Distance, required: true)
 
     # Note that `brake` is misspelled in the API.
     # The `status` fields are null for me.
@@ -32,25 +32,25 @@ defmodule PorscheConnEx.Struct.Overview do
     field(:parking_light, OnOff, key: "parkingLight", required: true)
     field(:parking_light_status, :any, key: "parkingLightStatus")
 
-    field(:remaining_ranges, Type.Struct.Status.RemainingRanges,
+    field(:remaining_ranges, Struct.Status.RemainingRanges,
       key: "remainingRanges",
       required: true
     )
 
-    field(:service_intervals, Type.Struct.Status.ServiceInterval.MapOrNull,
+    field(:service_intervals, Struct.Status.ServiceIntervalNullMap,
       key: "serviceIntervals",
       required: true
     )
 
     field(:engine_type, :string, key: "engineType", required: true)
 
-    field(:doors, Type.Struct.Overview.Doors, required: true)
-    field(:windows, Type.Struct.Overview.Windows, required: true)
+    field(:doors, Struct.Overview.Doors, required: true)
+    field(:windows, Struct.Overview.Windows, required: true)
 
     field(:charging_state, :any, key: "chargingState", required: true)
     field(:charging_status, :any, key: "chargingStatus", required: true)
 
-    field(:tires, Type.Struct.Overview.TirePressure.Map, required: true)
+    field(:tires, Struct.Overview.TirePressureMap, required: true)
     field(:overall_open_status, OpenStatus, key: "overallOpenStatus", required: true)
     field(:parking_time, Type.ReverseUtcDateTime, key: "parkingTime", required: true)
 

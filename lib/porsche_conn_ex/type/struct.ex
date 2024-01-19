@@ -21,7 +21,7 @@ defmodule PorscheConnEx.Type.Struct do
   end
 
   def load(module, item) do
-    module.from_api(item)
+    module.load(item)
   end
 
   def dump(_module, _item) do

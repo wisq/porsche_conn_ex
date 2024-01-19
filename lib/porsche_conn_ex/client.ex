@@ -202,12 +202,12 @@ defmodule PorscheConnEx.Client do
   defp handle({:ok, resp}), do: {:error, resp}
   defp handle({:error, err}), do: {:error, err}
 
-  defp from_api({:ok, body}, module) when is_map(body), do: module.from_api(body)
+  defp from_api({:ok, body}, module) when is_map(body), do: module.load(body)
 
   defp list_from_api({:ok, list}, module) when is_list(list) do
     list
     |> Enum.flat_map_reduce(:ok, fn item, _ ->
-      case module.from_api(item) do
+      case module.load(item) do
         {:ok, struct} -> {[struct], :ok}
         {:error, _} = err -> {:halt, err}
       end

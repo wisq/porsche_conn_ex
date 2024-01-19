@@ -38,7 +38,7 @@ defmodule PorscheConnEx.Type.StructMap do
         end
 
       {key, value}, :ok when is_binary(key) ->
-        case module.from_api(value) do
+        case module.load(value) do
           {:ok, struct} -> {[{key, struct}], :ok}
           {:error, _} = err -> {:halt, err}
         end

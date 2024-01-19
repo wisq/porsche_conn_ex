@@ -2,7 +2,7 @@ defmodule PorscheConnEx.Struct.Status.LockStatus do
   @enforce_keys [:open, :locked]
   defstruct(@enforce_keys)
 
-  def from_api(term) do
+  def load(term) do
     [open, locked] = String.split(term, "_")
 
     with {:ok, open} <- open_from_api(open),
