@@ -40,20 +40,13 @@ defmodule PorscheConnEx.ClientTest do
       resp_json(conn, ServerResponses.vehicles(vin, nickname))
     end)
 
-    assert {:ok, [vehicle]} = Client.vehicles(session, config(bypass))
+    assert {:ok, [%Struct.Vehicle{} = vehicle]} = Client.vehicles(session, config(bypass))
     assert MockSession.count(session) == 1
 
-    assert %Struct.Vehicle{
-             vin: ^vin,
-             model_year: 2022,
-             model_description: "Taycan GTS",
-             attributes: [attr]
-           } = vehicle
-
-    assert %{
-             name: "licenseplate",
-             value: ^nickname
-           } = attr
+    assert vehicle.vin == vin
+    assert vehicle.model_year == 2022
+    assert vehicle.model_description == "Taycan GTS"
+    assert [%{name: "licenseplate", value: ^nickname}] = vehicle.attributes
   end
 
   test "status", %{session: session, bypass: bypass} do
@@ -63,15 +56,17 @@ defmodule PorscheConnEx.ClientTest do
       resp_json(conn, ServerResponses.status(vin))
     end)
 
-    assert {:ok, status} = Client.status(session, vin, config(bypass))
+    assert {:ok, %Struct.Status{} = status} = Client.status(session, vin, config(bypass))
     assert MockSession.count(session) == 1
 
-    assert %{
-             "vin" => ^vin,
-             "mileage" => %{"value" => 9001},
-             "batteryLevel" => %{"value" => 80},
-             "remainingRanges" => %{"electricalRange" => %{"distance" => %{"value" => 247}}}
-           } = status
+    assert status.vin == vin
+    assert status.mileage.value == 9001
+    assert status.battery_level.value == 80
+    assert status.remaining_ranges.electrical.distance.value == 247
+    assert status.overall_lock_status.locked
+
+    assert %{"inspection" => inspection} = status.service_intervals
+    assert inspection.time.value == -113
   end
 
   test "summary", %{session: session, bypass: bypass} do

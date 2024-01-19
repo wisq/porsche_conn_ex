@@ -14,6 +14,7 @@ defmodule PorscheConnEx.Client do
 
   def status(session, vin, config \\ %Config{}) do
     get(session, config, "/vehicle-data/#{Config.url(config)}/status/#{vin}")
+    |> from_api(Struct.Status)
   end
 
   def summary(session, vin, config \\ %Config{}) do

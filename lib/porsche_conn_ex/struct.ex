@@ -10,10 +10,14 @@ defmodule PorscheConnEx.Struct do
         end
       end
 
+      defoverridable from_api: 1
+
       if Keyword.get(opts, :writable, false) do
         def to_api(%__MODULE__{} = struct) do
           Parameter.dump(__MODULE__, struct)
         end
+
+        defoverridable to_api: 1
       end
     end
   end

@@ -24,11 +24,9 @@ defmodule PorscheConnEx.Struct.Vehicle do
     field(:login_method, :string, key: "loginMethod", required: true)
     field(:ota_active, :boolean, key: "otaActive", required: true)
     field(:valid_from, :datetime, key: "validFrom", required: true)
-    field(:attributes, Type.Struct.list_of(Attribute), key: "attributes", required: true)
+    field(:attributes, Type.list_of(Attribute), key: "attributes", required: true)
 
-    # Never seen this not-nil, but I'm assuming it'll be a datetime.
-    field(:pending_relationship_termination_at, :datetime,
-      key: "pendingRelationshipTerminationAt"
-    )
+    # Unknown datatypes (null for me):
+    #  - pendingRelationshipTerminationAt
   end
 end
