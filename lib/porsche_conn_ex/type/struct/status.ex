@@ -8,7 +8,7 @@ defmodule PorscheConnEx.Type.Struct.Status do
   end
 
   defmodule ServiceInterval.Map do
-    use PorscheConnEx.Type.Struct.Map, of: PorscheConnEx.Struct.Status.ServiceInterval
+    use PorscheConnEx.Type.StructMap, of: PorscheConnEx.Struct.Status.ServiceInterval
   end
 
   defmodule OverallLockStatus do
