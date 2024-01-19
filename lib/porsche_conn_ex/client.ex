@@ -18,6 +18,7 @@ defmodule PorscheConnEx.Client do
 
   def summary(session, vin, config \\ %Config{}) do
     get(session, config, "/service-vehicle/vehicle-summary/#{vin}")
+    |> from_api(Struct.Summary)
   end
 
   def stored_overview(session, vin, config \\ %Config{}) do
@@ -198,6 +199,8 @@ defmodule PorscheConnEx.Client do
 
   defp handle({:ok, resp}), do: {:error, resp}
   defp handle({:error, err}), do: {:error, err}
+
+  defp from_api({:ok, body}, module) when is_map(body), do: module.from_api(body)
 
   defp list_from_api({:ok, list}, module) when is_list(list) do
     list

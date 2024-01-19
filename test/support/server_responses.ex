@@ -148,11 +148,17 @@ defmodule PorscheConnEx.Test.ServerResponses do
     """
   end
 
-  def summary do
+  def summary(nickname \\ nil) do
+    nn_json =
+      case nickname do
+        nil -> "null"
+        nn when is_binary(nn) -> ~s["#{nn}"]
+      end
+
     """
     {
       "modelDescription" : "Taycan GTS",
-      "nickName" : null
+      "nickName" : #{nn_json}
     }
     """
   end

@@ -84,7 +84,21 @@ defmodule PorscheConnEx.ClientTest do
     assert {:ok, summary} = Client.summary(session, vin, config(bypass))
     assert MockSession.count(session) == 1
 
-    assert %{"modelDescription" => "Taycan GTS"} = summary
+    assert %Struct.Summary{model_description: "Taycan GTS", nickname: nil} = summary
+  end
+
+  test "summary with nickname", %{session: session, bypass: bypass} do
+    vin = random_vin()
+    nickname = random_nickname()
+
+    Bypass.expect_once(bypass, "GET", "/service-vehicle/vehicle-summary/#{vin}", fn conn ->
+      resp_json(conn, ServerResponses.summary(nickname))
+    end)
+
+    assert {:ok, summary} = Client.summary(session, vin, config(bypass))
+    assert MockSession.count(session) == 1
+
+    assert %Struct.Summary{model_description: "Taycan GTS", nickname: ^nickname} = summary
   end
 
   test "stored_overview/3", %{session: session, bypass: bypass} do
