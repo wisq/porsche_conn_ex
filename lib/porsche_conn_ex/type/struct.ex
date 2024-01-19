@@ -1,7 +1,11 @@
 defmodule PorscheConnEx.Type.Struct do
   def list_of(module) do
     ["PorscheConnEx", "Struct" | rest] = Module.split(module)
-    type_module = ["PorscheConnEx", "Type", "Struct" | rest] |> Module.concat()
+
+    type_module =
+      ["PorscheConnEx", "Type", "Struct", rest, "List"]
+      |> List.flatten()
+      |> Module.concat()
 
     unless is_compiled?(type_module) do
       quote do
