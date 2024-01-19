@@ -44,7 +44,23 @@ defmodule PorscheConnEx.Test.ServerResponses do
     """
   end
 
-  def vehicles(vin) do
+  def vehicles(vin, nickname \\ nil) do
+    attributes =
+      case nickname do
+        nil ->
+          """
+            "attributes" : [ ],
+          """
+
+        nn when is_binary(nn) ->
+          """
+            "attributes" : [ {
+              "name" : "licenseplate",
+              "value" : "#{nn}"
+            } ],
+          """
+      end
+
     """
     [ {
       "vin" : "#{vin}",
@@ -58,7 +74,7 @@ defmodule PorscheConnEx.Test.ServerResponses do
       "spinEnabled" : true,
       "loginMethod" : "PORSCHE_ID",
       "pendingRelationshipTerminationAt" : null,
-      "attributes" : [ ],
+      #{attributes |> String.trim()}
       "otaActive" : true,
       "validFrom" : "2024-01-01T01:02:03.000Z"
     } ]

@@ -1,5 +1,15 @@
 defmodule PorscheConnEx.Struct.Vehicle do
-  use Parameter.Schema
+  use PorscheConnEx.Struct
+  alias PorscheConnEx.Type
+
+  defmodule Attribute do
+    use PorscheConnEx.Struct
+
+    param do
+      field(:name, :string, required: true)
+      field(:value, :string, required: true)
+    end
+  end
 
   param do
     field(:vin, :string, required: true)
@@ -14,22 +24,11 @@ defmodule PorscheConnEx.Struct.Vehicle do
     field(:login_method, :string, key: "loginMethod", required: true)
     field(:ota_active, :boolean, key: "otaActive", required: true)
     field(:valid_from, :datetime, key: "validFrom", required: true)
+    field(:attributes, Type.Struct.list_of(Attribute), key: "attributes", required: true)
 
     # Never seen this not-nil, but I'm assuming it'll be a datetime.
     field(:pending_relationship_termination_at, :datetime,
       key: "pendingRelationshipTerminationAt"
     )
-
-    # Not sure what type this will be, mine's empty.
-    field(:attributes, {:array, :string}, key: "attributes", required: true)
   end
-
-  def from_api(params) do
-    case Parameter.load(__MODULE__, params) do
-      {:ok, fields} -> {:ok, struct!(__MODULE__, fields)}
-      {:error, _} = err -> err
-    end
-  end
-
-  def to_api(%__MODULE__{} = struct), do: Parameter.dump(__MODULE__, struct)
 end

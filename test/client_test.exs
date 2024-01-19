@@ -25,10 +25,35 @@ defmodule PorscheConnEx.ClientTest do
     assert MockSession.count(session) == 1
 
     assert %Struct.Vehicle{
+             vin: ^vin,
              model_year: 2022,
              model_description: "Taycan GTS",
-             vin: ^vin
+             attributes: []
            } = vehicle
+  end
+
+  test "vehicles with nickname", %{session: session, bypass: bypass} do
+    vin = random_vin()
+    nickname = random_nickname()
+
+    Bypass.expect_once(bypass, "GET", "/core/api/v3/de/de_DE/vehicles", fn conn ->
+      resp_json(conn, ServerResponses.vehicles(vin, nickname))
+    end)
+
+    assert {:ok, [vehicle]} = Client.vehicles(session, config(bypass))
+    assert MockSession.count(session) == 1
+
+    assert %Struct.Vehicle{
+             vin: ^vin,
+             model_year: 2022,
+             model_description: "Taycan GTS",
+             attributes: [attr]
+           } = vehicle
+
+    assert %{
+             name: "licenseplate",
+             value: ^nickname
+           } = attr
   end
 
   test "status", %{session: session, bypass: bypass} do
@@ -485,6 +510,15 @@ defmodule PorscheConnEx.ClientTest do
   defp random_vin do
     1..@vin_length
     |> Enum.map(fn _ -> Enum.random(@vin_chars) end)
+    |> String.Chars.to_string()
+  end
+
+  @nickname_chars [?A..?Z, ?a..?z] |> Enum.flat_map(& &1)
+  @nickname_length 1..24
+
+  defp random_nickname do
+    1..Enum.random(@nickname_length)
+    |> Enum.map(fn _ -> Enum.random(@nickname_chars) end)
     |> String.Chars.to_string()
   end
 
