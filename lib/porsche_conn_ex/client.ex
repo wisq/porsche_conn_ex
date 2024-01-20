@@ -66,6 +66,7 @@ defmodule PorscheConnEx.Client do
 
   def position(session, vin, config \\ %Config{}) do
     get(session, config, "/service-vehicle/car-finder/#{vin}/position")
+    |> from_api(Struct.Position)
   end
 
   def trips_short_term(session, vin, config \\ %Config{}) do

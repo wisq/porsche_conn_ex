@@ -347,13 +347,10 @@ defmodule PorscheConnEx.ClientTest do
     assert {:ok, position} = Client.position(session, vin, config(bypass))
     assert MockSession.count(session) == 1
 
-    assert %{
-             "carCoordinate" => %{
-               "latitude" => 45.444444,
-               "longitude" => -75.693889
-             },
-             "heading" => 90
-           } = position
+    assert position.coordinates.latitude == 45.444444
+    assert position.coordinates.longitude == -75.693889
+    assert position.coordinates.reference_system == :wgs84
+    assert position.heading == 90
   end
 
   test "trips_short_term", %{session: session, bypass: bypass} do
