@@ -24,12 +24,10 @@ defmodule PorscheConnEx.ClientTest do
     assert {:ok, [vehicle]} = Client.vehicles(session, config(bypass))
     assert MockSession.count(session) == 1
 
-    assert %Struct.Vehicle{
-             vin: ^vin,
-             model_year: 2022,
-             model_description: "Taycan GTS",
-             attributes: []
-           } = vehicle
+    assert vehicle.vin == vin
+    assert vehicle.model_year == 2022
+    assert vehicle.model_description == "Taycan GTS"
+    assert vehicle.attributes == []
   end
 
   test "vehicles with nickname", %{session: session, bypass: bypass} do
@@ -56,7 +54,7 @@ defmodule PorscheConnEx.ClientTest do
       resp_json(conn, ServerResponses.status(vin))
     end)
 
-    assert {:ok, %Struct.Status{} = status} = Client.status(session, vin, config(bypass))
+    assert {:ok, status} = Client.status(session, vin, config(bypass))
     assert MockSession.count(session) == 1
 
     assert status.vin == vin
@@ -79,7 +77,8 @@ defmodule PorscheConnEx.ClientTest do
     assert {:ok, summary} = Client.summary(session, vin, config(bypass))
     assert MockSession.count(session) == 1
 
-    assert %Struct.Summary{model_description: "Taycan GTS", nickname: nil} = summary
+    assert summary.model_description == "Taycan GTS"
+    assert summary.nickname == nil
   end
 
   test "summary with nickname", %{session: session, bypass: bypass} do
@@ -93,7 +92,8 @@ defmodule PorscheConnEx.ClientTest do
     assert {:ok, summary} = Client.summary(session, vin, config(bypass))
     assert MockSession.count(session) == 1
 
-    assert %Struct.Summary{model_description: "Taycan GTS", nickname: ^nickname} = summary
+    assert summary.model_description == "Taycan GTS"
+    assert summary.nickname == nickname
   end
 
   test "stored_overview/3", %{session: session, bypass: bypass} do
@@ -108,21 +108,31 @@ defmodule PorscheConnEx.ClientTest do
       end
     )
 
-    assert {:ok, %Struct.Overview{} = overview} =
-             Client.stored_overview(session, vin, config(bypass))
-
+    assert {:ok, overview} = Client.stored_overview(session, vin, config(bypass))
     assert MockSession.count(session) == 1
 
     assert overview.vin == vin
+    assert overview.car_model == "J1"
+    assert overview.engine_type == "BEV"
     assert overview.mileage.value == 9001
     assert overview.battery_level.value == 80
+    assert overview.charging_state == :completed
+    assert overview.charging_status == :completed
+
+    assert overview.doors.front_left.locked
+    refute overview.doors.front_left.open
+    assert overview.windows.back_left == :closed
+    assert overview.open_status == :closed
+
+    assert overview.tires.back_left.current.value == 2.3
+    assert overview.tires.back_left.current.unit == :bar
 
     assert overview.remaining_ranges.electrical.distance.value == 247
     assert overview.remaining_ranges.electrical.is_primary
     refute overview.remaining_ranges.conventional.is_primary
 
-    assert overview.doors.front_left.locked
-    refute overview.doors.front_left.open
+    assert inspection = overview.service_intervals["inspection"]
+    assert inspection.distance.km == -21300
   end
 
   test "current_overview/3", %{session: session, bypass: bypass} do
@@ -168,12 +178,16 @@ defmodule PorscheConnEx.ClientTest do
     assert MockSession.count(session) == status_requests + 2
     assert StatusCounter.get(counter) == 0
 
-    assert %{
-             "vin" => ^vin,
-             "mileage" => %{"value" => 9001},
-             "batteryLevel" => %{"value" => 80},
-             "remainingRanges" => %{"electricalRange" => %{"distance" => %{"value" => 247}}}
-           } = overview
+    assert overview.vin == vin
+    assert overview.mileage.value == 9001
+    assert overview.battery_level.value == 80
+
+    assert overview.remaining_ranges.electrical.distance.value == 247
+    assert overview.remaining_ranges.electrical.is_primary
+    refute overview.remaining_ranges.conventional.is_primary
+
+    assert overview.doors.front_left.locked
+    refute overview.doors.front_left.open
   end
 
   test "capabilities", %{session: session, bypass: bypass} do

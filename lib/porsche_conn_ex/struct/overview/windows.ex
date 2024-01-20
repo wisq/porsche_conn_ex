@@ -4,7 +4,7 @@ defmodule PorscheConnEx.Struct.Overview.Windows do
   enum OpenStatus do
     value(:open, key: "OPEN")
     value(:closed, key: "CLOSED")
-    value(:unsupported, key: "UNSUPPORTED")
+    value(nil, key: "UNSUPPORTED")
   end
 
   alias __MODULE__.OpenStatus

@@ -13,6 +13,7 @@ defmodule PorscheConnEx.Struct.Distance do
     field(:value, :float, required: true)
     field(:original_unit, Unit, key: "originalUnit", required: true)
     field(:original_value, :float, key: "originalValue", required: true)
+    field(:km, :float, key: "valueInKilometers", required: true)
   end
 end
 
@@ -24,11 +25,12 @@ defimpl Inspect, for: PorscheConnEx.Struct.Distance do
         "#{inspect(dist.original_value)} #{dist.original_unit}"
       else
         nil
-      end
+      end,
+      "#{inspect(dist.km)} km"
     ]
     |> Enum.reject(&is_nil/1)
     |> Enum.uniq()
-    |> Enum.join(" ")
+    |> Enum.join(" / ")
     |> then(fn inner -> "#PCX:Distance<#{inner}>" end)
   end
 end

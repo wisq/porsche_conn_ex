@@ -16,7 +16,3 @@ defmodule PorscheConnEx.Struct.Overview.TirePressure do
     field(:status, Status, key: "tirePressureDifferenceStatus")
   end
 end
-
-defmodule PorscheConnEx.Struct.Overview.TirePressureMap do
-  use PorscheConnEx.Type.StructMap, of: PorscheConnEx.Struct.Overview.TirePressure
-end

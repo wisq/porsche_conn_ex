@@ -43,6 +43,7 @@ defmodule PorscheConnEx.Client do
       fn req_id -> "#{url}/#{req_id}/status" end,
       fn req_id -> "#{url}/#{req_id}" end
     )
+    |> from_api(Struct.Overview)
   end
 
   def capabilities(session, vin, config \\ %Config{}) do
