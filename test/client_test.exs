@@ -96,7 +96,7 @@ defmodule PorscheConnEx.ClientTest do
     assert summary.nickname == nickname
   end
 
-  test "stored_overview/3", %{session: session, bypass: bypass} do
+  test "stored_overview", %{session: session, bypass: bypass} do
     vin = random_vin()
 
     Bypass.expect_once(
@@ -104,7 +104,7 @@ defmodule PorscheConnEx.ClientTest do
       "GET",
       "/service-vehicle/de/de_DE/vehicle-data/#{vin}/stored",
       fn conn ->
-        resp_json(conn, ServerResponses.overview(vin))
+        resp_json(conn, ServerResponses.overview(vin, true))
       end
     )
 
@@ -126,6 +126,7 @@ defmodule PorscheConnEx.ClientTest do
 
     assert overview.tires.back_left.current.value == 2.3
     assert overview.tires.back_left.current.unit == :bar
+    assert overview.tires.back_left.status == :divergent
 
     assert overview.remaining_ranges.electrical.distance.value == 247
     assert overview.remaining_ranges.electrical.is_primary
@@ -135,7 +136,27 @@ defmodule PorscheConnEx.ClientTest do
     assert inspection.distance.km == -21300
   end
 
-  test "current_overview/3", %{session: session, bypass: bypass} do
+  test "stored_overview with null tire data", %{session: session, bypass: bypass} do
+    vin = random_vin()
+
+    Bypass.expect_once(
+      bypass,
+      "GET",
+      "/service-vehicle/de/de_DE/vehicle-data/#{vin}/stored",
+      fn conn ->
+        resp_json(conn, ServerResponses.overview(vin, false))
+      end
+    )
+
+    assert {:ok, overview} = Client.stored_overview(session, vin, config(bypass))
+    assert MockSession.count(session) == 1
+
+    assert overview.vin == vin
+    assert overview.tires.back_left.current == nil
+    assert overview.tires.back_left.status == nil
+  end
+
+  test "current_overview", %{session: session, bypass: bypass} do
     vin = random_vin()
     req_id = random_request_id()
     status_requests = Enum.random(5..10)
