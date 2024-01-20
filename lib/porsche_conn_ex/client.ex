@@ -48,6 +48,7 @@ defmodule PorscheConnEx.Client do
 
   def capabilities(session, vin, config \\ %Config{}) do
     get(session, config, "/service-vehicle/vcs/capabilities/#{vin}")
+    |> from_api(Struct.Capabilities)
   end
 
   def maintenance(session, vin, config \\ %Config{}) do

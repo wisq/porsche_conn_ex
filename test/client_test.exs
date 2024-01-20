@@ -221,14 +221,17 @@ defmodule PorscheConnEx.ClientTest do
     assert {:ok, caps} = Client.capabilities(session, vin, config(bypass))
     assert MockSession.count(session) == 1
 
-    assert %{
-             "carModel" => "J1",
-             "engineType" => "BEV",
-             "heatingCapabilities" => %{
-               "frontSeatHeatingAvailable" => true,
-               "rearSeatHeatingAvailable" => true
-             }
-           } = caps
+    assert caps.car_model == "J1"
+    assert caps.engine_type == "BEV"
+    assert caps.steering_wheel == :left
+
+    assert caps.has_rdk?
+    refute caps.has_dx1?
+    assert caps.needs_spin?
+    assert caps.display_parking_brake?
+
+    assert caps.heating.front_seat?
+    assert caps.heating.rear_seat?
   end
 
   test "maintenance", %{session: session, bypass: bypass} do
