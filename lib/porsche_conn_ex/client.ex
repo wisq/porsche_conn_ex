@@ -53,6 +53,7 @@ defmodule PorscheConnEx.Client do
 
   def maintenance(session, vin, config \\ %Config{}) do
     get(session, config, "/predictive-maintenance/information/#{vin}")
+    |> from_api(Struct.Maintenance)
   end
 
   def emobility(session, vin, model, config \\ %Config{}) do

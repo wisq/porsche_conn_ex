@@ -299,14 +299,50 @@ defmodule PorscheConnEx.ClientTest do
     assert {:ok, maint} = Client.maintenance(session, vin, config(bypass))
     assert MockSession.count(session) == 1
 
-    assert %{"data" => schedule} = maint
-    assert Enum.count(schedule) == 13
+    assert maint.service_access?
+    assert Enum.count(maint.schedule) == 13
 
-    assert %{
-             "id" => "0003",
-             "criticality" => 1,
-             "description" => %{"shortName" => "Inspektion"}
-           } = schedule |> Enum.at(0)
+    assert first = Enum.at(maint.schedule, 0)
+    assert first.id == "0003"
+    assert first.description.short_name == "Inspektion"
+    assert first.description.long_name == nil
+    assert first.description.criticality == "Zurzeit ist kein Service notwendig."
+    assert first.description.notification == nil
+    assert first.criticality == 1
+    assert first.remaining_days == nil
+    assert first.remaining_km == nil
+    assert first.remaining_percent == nil
+
+    assert first.values.model_id == "0003"
+    assert first.values.model_state == :active
+    assert first.values.model_name == "Service-Intervall"
+    assert first.values.model_visibility == :visible
+    assert first.values.source == :vehicle
+    assert first.values.event == :cyclic
+    assert first.values.odometer_last_reset == 0
+    assert first.values.criticality == 1
+    assert first.values.warnings == %{99 => 0, 100 => 0}
+
+    assert last = Enum.at(maint.schedule, -1)
+    assert last.id == "0037"
+    assert last.description.short_name == "On-Board DC-Lader"
+    assert last.description.long_name == "On-Board DC-Lader"
+    assert last.description.criticality == "Zurzeit ist kein Service notwendig."
+    assert last.description.notification == nil
+    assert last.criticality == 1
+    assert last.remaining_days == nil
+    assert last.remaining_km == nil
+    assert last.remaining_percent == nil
+
+    assert last.values.model_id == "0037"
+    assert last.values.model_state == :active
+    assert last.values.model_name == "HV_Booster"
+    assert last.values.model_visibility == :visible
+    assert last.values.source == :vehicle
+    assert last.values.event == :cyclic
+    assert last.values.odometer_last_reset == 0
+    assert last.values.criticality == 1
+    assert last.values.warnings == %{}
   end
 
   test "emobility", %{session: session, bypass: bypass} do
