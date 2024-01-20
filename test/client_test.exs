@@ -26,8 +26,20 @@ defmodule PorscheConnEx.ClientTest do
 
     assert vehicle.vin == vin
     assert vehicle.model_year == 2022
+    assert vehicle.model_type == "Y1ADE1"
     assert vehicle.model_description == "Taycan GTS"
+    assert vehicle.relationship == "OWNER"
+    assert vehicle.login_method == "PORSCHE_ID"
+    assert vehicle.exterior_color == "vulkangraumetallic/vulkangraumetallic"
+    assert vehicle.exterior_color_hex == "#252625"
     assert vehicle.attributes == []
+
+    assert vehicle.valid_from == ~U[2024-01-01 01:02:03.000Z]
+    assert vehicle.pending_relationship_termination_at == nil
+
+    assert vehicle.pcc?
+    assert vehicle.spin_enabled?
+    assert vehicle.ota_active?
   end
 
   test "vehicles with nickname", %{session: session, bypass: bypass} do
@@ -42,8 +54,6 @@ defmodule PorscheConnEx.ClientTest do
     assert MockSession.count(session) == 1
 
     assert vehicle.vin == vin
-    assert vehicle.model_year == 2022
-    assert vehicle.model_description == "Taycan GTS"
     assert [%{name: "licenseplate", value: ^nickname}] = vehicle.attributes
   end
 
@@ -58,13 +68,26 @@ defmodule PorscheConnEx.ClientTest do
     assert MockSession.count(session) == 1
 
     assert status.vin == vin
-    assert status.mileage.value == 9001
-    assert status.battery_level.value == 80
-    assert status.remaining_ranges.electrical.distance.value == 247
+    assert status.battery_level == battery_level(80)
+    assert status.mileage == distance_km_to_km(9001.0)
     assert status.overall_lock_status.locked
 
-    assert %{"inspection" => inspection} = status.service_intervals
-    assert inspection.time.value == -113
+    assert %{electrical: elec, conventional: conv} = status.remaining_ranges
+    assert elec.distance == distance_km_to_km(247.0)
+    assert elec.engine_type == :electric
+    assert elec.primary? == nil
+    assert conv.distance == nil
+    assert conv.engine_type == nil
+    assert conv.primary? == nil
+
+    assert %{"inspection" => inspect, "oilService" => oilserv} = status.service_intervals
+    assert inspect.distance == distance_km_to_km(-21300.0)
+    assert inspect.time == time(-113, :day)
+    assert oilserv.distance == nil
+    assert oilserv.time == nil
+
+    assert status.oil_level == nil
+    assert status.fuel_level == nil
   end
 
   test "summary", %{session: session, bypass: bypass} do
@@ -114,26 +137,54 @@ defmodule PorscheConnEx.ClientTest do
     assert overview.vin == vin
     assert overview.car_model == "J1"
     assert overview.engine_type == "BEV"
-    assert overview.mileage.value == 9001
-    assert overview.battery_level.value == 80
+    assert overview.mileage == distance_km_to_km(9001.0)
+    assert overview.battery_level == battery_level(80)
     assert overview.charging_state == :completed
     assert overview.charging_status == :completed
 
-    assert overview.doors.front_left.locked
-    refute overview.doors.front_left.open
+    assert overview.doors.front_left == lock(:closed, :locked)
+    assert overview.doors.front_right == lock(:closed, :locked)
+    assert overview.doors.back_left == lock(:closed, :locked)
+    assert overview.doors.back_right == lock(:closed, :locked)
+    assert overview.doors.trunk == lock(:closed, :locked)
+    assert overview.doors.hood == lock(:closed, :unlocked)
+    assert overview.doors.overall == lock(:closed, :locked)
+
+    assert overview.windows.front_left == :closed
+    assert overview.windows.front_right == :closed
     assert overview.windows.back_left == :closed
+    assert overview.windows.back_right == :closed
+    assert overview.windows.maintenance_hatch == nil
+    assert overview.windows.roof == nil
+    assert overview.windows.sunroof.percent == nil
+    assert overview.windows.sunroof.status == nil
+
+    assert overview.tires.front_left == tire_pressure(2.4, 2.7, 0.3, :divergent)
+    assert overview.tires.front_right == tire_pressure(2.4, 2.7, 0.3, :divergent)
+    assert overview.tires.back_left == tire_pressure(2.3, 2.5, 0.2, :divergent)
+    assert overview.tires.back_right == tire_pressure(2.3, 2.4, 0.1, :divergent)
+
     assert overview.open_status == :closed
+    assert overview.parking_brake == :inactive
+    assert overview.parking_brake_status == nil
+    assert overview.parking_light == :off
+    assert overview.parking_light_status == nil
+    assert overview.parking_time == ~U[2024-01-17 21:48:10Z]
 
-    assert overview.tires.back_left.current.value == 2.3
-    assert overview.tires.back_left.current.unit == :bar
-    assert overview.tires.back_left.status == :divergent
+    assert %{electrical: elec, conventional: conv} = overview.remaining_ranges
+    assert elec.distance == distance_km_to_km(247.0)
+    assert elec.engine_type == :electric
+    assert elec.primary? == true
+    assert conv.distance == nil
+    assert conv.engine_type == nil
+    assert conv.primary? == false
 
-    assert overview.remaining_ranges.electrical.distance.value == 247
-    assert overview.remaining_ranges.electrical.is_primary
-    refute overview.remaining_ranges.conventional.is_primary
+    assert %{"inspection" => inspect, "oilService" => nil} = overview.service_intervals
+    assert inspect.distance == distance_km_to_km(-21300.0)
+    assert inspect.time == time(-113, :day)
 
-    assert inspection = overview.service_intervals["inspection"]
-    assert inspection.distance.km == -21300
+    assert overview.oil_level == nil
+    assert overview.fuel_level == nil
   end
 
   test "stored_overview with null tire data", %{session: session, bypass: bypass} do
@@ -151,9 +202,18 @@ defmodule PorscheConnEx.ClientTest do
     assert {:ok, overview} = Client.stored_overview(session, vin, config(bypass))
     assert MockSession.count(session) == 1
 
+    nil_tire = %Struct.Overview.TirePressure{
+      current: nil,
+      optimal: nil,
+      difference: nil,
+      status: nil
+    }
+
     assert overview.vin == vin
-    assert overview.tires.back_left.current == nil
-    assert overview.tires.back_left.status == nil
+    assert overview.tires.front_left == nil_tire
+    assert overview.tires.front_right == nil_tire
+    assert overview.tires.back_left == nil_tire
+    assert overview.tires.back_right == nil_tire
   end
 
   test "current_overview", %{session: session, bypass: bypass} do
@@ -200,15 +260,10 @@ defmodule PorscheConnEx.ClientTest do
     assert StatusCounter.get(counter) == 0
 
     assert overview.vin == vin
-    assert overview.mileage.value == 9001
-    assert overview.battery_level.value == 80
-
-    assert overview.remaining_ranges.electrical.distance.value == 247
-    assert overview.remaining_ranges.electrical.is_primary
-    refute overview.remaining_ranges.conventional.is_primary
-
-    assert overview.doors.front_left.locked
-    refute overview.doors.front_left.open
+    assert overview.car_model == "J1"
+    assert overview.engine_type == "BEV"
+    assert overview.mileage == distance_km_to_km(9001.0)
+    assert overview.battery_level == battery_level(80)
   end
 
   test "capabilities", %{session: session, bypass: bypass} do
@@ -598,4 +653,52 @@ defmodule PorscheConnEx.ClientTest do
   ]
 
   defp random_timezone, do: @timezones |> Enum.random()
+
+  defp distance_km_to_km(value) do
+    %Struct.Distance{
+      value: value,
+      unit: :km,
+      original_value: value,
+      original_unit: :km,
+      km: value
+    }
+  end
+
+  defp time(value, unit) when unit in [:day] do
+    %Struct.Time{
+      value: value,
+      unit: unit
+    }
+  end
+
+  defp battery_level(value) do
+    %Struct.BatteryLevel{
+      value: value,
+      unit: :percent
+    }
+  end
+
+  defp lock(open, locked) do
+    %Struct.Status.LockStatus{
+      open:
+        case open do
+          :open -> true
+          :closed -> false
+        end,
+      locked:
+        case locked do
+          :locked -> true
+          :unlocked -> false
+        end
+    }
+  end
+
+  defp tire_pressure(current, optimal, diff, status) do
+    %Struct.Overview.TirePressure{
+      current: %Struct.Pressure{value: current, unit: :bar},
+      optimal: %Struct.Pressure{value: optimal, unit: :bar},
+      difference: %Struct.Pressure{value: diff, unit: :bar},
+      status: status
+    }
+  end
 end

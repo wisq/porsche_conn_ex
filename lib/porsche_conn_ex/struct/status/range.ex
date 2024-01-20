@@ -14,6 +14,6 @@ defmodule PorscheConnEx.Struct.Status.Range do
     field(:engine_type, EngineType, key: "engineType", required: true)
     field(:distance, Struct.Distance, required: false)
     # Only appears in `overview` requests, not `status` ones.
-    field(:is_primary, :boolean, key: "isPrimary", required: false)
+    field(:primary?, :boolean, key: "isPrimary", required: false)
   end
 end
