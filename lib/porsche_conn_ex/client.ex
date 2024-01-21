@@ -57,6 +57,14 @@ defmodule PorscheConnEx.Client do
   end
 
   def emobility(session, vin, model, config \\ %Config{}) do
+    emobility_raw(session, vin, model, config)
+    |> from_api(Struct.Emobility)
+  end
+
+  # This function is currently exposed to allow my library to retrieve unparsed
+  # data and continue working, while also attempting to parse it and logging
+  # any parse errors.  I'm hoping to discover more enum values this way.
+  def emobility_raw(session, vin, model, config \\ %Config{}) do
     get(
       session,
       config,

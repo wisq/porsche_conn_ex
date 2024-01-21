@@ -37,9 +37,9 @@ defmodule PorscheConnEx.ClientTest do
     assert vehicle.valid_from == ~U[2024-01-01 01:02:03.000Z]
     assert vehicle.pending_relationship_termination_at == nil
 
-    assert vehicle.pcc?
-    assert vehicle.spin_enabled?
-    assert vehicle.ota_active?
+    assert vehicle.pcc? == true
+    assert vehicle.spin_enabled? == true
+    assert vehicle.ota_active? == true
   end
 
   test "vehicles with nickname", %{session: session, bypass: bypass} do
@@ -280,13 +280,13 @@ defmodule PorscheConnEx.ClientTest do
     assert caps.engine_type == "BEV"
     assert caps.steering_wheel == :left
 
-    assert caps.has_rdk?
-    refute caps.has_dx1?
-    assert caps.needs_spin?
-    assert caps.display_parking_brake?
+    assert caps.has_rdk? == true
+    assert caps.has_dx1? == false
+    assert caps.needs_spin? == true
+    assert caps.display_parking_brake? == true
 
-    assert caps.heating.front_seat?
-    assert caps.heating.rear_seat?
+    assert caps.heating.front_seat? == true
+    assert caps.heating.rear_seat? == true
   end
 
   test "maintenance", %{session: session, bypass: bypass} do
@@ -299,7 +299,7 @@ defmodule PorscheConnEx.ClientTest do
     assert {:ok, maint} = Client.maintenance(session, vin, config(bypass))
     assert MockSession.count(session) == 1
 
-    assert maint.service_access?
+    assert maint.service_access? == true
     assert Enum.count(maint.schedule) == 13
 
     assert first = Enum.at(maint.schedule, 0)
@@ -359,18 +359,80 @@ defmodule PorscheConnEx.ClientTest do
     assert {:ok, emobility} = Client.emobility(session, vin, model, config)
     assert MockSession.count(session) == 1
 
-    assert %{
-             "batteryChargeStatus" => %{
-               "stateOfChargeInPercentage" => 80,
-               "remainingERange" => %{"value" => 248}
-             },
-             "directClimatisation" => %{"climatisationState" => "OFF"},
-             "timers" => timers,
-             "chargingProfiles" => %{"profiles" => profiles}
-           } = emobility
+    assert charging = emobility.charging
+    assert charging.mode == :off
+    assert charging.plug == :connected
+    assert charging.plug_lock == :locked
+    assert charging.state == :completed
+    assert charging.reason == :schedule
+    assert charging.external_power == :station_connected
+    assert charging.led_color == :green
+    assert charging.led_state == :solid
+    assert charging.percent == 80
+    assert charging.minutes_to_full == 0
+    assert charging.remaining_electric_range == distance_km_to_km(248)
+    assert charging.remaining_conventional_range == nil
+    assert charging.target_time == ~N[2024-01-17 19:55:00]
+    assert charging.target_opl_enforced == nil
+    assert charging.rate == charge_rate(0, 0)
+    assert charging.kilowatts == 0
+    assert charging.dc_mode? == false
 
-    assert timers |> Enum.map(fn %{"timerID" => id} -> id end) == ~w{1 2 3 4 5}
-    assert profiles |> Enum.map(fn %{"profileId" => id} -> id end) == [4, 5]
+    assert emobility.direct_charge.disabled? == false
+    assert emobility.direct_charge.active? == false
+
+    assert climate = emobility.direct_climate
+    assert climate.state == :off
+    assert climate.remaining_minutes == nil
+    assert climate.target_temperature == temperature(2930, 20)
+    assert climate.without_hv_power == false
+    assert climate.heater_source == :electric
+
+    assert [first, _, _, _, last] = emobility.timers
+
+    assert first.id == 1
+    assert first.active? == true
+    assert first.depart_time == ~N[2024-01-20 18:41:00]
+    assert first.frequency == :single
+    assert first.climate? == true
+    assert first.charge? == false
+    assert first.weekdays == nil
+    assert first.target_charge == 85
+
+    assert last.id == 5
+    assert last.active? == true
+    assert last.depart_time == ~N[2024-01-17 07:00:00]
+    assert last.frequency == :repeating
+    assert last.climate? == false
+    assert last.charge? == true
+    assert last.weekdays == [1, 2, 3, 4, 5, 6, 7]
+    assert last.target_charge == 80
+
+    assert emobility.current_charging_profile_id == 5
+    assert Enum.count(emobility.charging_profiles) == 2
+    assert %{4 => profile4, 5 => profile5} = emobility.charging_profiles
+
+    assert profile4.id == 4
+    assert profile4.name == "Allgemein"
+    assert profile4.active == true
+    assert profile4.charging.minimum == 30
+    assert profile4.charging.target == 100
+    assert profile4.charging.mode == :smart
+    assert profile4.charging.preferred_time_start == ~T[19:00:00]
+    assert profile4.charging.preferred_time_end == ~T[07:00:00]
+    assert profile4.position == nil
+
+    assert profile5.id == 5
+    assert profile5.name == "Home"
+    assert profile5.active == true
+    assert profile5.charging.minimum == 30
+    assert profile5.charging.target == 100
+    assert profile5.charging.mode == :preferred_time
+    assert profile5.charging.preferred_time_start == ~T[19:00:00]
+    assert profile5.charging.preferred_time_end == ~T[07:00:00]
+    assert profile5.position.latitude == 45.444444
+    assert profile5.position.longitude == -75.693889
+    assert profile5.position.radius == 250
   end
 
   test "position", %{session: session, bypass: bypass} do
@@ -732,6 +794,21 @@ defmodule PorscheConnEx.ClientTest do
       optimal: %Struct.Pressure{value: optimal, unit: :bar},
       difference: %Struct.Pressure{value: diff, unit: :bar},
       status: status
+    }
+  end
+
+  defp charge_rate(km_per_minute, km_per_hour) do
+    %Struct.Emobility.ChargeRate{
+      value: km_per_minute,
+      unit: :km_per_minute,
+      km_per_hour: km_per_hour
+    }
+  end
+
+  defp temperature(dk, celsius) do
+    %Struct.Emobility.Temperature{
+      decikelvin: dk,
+      celsius: celsius
     }
   end
 end
