@@ -1,4 +1,4 @@
-defmodule PorscheConnEx.Struct.Emobility.Charging do
+defmodule PorscheConnEx.Struct.Emobility.ChargeStatus do
   use PorscheConnEx.Struct
   alias PorscheConnEx.Struct
 
@@ -21,6 +21,7 @@ defmodule PorscheConnEx.Struct.Emobility.Charging do
   enum State do
     value(:completed, key: "COMPLETED")
     value(:charging, key: "CHARGING")
+    value(:error, key: "ERROR")
     value(:off, key: "OFF")
   end
 
@@ -42,12 +43,17 @@ defmodule PorscheConnEx.Struct.Emobility.Charging do
   end
 
   enum LedColor do
+    value(:white, key: "WHITE")
     value(:green, key: "GREEN")
-    value(:none, key: "NONE")
+    value(:blue, key: "BLUE")
+    value(:red, key: "RED")
+    value(nil, key: "NONE")
   end
 
   enum LedState do
+    value(:flashing, key: "FLASH")
     value(:blinking, key: "BLINK")
+    value(:pulsing, key: "PULSE")
     value(:solid, key: "PERMANENT_ON")
     value(:off, key: "OFF")
   end

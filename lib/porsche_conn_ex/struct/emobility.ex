@@ -8,7 +8,7 @@ defmodule PorscheConnEx.Struct.Emobility do
   end
 
   param do
-    field(:charging, E.Charging, key: "batteryChargeStatus", required: true)
+    field(:charging, E.ChargeStatus, key: "batteryChargeStatus", required: true)
     field(:direct_charge, E.DirectCharge, key: "directCharge", required: true)
     field(:direct_climate, E.DirectClimate, key: "directClimatisation", required: true)
     field(:timers, TimerList, required: true)
