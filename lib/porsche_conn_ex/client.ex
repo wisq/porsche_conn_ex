@@ -203,6 +203,7 @@ defmodule PorscheConnEx.Client do
     |> Keyword.put(:url, url)
     |> Keyword.put(:base_url, config.api_url)
     |> Keyword.update(:headers, headers, &Map.merge(&1, headers))
+    |> Keyword.put(:max_retries, 1)
     |> Req.new()
   end
 
