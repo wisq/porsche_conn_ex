@@ -10,15 +10,18 @@ defmodule PorscheConnEx.Struct.Emobility.Charging do
 
   enum Plug do
     value(:connected, key: "CONNECTED")
+    value(:disconnected, key: "DISCONNECTED")
   end
 
   enum PlugLock do
     value(:locked, key: "LOCKED")
+    value(:unlocked, key: "UNLOCKED")
   end
 
   enum State do
     value(:completed, key: "COMPLETED")
     value(:charging, key: "CHARGING")
+    value(:off, key: "OFF")
   end
 
   enum Reason do
@@ -28,20 +31,25 @@ defmodule PorscheConnEx.Struct.Emobility.Charging do
     value(:schedule, key: "TIMER4")
     # This value is seen when "direct charging" is enabled.
     value(:direct, key: "IMMEDIATE")
+    # Charging not available, e.g. not plugged in.
+    value(:invalid, key: "INVALID")
   end
 
   enum ExternalPower do
     value(:station_connected, key: "STATION_CONNECTED")
     value(:available, key: "AVAILABLE")
+    value(:unavailable, key: "UNAVAILABLE")
   end
 
   enum LedColor do
     value(:green, key: "GREEN")
+    value(:none, key: "NONE")
   end
 
   enum LedState do
     value(:blinking, key: "BLINK")
     value(:solid, key: "PERMANENT_ON")
+    value(:off, key: "OFF")
   end
 
   defmodule TargetTime do
@@ -69,12 +77,7 @@ defmodule PorscheConnEx.Struct.Emobility.Charging do
     field(:led_color, LedColor, key: "ledColor", required: true)
     field(:led_state, LedState, key: "ledState", required: true)
     field(:percent, :integer, key: "stateOfChargeInPercentage", required: true)
-
-    field(:minutes_to_full, :integer,
-      key: "remainingChargeTimeUntil100PercentInMinutes",
-      required: true
-    )
-
+    field(:minutes_to_full, :integer, key: "remainingChargeTimeUntil100PercentInMinutes")
     field(:remaining_electric_range, Struct.Distance, key: "remainingERange", required: true)
     field(:remaining_conventional_range, Struct.Distance, key: "remainingCRange")
     field(:target_time, TargetTime, key: "chargingTargetDateTime", required: true)
