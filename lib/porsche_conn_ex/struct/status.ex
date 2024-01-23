@@ -4,8 +4,8 @@ defmodule PorscheConnEx.Struct.Status do
 
   param do
     field(:vin, :string, required: true)
-    field(:battery_level, Struct.BatteryLevel, key: "batteryLevel", required: true)
-    field(:mileage, Struct.Distance, required: true)
+    field(:battery_level, Struct.Unit.BatteryLevel, key: "batteryLevel", required: true)
+    field(:mileage, Struct.Unit.Distance, required: true)
 
     field(:remaining_ranges, Struct.Status.RemainingRanges,
       key: "remainingRanges",

@@ -37,9 +37,9 @@ defmodule PorscheConnEx.Struct.Overview do
     field(:vin, :string, required: true)
     field(:car_model, :string, key: "carModel", required: true)
     field(:engine_type, :string, key: "engineType", required: true)
-    field(:mileage, Struct.Distance, required: true)
+    field(:mileage, Struct.Unit.Distance, required: true)
 
-    field(:battery_level, Struct.BatteryLevel, key: "batteryLevel", required: true)
+    field(:battery_level, Struct.Unit.BatteryLevel, key: "batteryLevel", required: true)
     field(:charging_state, ChargingState, key: "chargingState", required: true)
     field(:charging_status, ChargingStatus, key: "chargingStatus", required: true)
 

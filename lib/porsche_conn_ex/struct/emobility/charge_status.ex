@@ -84,10 +84,10 @@ defmodule PorscheConnEx.Struct.Emobility.ChargeStatus do
     field(:led_state, LedState, key: "ledState", required: true)
     field(:percent, :integer, key: "stateOfChargeInPercentage", required: true)
     field(:minutes_to_full, :integer, key: "remainingChargeTimeUntil100PercentInMinutes")
-    field(:remaining_electric_range, Struct.Distance, key: "remainingERange", required: true)
-    field(:remaining_conventional_range, Struct.Distance, key: "remainingCRange")
+    field(:remaining_electric_range, Struct.Unit.Distance, key: "remainingERange", required: true)
+    field(:remaining_conventional_range, Struct.Unit.Distance, key: "remainingCRange")
     field(:target_time, TargetTime, key: "chargingTargetDateTime", required: true)
-    field(:rate, Struct.Emobility.ChargeRate, key: "chargeRate", required: true)
+    field(:rate, Struct.Unit.ChargeRate, key: "chargeRate", required: true)
     field(:kilowatts, :float, key: "chargingPower", required: true)
     field(:dc_mode?, :boolean, key: "chargingInDCMode", required: true)
 

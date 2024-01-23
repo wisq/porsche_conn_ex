@@ -11,9 +11,9 @@ defmodule PorscheConnEx.Struct.Overview.TirePressure do
   alias __MODULE__.Status
 
   param do
-    field(:current, Struct.Pressure, key: "currentPressure")
-    field(:optimal, Struct.Pressure, key: "optimalPressure")
-    field(:difference, Struct.Pressure, key: "differencePressure")
+    field(:current, Struct.Unit.Pressure, key: "currentPressure")
+    field(:optimal, Struct.Unit.Pressure, key: "optimalPressure")
+    field(:difference, Struct.Unit.Pressure, key: "differencePressure")
     field(:status, Status, key: "tirePressureDifferenceStatus", required: true)
   end
 end

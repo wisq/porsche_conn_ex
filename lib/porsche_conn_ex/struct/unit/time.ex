@@ -1,4 +1,4 @@
-defmodule PorscheConnEx.Struct.Time do
+defmodule PorscheConnEx.Struct.Unit.Time do
   use PorscheConnEx.Struct
 
   enum Unit do
@@ -14,7 +14,7 @@ defmodule PorscheConnEx.Struct.Time do
   end
 end
 
-defimpl Inspect, for: PorscheConnEx.Struct.Time do
+defimpl Inspect, for: PorscheConnEx.Struct.Unit.Time do
   def inspect(time, _opts) do
     "#PCX:Time<#{time.value} #{time.unit}s>"
   end

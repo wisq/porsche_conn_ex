@@ -1,4 +1,4 @@
-defmodule PorscheConnEx.Struct.Pressure do
+defmodule PorscheConnEx.Struct.Unit.Pressure do
   use PorscheConnEx.Struct
 
   enum Unit do
@@ -13,7 +13,7 @@ defmodule PorscheConnEx.Struct.Pressure do
   end
 end
 
-defimpl Inspect, for: PorscheConnEx.Struct.Pressure do
+defimpl Inspect, for: PorscheConnEx.Struct.Unit.Pressure do
   def inspect(pressure, _opts) do
     "#PCX:Pressure<#{pressure.value} #{pressure.unit}>"
   end

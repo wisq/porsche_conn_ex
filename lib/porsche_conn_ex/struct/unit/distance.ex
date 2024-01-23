@@ -1,4 +1,4 @@
-defmodule PorscheConnEx.Struct.Distance do
+defmodule PorscheConnEx.Struct.Unit.Distance do
   use PorscheConnEx.Struct
 
   enum Unit do
@@ -17,7 +17,7 @@ defmodule PorscheConnEx.Struct.Distance do
   end
 end
 
-defimpl Inspect, for: PorscheConnEx.Struct.Distance do
+defimpl Inspect, for: PorscheConnEx.Struct.Unit.Distance do
   def inspect(dist, _opts) do
     [
       "#{inspect(dist.value)} #{dist.unit}",

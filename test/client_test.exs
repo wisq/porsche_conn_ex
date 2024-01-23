@@ -750,7 +750,7 @@ defmodule PorscheConnEx.ClientTest do
   defp random_timezone, do: @timezones |> Enum.random()
 
   defp distance_km_to_km(value) do
-    %Struct.Distance{
+    %Struct.Unit.Distance{
       value: value,
       unit: :km,
       original_value: value,
@@ -760,14 +760,14 @@ defmodule PorscheConnEx.ClientTest do
   end
 
   defp time(value, unit) when unit in [:day] do
-    %Struct.Time{
+    %Struct.Unit.Time{
       value: value,
       unit: unit
     }
   end
 
   defp battery_level(value) do
-    %Struct.BatteryLevel{
+    %Struct.Unit.BatteryLevel{
       value: value,
       unit: :percent
     }
@@ -790,15 +790,15 @@ defmodule PorscheConnEx.ClientTest do
 
   defp tire_pressure(current, optimal, diff, status) do
     %Struct.Overview.TirePressure{
-      current: %Struct.Pressure{value: current, unit: :bar},
-      optimal: %Struct.Pressure{value: optimal, unit: :bar},
-      difference: %Struct.Pressure{value: diff, unit: :bar},
+      current: %Struct.Unit.Pressure{value: current, unit: :bar},
+      optimal: %Struct.Unit.Pressure{value: optimal, unit: :bar},
+      difference: %Struct.Unit.Pressure{value: diff, unit: :bar},
       status: status
     }
   end
 
   defp charge_rate(km_per_minute, km_per_hour) do
-    %Struct.Emobility.ChargeRate{
+    %Struct.Unit.ChargeRate{
       value: km_per_minute,
       unit: :km_per_minute,
       km_per_hour: km_per_hour
@@ -806,7 +806,7 @@ defmodule PorscheConnEx.ClientTest do
   end
 
   defp temperature(dk, celsius) do
-    %Struct.Emobility.Temperature{
+    %Struct.Unit.Temperature{
       decikelvin: dk,
       celsius: celsius
     }

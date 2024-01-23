@@ -19,7 +19,7 @@ defmodule PorscheConnEx.Struct.Emobility.DirectClimate do
     field(:remaining_minutes, :integer, key: "remainingClimatisationTime")
     field(:heater_source, HeaterSource, key: "heaterSource", required: true)
 
-    field(:target_temperature, Struct.Emobility.Temperature,
+    field(:target_temperature, Struct.Unit.Temperature,
       key: "targetTemperature",
       required: true
     )

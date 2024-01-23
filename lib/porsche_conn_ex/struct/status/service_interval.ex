@@ -3,8 +3,8 @@ defmodule PorscheConnEx.Struct.Status.ServiceInterval do
   alias PorscheConnEx.Struct
 
   param do
-    field(:distance, Struct.Distance)
-    field(:time, Struct.Time)
+    field(:distance, Struct.Unit.Distance)
+    field(:time, Struct.Unit.Time)
   end
 end
 

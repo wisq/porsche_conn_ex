@@ -1,4 +1,4 @@
-defmodule PorscheConnEx.Struct.Emobility.ChargeRate do
+defmodule PorscheConnEx.Struct.Unit.ChargeRate do
   use PorscheConnEx.Struct
 
   enum Unit do
@@ -14,7 +14,7 @@ defmodule PorscheConnEx.Struct.Emobility.ChargeRate do
   end
 end
 
-defimpl Inspect, for: PorscheConnEx.Struct.Emobility.ChargeRate do
+defimpl Inspect, for: PorscheConnEx.Struct.Unit.ChargeRate do
   def inspect(rate, _opts) do
     [
       "#{inspect(rate.value)} #{unit(rate.unit)}",
