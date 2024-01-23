@@ -80,10 +80,12 @@ defmodule PorscheConnEx.Client do
 
   def trips_short_term(session, vin, config \\ %Config{}) do
     get(session, config, "/service-vehicle/#{Config.url(config)}/trips/#{vin}/SHORT_TERM")
+    |> list_from_api(Struct.Trip)
   end
 
   def trips_long_term(session, vin, config \\ %Config{}) do
     get(session, config, "/service-vehicle/#{Config.url(config)}/trips/#{vin}/LONG_TERM")
+    |> list_from_api(Struct.Trip)
   end
 
   def put_timer(session, vin, model, timer, config \\ %Config{}) do

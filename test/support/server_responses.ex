@@ -1023,7 +1023,7 @@ defmodule PorscheConnEx.Test.ServerResponses do
           }
         """
 
-      {[chunk], {id, odo, time}}
+      {[chunk], {id, odo_start, time}}
     end)
     |> then(fn {chunks, _} ->
       [

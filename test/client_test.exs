@@ -468,7 +468,17 @@ defmodule PorscheConnEx.ClientTest do
     assert MockSession.count(session) == 1
     assert Enum.count(trips) == trip_count
 
-    assert %{"endMileage" => %{"value" => 9001}} = trips |> Enum.at(0)
+    assert first = trips |> Enum.at(0)
+    assert first.end_mileage == distance_km_to_km(9001.0)
+
+    assert trips |> Enum.all?(&(&1.type == :short_term))
+    total_distance = trips |> Enum.map(& &1.distance.km) |> Enum.sum()
+
+    assert last = trips |> Enum.at(-1)
+    assert last.start_mileage == distance_km_to_km(9001.0 - total_distance)
+
+    assert last.id < first.id
+    assert DateTime.compare(last.timestamp, first.timestamp) == :lt
   end
 
   test "trips_long_term", %{session: session, bypass: bypass} do
@@ -485,9 +495,30 @@ defmodule PorscheConnEx.ClientTest do
 
     assert {:ok, trips} = Client.trips_long_term(session, vin, config(bypass))
     assert MockSession.count(session) == 1
-    assert Enum.count(trips) == 2
-    assert %{"endMileage" => %{"value" => 9001}} = trips |> Enum.at(0)
-    assert %{"endMileage" => %{"value" => 7242}} = trips |> Enum.at(1)
+    assert [first, second] = trips
+
+    assert first.id == 2_627_363_506
+    assert first.type == :long_term
+    assert first.timestamp == ~U[2024-01-01 01:02:03Z]
+    assert first.minutes == 3479
+    assert first.average_speed == speed_kmh(31.0)
+    assert first.zero_emission_distance == distance_km_to_km(1759.0)
+    assert first.average_fuel_consumption == fuel_consumption_km(0.0)
+    assert first.average_energy_consumption == energy_consumption_km(32.7)
+
+    assert second.id == 2_586_922_833
+    assert second.type == :long_term
+    assert second.timestamp == ~U[2023-12-08 23:45:25Z]
+    assert second.minutes == 10415
+    assert second.average_speed == speed_kmh(42.0)
+    assert second.zero_emission_distance == distance_km_to_km(7242.0)
+    assert second.average_fuel_consumption == fuel_consumption_km(0.0)
+    assert second.average_energy_consumption == energy_consumption_km(9.5)
+
+    assert first.end_mileage == distance_km_to_km(9001.0)
+    assert first.start_mileage == distance_km_to_km(7242.0)
+    assert second.end_mileage == distance_km_to_km(7242.0)
+    assert second.start_mileage == distance_km_to_km(0.0)
   end
 
   test "put_timer", %{session: session, bypass: bypass} do
@@ -809,6 +840,30 @@ defmodule PorscheConnEx.ClientTest do
     %Struct.Unit.Temperature{
       decikelvin: dk,
       celsius: celsius
+    }
+  end
+
+  defp speed_kmh(kmh) do
+    %Struct.Unit.Speed{
+      value: kmh,
+      unit: :km_per_hour,
+      km_per_hour: kmh
+    }
+  end
+
+  defp fuel_consumption_km(value) do
+    %Struct.Unit.Consumption.Fuel{
+      value: value,
+      unit: :litres_per_100km,
+      litres_per_100km: value
+    }
+  end
+
+  defp energy_consumption_km(value) do
+    %Struct.Unit.Consumption.Energy{
+      value: value,
+      unit: :kwh_per_100km,
+      kwh_per_100km: value
     }
   end
 end
