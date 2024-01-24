@@ -2,20 +2,21 @@ defmodule PorscheConnEx.Struct.Emobility.ChargingProfile.ChargingOptions do
   use PorscheConnEx.Struct
 
   defmodule PreferredTime do
-    def load(<<hours::binary-size(2), ":", minutes::binary-size(2)>> = str) do
-      with {hours, ""} <- Integer.parse(hours),
-           {minutes, ""} <- Integer.parse(minutes),
-           {:ok, time} <- Time.new(hours, minutes, 0) do
-        {:ok, time}
-      else
-        _ -> {:error, "Invalid time: #{inspect(str)}"}
+    @format "{h24}:{0m}"
+    def load(str) do
+      with {:ok, ndt} = Timex.parse(str, @format) do
+        {:ok, NaiveDateTime.to_time(ndt)}
       end
+    end
+
+    def dump(%Time{} = time) do
+      Timex.format(time, @format)
     end
   end
 
   param do
-    field(:minimum, :integer, key: "minimumChargeLevel", required: true)
-    field(:target, :integer, key: "targetChargeLevel", required: true)
+    field(:minimum_charge, :integer, key: "minimumChargeLevel", required: true)
+    field(:target_charge, :integer, key: "targetChargeLevel", required: true)
     field(:mode, :atom, required: true)
 
     field(:preferred_time_start, PreferredTime,

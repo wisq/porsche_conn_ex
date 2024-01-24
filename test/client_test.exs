@@ -415,8 +415,8 @@ defmodule PorscheConnEx.ClientTest do
     assert profile4.id == 4
     assert profile4.name == "Allgemein"
     assert profile4.active == true
-    assert profile4.charging.minimum == 30
-    assert profile4.charging.target == 100
+    assert profile4.charging.minimum_charge == 30
+    assert profile4.charging.target_charge == 100
     assert profile4.charging.mode == :smart
     assert profile4.charging.preferred_time_start == ~T[19:00:00]
     assert profile4.charging.preferred_time_end == ~T[07:00:00]
@@ -425,8 +425,8 @@ defmodule PorscheConnEx.ClientTest do
     assert profile5.id == 5
     assert profile5.name == "Home"
     assert profile5.active == true
-    assert profile5.charging.minimum == 30
-    assert profile5.charging.target == 100
+    assert profile5.charging.minimum_charge == 30
+    assert profile5.charging.target_charge == 100
     assert profile5.charging.mode == :preferred_time
     assert profile5.charging.preferred_time_start == ~T[19:00:00]
     assert profile5.charging.preferred_time_end == ~T[07:00:00]
@@ -624,7 +624,7 @@ defmodule PorscheConnEx.ClientTest do
     assert MockSession.count(session) == status_requests + 1
   end
 
-  test "put_profile", %{session: session, bypass: bypass} do
+  test "put_charging_profile", %{session: session, bypass: bypass} do
     vin = random_vin()
     model = random_model()
 
@@ -632,35 +632,25 @@ defmodule PorscheConnEx.ClientTest do
     status_requests = Enum.random(5..10)
     {:ok, counter} = StatusCounter.start_link(count: status_requests)
 
-    profile =
-      %{
-        "chargingOptions" => %{
-          "minimumChargeLevel" => 30,
-          "preferredChargingEnabled" => true,
-          "preferredChargingTimeEnd" => "07:00",
-          "preferredChargingTimeStart" => "19:00",
-          "smartChargingEnabled" => false,
-          "targetChargeLevel" => 100
-        },
-        "position" => %{
-          "latitude" => 45.444444,
-          "longitude" => -75.693889,
-          "radius" => 250,
-          "radiusUnit" => "noUnit"
-        },
-        "profileActive" => true,
-        "profileId" => 5,
-        "profileName" => "Home",
-        "profileOptions" => %{
-          "autoPlugUnlockEnabled" => false,
-          "energyCostOptimisationEnabled" => false,
-          "energyMixOptimisationEnabled" => false,
-          "powerLimitationEnabled" => false,
-          "timeBasedEnabled" => false,
-          "usePrivateCurrentEnabled" => true
-        },
-        "timerActionList" => %{"timerAction" => [1, 2, 3, 4, 5]}
+    profile = %Struct.Emobility.ChargingProfile{
+      id: 3,
+      name: "Test",
+      active: true,
+      charging: %Struct.Emobility.ChargingProfile.ChargingOptions{
+        minimum_charge: 35,
+        target_charge: 100,
+        mode: :preferred_time,
+        preferred_time_start: ~T[01:02:00],
+        preferred_time_end: ~T[03:04:00]
+      },
+      position: %Struct.Emobility.ChargingProfile.Position{
+        latitude: 45.444444,
+        longitude: -75.693889,
+        radius: 250
       }
+    }
+
+    me = self()
 
     Bypass.expect_once(
       bypass,
@@ -668,7 +658,7 @@ defmodule PorscheConnEx.ClientTest do
       "/e-mobility/de/de_DE/#{model}/#{vin}/profile",
       fn conn ->
         {:ok, body, conn} = conn |> Plug.Conn.read_body()
-        assert body |> Jason.decode!() == profile
+        send(me, {:profile_json, body |> Jason.decode!()})
         resp_json(conn, ServerResponses.action_in_progress(req_id))
       end
     )
@@ -690,8 +680,30 @@ defmodule PorscheConnEx.ClientTest do
       end
     )
 
-    assert {:ok, "SUCCESS"} = Client.put_profile(session, vin, model, profile, config(bypass))
+    assert {:ok, "SUCCESS"} =
+             Client.put_charging_profile(session, vin, model, profile, config(bypass))
+
     assert MockSession.count(session) == status_requests + 1
+
+    assert_received {:profile_json, json}
+
+    assert json == %{
+             "profileId" => 3,
+             "profileName" => "Test",
+             "profileActive" => true,
+             "chargingOptions" => %{
+               "minimumChargeLevel" => 35,
+               "targetChargeLevel" => 100,
+               "mode" => "preferred_time",
+               "preferredChargingTimeEnd" => "03:04",
+               "preferredChargingTimeStart" => "01:02"
+             },
+             "position" => %{
+               "latitude" => 45.444444,
+               "longitude" => -75.693889,
+               "radius" => 250
+             }
+           }
   end
 
   test "climate_set", %{session: session, bypass: bypass} do

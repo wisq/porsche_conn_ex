@@ -4,7 +4,7 @@ defmodule PorscheConnEx.Client do
   alias PorscheConnEx.Session
   alias PorscheConnEx.Config
   alias PorscheConnEx.Struct
-  alias PorscheConnEx.Struct.Emobility.Timer
+  alias PorscheConnEx.Struct.Emobility.{Timer, ChargingProfile}
 
   @wait_secs 120
 
@@ -113,15 +113,17 @@ defmodule PorscheConnEx.Client do
     )
   end
 
-  def put_profile(session, vin, model, profile, config \\ %Config{}) do
+  def put_charging_profile(session, vin, model, profile, config \\ %Config{}) do
     base = "/e-mobility/#{Config.url(config)}/#{model}/#{vin}"
 
-    put(session, config, "#{base}/profile", json: profile)
-    |> and_wait(
-      session,
-      config,
-      fn req_id -> "#{base}/action-status/#{req_id}?hasDX1=false" end
-    )
+    with {:ok, profile_json} <- ChargingProfile.dump(profile) do
+      put(session, config, "#{base}/profile", json: profile_json)
+      |> and_wait(
+        session,
+        config,
+        fn req_id -> "#{base}/action-status/#{req_id}?hasDX1=false" end
+      )
+    end
   end
 
   def climate_set(session, vin, climate, config \\ %Config{}) when is_boolean(climate) do
