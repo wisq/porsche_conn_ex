@@ -25,15 +25,21 @@ defmodule PorscheConnEx.Struct.Emobility.ChargeStatus do
     value(:off, key: "OFF")
   end
 
-  enum Reason do
-    # Note that the "4" here does NOT seem to indicate timer number.
-    # I see this regardless of the next upcoming timer, and also when
-    # charging due to being below the profile minimum.
-    value(:schedule, key: "TIMER4")
-    # This value is seen when "direct charging" is enabled.
-    value(:direct, key: "IMMEDIATE")
-    # Charging not available, e.g. not plugged in.
-    value(:invalid, key: "INVALID")
+  defmodule Reason do
+    def load("IMMEDIATE"), do: {:ok, :immediate}
+    def load("INVALID"), do: {:ok, :invalid}
+
+    # I thought `TIMER4` was just a code and didn't have anything to do with
+    # timer numbers, but I've subsequently seen `TIMER3` and `TIMER2` when
+    # timers #3 and #2 respectively were waking up the car.
+    #
+    # I suspect I just saw `TIMER4` a lot because that was my first daily
+    # repeating timer.
+    def load(<<"TIMER", id::binary-size(1)>>) when id in ~w"1 2 3 4 5" do
+      {:ok, {:timer, String.to_integer(id)}}
+    end
+
+    def load(other), do: {:error, "Unknown charge reason: #{inspect(other)}"}
   end
 
   enum ExternalPower do

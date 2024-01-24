@@ -364,7 +364,7 @@ defmodule PorscheConnEx.ClientTest do
     assert charging.plug == :connected
     assert charging.plug_lock == :locked
     assert charging.state == :completed
-    assert charging.reason == :schedule
+    assert charging.reason == {:timer, 4}
     assert charging.external_power == :station_connected
     assert charging.led_color == :green
     assert charging.led_state == :solid
