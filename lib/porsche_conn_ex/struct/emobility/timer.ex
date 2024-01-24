@@ -35,30 +35,26 @@ defmodule PorscheConnEx.Struct.Emobility.Timer do
   defmodule DepartTime do
     # Local time, not UTC, despite the Z.
     # Always rounded to the minute.
-    def load(str), do: Timex.parse(str, "{YYYY}-{0M}-{0D}T{h24}:{m}:00.000Z")
+    @format "{YYYY}-{0M}-{0D}T{h24}:{m}:00.000Z"
+    def load(str), do: Timex.parse(str, @format)
+    def dump(ndt), do: Timex.format(ndt, @format)
   end
 
   alias __MODULE__.Frequency
 
   param do
     field(:id, :integer, key: "timerID", required: true)
+    field(:active?, :boolean, key: "active", required: true)
     field(:depart_time, DepartTime, key: "departureDateTime", required: true)
 
-    field(:preferred_charging_time_enabled?, :boolean,
-      key: "preferredChargingTimeEnabled",
-      required: true
-    )
-
-    field(:preferred_charging_start_time, :any, key: "preferredChargingStartTime")
-    field(:preferred_charging_end_time, :any, key: "preferredChargingEndTime")
     field(:frequency, Frequency, required: true)
+    field(:weekdays, Weekdays, key: "weekDays")
+
     field(:climate?, :boolean, key: "climatised", required: true)
     field(:charge?, :boolean, key: "chargeOption", required: true)
-    field(:weekdays, Weekdays, key: "weekDays")
-    field(:active?, :boolean, key: "active", required: true)
     field(:target_charge, :integer, key: "targetChargeLevel", required: true)
 
-    # These two fields don't seem to be used:
+    # These fields don't seem to be used, so I'm leaving them out to avoid confusion:
     #
     #  - climatisationTimer: 
     #    - doesn't actually seem to affect timer type / climatisation option
@@ -66,7 +62,12 @@ defmodule PorscheConnEx.Struct.Emobility.Timer do
     #    - if it did what it sounds like, it would be a duplicate of `climatised`
     #  - e3_CLIMATISATION_TIMER_ID
     #    - always 4
+    #  - preferredChargingTimeEnabled
+    #  - preferredChargingStartTime
+    #  - preferredChargingEndTime
+    #    - these fields seem to duplicate behaviour from charging profiles
+    #    - they aren't accessible in the car / app UI
+    #    - not sure if it's safe to use them
     #
-    # I'm leaving them out to avoid confusion with other fields.
   end
 end

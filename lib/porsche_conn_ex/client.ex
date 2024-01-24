@@ -4,6 +4,7 @@ defmodule PorscheConnEx.Client do
   alias PorscheConnEx.Session
   alias PorscheConnEx.Config
   alias PorscheConnEx.Struct
+  alias PorscheConnEx.Struct.Emobility.Timer
 
   @wait_secs 120
 
@@ -91,12 +92,14 @@ defmodule PorscheConnEx.Client do
   def put_timer(session, vin, model, timer, config \\ %Config{}) do
     base = "/e-mobility/#{Config.url(config)}/#{model}/#{vin}"
 
-    put(session, config, "#{base}/timer", json: timer)
-    |> and_wait(
-      session,
-      config,
-      fn req_id -> "#{base}/action-status/#{req_id}?hasDX1=false" end
-    )
+    with {:ok, timer_json} <- Timer.dump(timer) do
+      put(session, config, "#{base}/timer", json: timer_json)
+      |> and_wait(
+        session,
+        config,
+        fn req_id -> "#{base}/action-status/#{req_id}?hasDX1=false" end
+      )
+    end
   end
 
   def delete_timer(session, vin, model, timer_id, config \\ %Config{}) do

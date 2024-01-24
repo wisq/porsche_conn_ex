@@ -529,22 +529,16 @@ defmodule PorscheConnEx.ClientTest do
     status_requests = Enum.random(5..10)
     {:ok, counter} = StatusCounter.start_link(count: status_requests)
 
-    timer =
-      %{
-        "active" => true,
-        "chargeOption" => false,
-        "climatisationTimer" => false,
-        "climatised" => true,
-        "departureDateTime" => "2024-01-18T15:52:00.000Z",
-        "e3_CLIMATISATION_TIMER_ID" => "4",
-        "frequency" => "SINGLE",
-        "preferredChargingEndTime" => nil,
-        "preferredChargingStartTime" => nil,
-        "preferredChargingTimeEnabled" => false,
-        "targetChargeLevel" => 85,
-        "timerID" => "3",
-        "weekDays" => nil
-      }
+    timer = %Struct.Emobility.Timer{
+      id: 3,
+      active?: true,
+      depart_time: ~N[2024-01-18 15:52:00],
+      frequency: :single,
+      climate?: true,
+      charge?: false
+    }
+
+    me = self()
 
     Bypass.expect_once(
       bypass,
@@ -552,7 +546,7 @@ defmodule PorscheConnEx.ClientTest do
       "/e-mobility/de/de_DE/#{model}/#{vin}/timer",
       fn conn ->
         {:ok, body, conn} = conn |> Plug.Conn.read_body()
-        assert body |> Jason.decode!() == timer
+        send(me, {:timer_json, body |> Jason.decode!()})
         resp_json(conn, ServerResponses.action_in_progress(req_id))
       end
     )
@@ -576,6 +570,19 @@ defmodule PorscheConnEx.ClientTest do
 
     assert {:ok, "SUCCESS"} = Client.put_timer(session, vin, model, timer, config(bypass))
     assert MockSession.count(session) == status_requests + 1
+
+    assert_received {:timer_json, json}
+
+    assert json == %{
+             "timerID" => 3,
+             "active" => true,
+             "departureDateTime" => "2024-01-18T15:52:00.000Z",
+             "frequency" => "SINGLE",
+             "weekDays" => nil,
+             "climatised" => true,
+             "chargeOption" => false,
+             "targetChargeLevel" => nil
+           }
   end
 
   test "delete_timer", %{session: session, bypass: bypass} do
