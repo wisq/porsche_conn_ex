@@ -410,7 +410,7 @@ defmodule PorscheConnEx.ClientTest do
 
     assert emobility.current_charging_profile_id == 5
     assert Enum.count(emobility.charging_profiles) == 2
-    assert %{4 => profile4, 5 => profile5} = emobility.charging_profiles
+    assert [%{id: 4} = profile4, %{id: 5} = profile5] = emobility.charging_profiles
 
     assert profile4.id == 4
     assert profile4.name == "Allgemein"

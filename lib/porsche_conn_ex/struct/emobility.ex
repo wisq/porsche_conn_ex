@@ -7,13 +7,17 @@ defmodule PorscheConnEx.Struct.Emobility do
     use PorscheConnEx.Type.StructList, of: E.Timer
   end
 
+  defmodule ChargingProfileList do
+    use PorscheConnEx.Type.StructList, of: E.ChargingProfile
+  end
+
   param do
     field(:charging, E.ChargeStatus, key: "batteryChargeStatus", required: true)
     field(:direct_charge, E.DirectCharge, key: "directCharge", required: true)
     field(:direct_climate, E.DirectClimate, key: "directClimatisation", required: true)
     field(:timers, TimerList, required: true)
     field(:current_charging_profile_id, :integer, required: true)
-    field(:charging_profiles, E.ChargingProfileMap, required: true)
+    field(:charging_profiles, ChargingProfileList, required: true)
   end
 
   # I'm choosing to flatten this a bit, since the sight of
