@@ -7,6 +7,7 @@ defmodule PorscheConnEx.Config do
     timezone: "Etc/UTC",
     api_url: "https://api.porsche.com",
     status_delay: 1_000,
+    max_status_checks: 120,
     max_retries: 1,
     receive_timeout: 15_000
   )

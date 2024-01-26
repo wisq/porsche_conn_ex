@@ -91,8 +91,9 @@ defmodule PorscheConnEx.ClientClimateSetTest do
         ServerResponses.status_failed()
       )
 
-      assert {:error, "IN_PROGRESS"} =
-               Client.climate_set(session, vin, enable, Data.config(bypass))
+      config = Data.config(bypass, max_status_checks: Enum.random(10..20))
+      assert {:error, "IN_PROGRESS"} = Client.climate_set(session, vin, enable, config)
+      assert MockSession.count(session) == config.max_status_checks + 1
     end
   end
 end

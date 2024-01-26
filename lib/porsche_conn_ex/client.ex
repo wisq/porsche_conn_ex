@@ -6,8 +6,6 @@ defmodule PorscheConnEx.Client do
   alias PorscheConnEx.Struct
   alias PorscheConnEx.Struct.Emobility.{Timer, ChargingProfile}
 
-  @wait_secs 120
-
   def vehicles(session, config \\ %Config{}) do
     get(session, config, "/core/api/v3/#{Config.url(config)}/vehicles")
     |> load_as_list_of(Struct.Vehicle)
@@ -225,7 +223,7 @@ defmodule PorscheConnEx.Client do
     wait_url = wait_url_fn.(req_id)
     final_url = if final_url_fn, do: final_url_fn.(req_id)
 
-    1..@wait_secs
+    1..config.max_status_checks
     |> Enum.reduce_while(nil, fn _, _ ->
       Process.sleep(config.status_delay)
 
