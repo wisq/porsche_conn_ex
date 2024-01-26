@@ -223,8 +223,8 @@ defmodule PorscheConnEx.Client do
     wait_url = wait_url_fn.(req_id)
     final_url = if final_url_fn, do: final_url_fn.(req_id)
 
-    1..config.max_status_checks
-    |> Enum.reduce_while(nil, fn _, _ ->
+    1..config.max_status_checks//1
+    |> Enum.reduce_while({:status, "IN_PROGRESS"}, fn _, _ ->
       Process.sleep(config.status_delay)
 
       get(session, config, wait_url)
