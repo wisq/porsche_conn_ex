@@ -6,6 +6,16 @@ defmodule PorscheConnEx.Client do
   alias PorscheConnEx.Struct
   alias PorscheConnEx.Struct.Emobility.{Timer, ChargingProfile}
 
+  defmodule PendingRequest do
+    @enforce_keys [:id, :poll_url]
+    defstruct(
+      id: nil,
+      poll_url: nil,
+      final_url: nil,
+      final_handler: nil
+    )
+  end
+
   def vehicles(session, config \\ %Config{}) do
     get(session, config, "/core/api/v3/#{Config.url(config)}/vehicles")
     |> load_as_list_of(Struct.Vehicle)
@@ -36,13 +46,11 @@ defmodule PorscheConnEx.Client do
       # avoids "missing content-length" error
       body: ""
     )
-    |> and_wait(
-      session,
-      config,
-      fn req_id -> "#{url}/#{req_id}/status" end,
-      fn req_id -> "#{url}/#{req_id}" end
+    |> as_pending(
+      poll_url: fn req_id -> "#{url}/#{req_id}/status" end,
+      final_url: fn req_id -> "#{url}/#{req_id}" end,
+      final_handler: &load_as(&1, Struct.Overview)
     )
-    |> load_as(Struct.Overview)
   end
 
   def capabilities(session, vin, config \\ %Config{}) do
@@ -85,11 +93,7 @@ defmodule PorscheConnEx.Client do
 
     with {:ok, timer_json} <- Timer.dump(timer) do
       put(session, config, "#{base}/timer", json: timer_json)
-      |> and_wait(
-        session,
-        config,
-        fn req_id -> "#{base}/action-status/#{req_id}?hasDX1=false" end
-      )
+      |> as_pending(poll_url: fn req_id -> "#{base}/action-status/#{req_id}?hasDX1=false" end)
     end
   end
 
@@ -97,11 +101,7 @@ defmodule PorscheConnEx.Client do
     base = "/e-mobility/#{Config.url(config)}/#{model}/#{vin}"
 
     delete(session, config, "#{base}/timer/#{timer_id}")
-    |> and_wait(
-      session,
-      config,
-      fn req_id -> "#{base}/action-status/#{req_id}?hasDX1=false" end
-    )
+    |> as_pending(poll_url: fn req_id -> "#{base}/action-status/#{req_id}?hasDX1=false" end)
   end
 
   def put_charging_profile(session, vin, model, profile, config \\ %Config{}) do
@@ -109,11 +109,7 @@ defmodule PorscheConnEx.Client do
 
     with {:ok, profile_json} <- ChargingProfile.dump(profile) do
       put(session, config, "#{base}/profile", json: profile_json)
-      |> and_wait(
-        session,
-        config,
-        fn req_id -> "#{base}/action-status/#{req_id}?hasDX1=false" end
-      )
+      |> as_pending(poll_url: fn req_id -> "#{base}/action-status/#{req_id}?hasDX1=false" end)
     end
   end
 
@@ -121,11 +117,7 @@ defmodule PorscheConnEx.Client do
     base = "/e-mobility/#{Config.url(config)}/#{vin}/toggle-direct-climatisation"
 
     post(session, config, "#{base}/#{climate}", json: %{})
-    |> and_wait(
-      session,
-      config,
-      fn req_id -> "#{base}/status/#{req_id}" end
-    )
+    |> as_pending(poll_url: fn req_id -> "#{base}/status/#{req_id}" end)
   end
 
   defp get(session, config, url, opts \\ []) do
@@ -200,18 +192,30 @@ defmodule PorscheConnEx.Client do
     end)
   end
 
-  defp and_wait(result, session, config, wait_url_fn, final_url_fn \\ nil) do
+  defp as_pending(result, opts) do
+    with {:ok, request_id} <- get_request_id(result) do
+      opts
+      |> Enum.map(fn
+        {key, fun} when key in [:poll_url, :final_url] and is_function(fun) ->
+          {key, fun.(request_id)}
+
+        other ->
+          other
+      end)
+      |> Keyword.put(:id, request_id)
+      |> then(fn opts ->
+        {:ok, struct!(PendingRequest, opts)}
+      end)
+    end
+  end
+
+  defp get_request_id(result) do
     handle_response(result, fn
       status, body when status in [200, 202] ->
         case body do
-          %{"requestId" => req_id} ->
-            wait(req_id, session, config, wait_url_fn, final_url_fn)
-
-          %{"actionId" => req_id} ->
-            wait(req_id, session, config, wait_url_fn, final_url_fn)
-
-          _ ->
-            {:error, :unexpected_data}
+          %{"requestId" => req_id} -> {:ok, req_id}
+          %{"actionId" => req_id} -> {:ok, req_id}
+          _ -> {:error, :unexpected_data}
         end
 
       _, _ ->
@@ -219,45 +223,63 @@ defmodule PorscheConnEx.Client do
     end)
   end
 
-  defp wait(req_id, session, config, wait_url_fn, final_url_fn) do
-    wait_url = wait_url_fn.(req_id)
-    final_url = if final_url_fn, do: final_url_fn.(req_id)
-
-    1..config.max_status_checks//1
-    |> Enum.reduce_while({:status, "IN_PROGRESS"}, fn _, _ ->
-      Process.sleep(config.status_delay)
-
-      get(session, config, wait_url)
-      |> handle_response(fn
-        status, body when status in [200, 202] ->
-          case body do
-            %{"status" => status} -> {:ok, status}
-            %{"actionState" => status} -> {:ok, status}
-            _ -> {:error, :unexpected_data}
-          end
-
-        502, %{"pcckErrorKey" => "EC.TIMERS_AND_PROFILES.ERROR_EXECUTION_FAILED"} ->
-          {:error, :failed}
-
-        _, _ ->
-          {:error, :unknown}
-      end)
-      |> then(fn
-        {:ok, "IN_PROGRESS" = status} -> {:cont, {:status, status}}
-        {:ok, status} -> {:halt, {:status, status}}
-        {:error, _} = err -> {:halt, err}
-      end)
-    end)
-    |> then(fn
-      {:status, "SUCCESS" = status} ->
-        if final_url do
-          get(session, config, final_url)
-        else
-          {:ok, status}
+  def poll(session, %PendingRequest{} = pending, config \\ %Config{}) do
+    get(session, config, pending.poll_url)
+    |> handle_response(fn
+      status, body when status in [200, 202] ->
+        case body do
+          %{"status" => status} -> {:ok, status}
+          %{"actionState" => status} -> {:ok, status}
+          _ -> {:error, :unexpected_data}
         end
 
-      {:status, status} ->
-        {:error, status}
+      502, %{"pcckErrorKey" => "EC.TIMERS_AND_PROFILES.ERROR_EXECUTION_FAILED"} ->
+        {:error, :failed}
+
+      _, _ ->
+        {:error, :unknown}
+    end)
+    |> then(fn
+      {:ok, "IN_PROGRESS"} -> {:ok, :in_progress}
+      {:ok, "SUCCESS"} -> {:ok, :success}
+      {:ok, "FAIL"} -> {:error, :failed}
+      {:error, _} = err -> err
+    end)
+  end
+
+  def complete(session, %PendingRequest{} = pending, config \\ %Config{}) do
+    get(session, config, pending.final_url)
+    |> pending.final_handler.()
+  end
+
+  def wait(
+        session,
+        %PendingRequest{} = pending,
+        opts \\ [],
+        config \\ %Config{}
+      ) do
+    wait_count = Keyword.get(opts, :count, 120)
+    wait_delay = Keyword.get(opts, :delay, 1000)
+
+    1..wait_count//1
+    |> Enum.reduce_while({:ok, :in_progress}, fn _, _ ->
+      Process.sleep(wait_delay)
+
+      case poll(session, pending, config) do
+        {:ok, :in_progress} = rval -> {:cont, rval}
+        _ = rval -> {:halt, rval}
+      end
+    end)
+    |> then(fn
+      {:ok, :success} ->
+        if pending.final_url do
+          complete(session, pending, config)
+        else
+          {:ok, :success}
+        end
+
+      {:ok, :in_progress} ->
+        {:error, :in_progress}
 
       {:error, _} = err ->
         err

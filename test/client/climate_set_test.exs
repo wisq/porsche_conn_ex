@@ -14,11 +14,12 @@ defmodule PorscheConnEx.ClientClimateSetTest do
   end
 
   describe "climate_set/3" do
-    test "issues request and waits for success", %{session: session, bypass: bypass} do
+    test "issues and completes pending request", %{session: session, bypass: bypass} do
       vin = Data.random_vin()
       req_id = Data.random_request_id()
       wait_count = Enum.random(5..10)
       enable = [true, false] |> Enum.random()
+      config = Data.config(bypass)
 
       base_url = "/e-mobility/de/de_DE/#{vin}/toggle-direct-climatisation"
 
@@ -32,10 +33,14 @@ defmodule PorscheConnEx.ClientClimateSetTest do
         end
       )
 
-      expect_status_in_progress_reversed(bypass, base_url, req_id, wait_count)
+      # Issue initial request:
+      assert {:ok, pending} = Client.climate_set(session, vin, enable, config)
+      assert MockSession.count(session) == 1
 
-      assert {:ok, "SUCCESS"} = Client.climate_set(session, vin, enable, Data.config(bypass))
-      assert MockSession.count(session) == wait_count + 1
+      # Wait for final status:
+      expect_status_in_progress_reversed(bypass, base_url, req_id, wait_count)
+      assert {:ok, :success} = Client.wait(session, pending, [delay: 1], config)
+      assert MockSession.count(session) == 1 + wait_count
     end
 
     test "returns error if operation fails", %{session: session, bypass: bypass} do
@@ -63,7 +68,9 @@ defmodule PorscheConnEx.ClientClimateSetTest do
         ServerResponses.status_failed()
       )
 
-      assert {:error, "FAIL"} = Client.climate_set(session, vin, enable, Data.config(bypass))
+      config = Data.config(bypass)
+      assert {:ok, pending} = Client.climate_set(session, vin, enable, config)
+      assert {:error, :failed} = Client.wait(session, pending, [delay: 1], config)
     end
 
     test "returns error if operation never succeeds", %{session: session, bypass: bypass} do
@@ -90,30 +97,10 @@ defmodule PorscheConnEx.ClientClimateSetTest do
         ServerResponses.status_failed()
       )
 
-      config = Data.config(bypass, max_status_checks: Enum.random(10..20))
-      assert {:error, "IN_PROGRESS"} = Client.climate_set(session, vin, enable, config)
-      assert MockSession.count(session) == config.max_status_checks + 1
-    end
-
-    test "with max_status_checks = 0, returns immediately", %{session: session, bypass: bypass} do
-      vin = Data.random_vin()
-      req_id = Data.random_request_id()
-      enable = [true, false] |> Enum.random()
-
-      base_url = "/e-mobility/de/de_DE/#{vin}/toggle-direct-climatisation"
-
-      Bypass.expect_once(
-        bypass,
-        "POST",
-        "#{base_url}/#{enable}",
-        fn conn ->
-          resp_json(conn, 202, ServerResponses.request_id(req_id))
-        end
-      )
-
-      config = Data.config(bypass, max_status_checks: 0)
-      assert {:error, "IN_PROGRESS"} = Client.climate_set(session, vin, enable, config)
-      assert MockSession.count(session) == 1
+      config = Data.config(bypass)
+      wait_opts = [delay: 1, count: Enum.random(5..10)]
+      assert {:ok, pending} = Client.climate_set(session, vin, enable, config)
+      assert {:error, :in_progress} = Client.wait(session, pending, wait_opts, config)
     end
   end
 end
