@@ -47,6 +47,31 @@ defmodule PorscheConnEx.Test.Bypass do
     )
   end
 
+  def expect_status_in_progress_reversed(
+        bypass,
+        base_url,
+        req_id,
+        count,
+        final_response \\ ServerResponses.status_success()
+      ) do
+    {:ok, counter} = StatusCounter.start_link(count: count)
+
+    Bypass.expect(
+      bypass,
+      "GET",
+      "#{base_url}/status/#{req_id}",
+      fn conn ->
+        resp_json(
+          conn,
+          case StatusCounter.tick(counter) do
+            :halt -> final_response
+            :cont -> ServerResponses.status_in_progress()
+          end
+        )
+      end
+    )
+  end
+
   # This prevents annoying "exit: shutdown" errors when the tests end.
   def timeout_cleanup(bypass) do
     GenServer.stop(bypass.pid)

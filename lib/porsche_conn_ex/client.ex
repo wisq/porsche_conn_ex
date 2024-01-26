@@ -204,14 +204,17 @@ defmodule PorscheConnEx.Client do
 
   defp and_wait(result, session, config, wait_url_fn, final_url_fn \\ nil) do
     handle_response(result, fn
-      200, %{"requestId" => req_id} ->
-        wait(req_id, session, config, wait_url_fn, final_url_fn)
+      status, body when status in [200, 202] ->
+        case body do
+          %{"requestId" => req_id} ->
+            wait(req_id, session, config, wait_url_fn, final_url_fn)
 
-      200, %{"actionId" => req_id} ->
-        wait(req_id, session, config, wait_url_fn, final_url_fn)
+          %{"actionId" => req_id} ->
+            wait(req_id, session, config, wait_url_fn, final_url_fn)
 
-      200, _ ->
-        {:error, :unexpected_data}
+          _ ->
+            {:error, :unexpected_data}
+        end
 
       _, _ ->
         {:error, :unknown}
@@ -228,14 +231,12 @@ defmodule PorscheConnEx.Client do
 
       get(session, config, wait_url)
       |> handle_response(fn
-        200, %{"status" => status} ->
-          {:ok, status}
-
-        200, %{"actionState" => status} ->
-          {:ok, status}
-
-        200, _ ->
-          {:error, :unexpected_data}
+        status, body when status in [200, 202] ->
+          case body do
+            %{"status" => status} -> {:ok, status}
+            %{"actionState" => status} -> {:ok, status}
+            _ -> {:error, :unexpected_data}
+          end
 
         502, %{"pcckErrorKey" => "EC.TIMERS_AND_PROFILES.ERROR_EXECUTION_FAILED"} ->
           {:error, :failed}

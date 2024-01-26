@@ -36,6 +36,14 @@ defmodule PorscheConnEx.Test.ServerResponses do
     """
   end
 
+  def status_failed do
+    """
+    {
+      "status" : "FAIL"
+    }
+    """
+  end
+
   def status_success do
     """
     {
