@@ -62,18 +62,18 @@ defmodule PorscheConnEx.ClientEmobliityTest do
     assert first.id == 1
     assert first.active? == true
     assert first.depart_time == ~N[2024-01-20 18:41:00]
-    assert first.frequency == :single
     assert first.climate? == true
     assert first.charge? == false
+    assert first.repeating? == false
     assert first.weekdays == nil
     assert first.target_charge == 85
 
     assert last.id == 5
     assert last.active? == true
     assert last.depart_time == ~N[2024-01-17 07:00:00]
-    assert last.frequency == :repeating
     assert last.climate? == false
     assert last.charge? == true
+    assert last.repeating? == true
     assert last.weekdays == [1, 2, 3, 4, 5, 6, 7]
     assert last.target_charge == 80
 

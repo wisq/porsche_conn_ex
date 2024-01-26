@@ -1,9 +1,9 @@
 defmodule PorscheConnEx.Struct.Emobility.Timer do
   use PorscheConnEx.Struct
 
-  enum Frequency do
-    value(:single, key: "SINGLE")
-    value(:repeating, key: "CYCLIC")
+  enum Repeating do
+    value(false, key: "SINGLE")
+    value(true, key: "CYCLIC")
   end
 
   defmodule Weekdays do
@@ -40,14 +40,14 @@ defmodule PorscheConnEx.Struct.Emobility.Timer do
     def dump(ndt), do: Timex.format(ndt, @format)
   end
 
-  alias __MODULE__.Frequency
+  alias __MODULE__.Repeating
 
   param do
     field(:id, :integer, key: "timerID", required: true)
     field(:active?, :boolean, key: "active", required: true)
     field(:depart_time, DepartTime, key: "departureDateTime", required: true)
 
-    field(:frequency, Frequency, required: true)
+    field(:repeating?, Repeating, key: "frequency", required: true)
     field(:weekdays, Weekdays, key: "weekDays")
 
     field(:climate?, :boolean, key: "climatised", required: true)

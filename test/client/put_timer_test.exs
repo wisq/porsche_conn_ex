@@ -35,7 +35,7 @@ defmodule PorscheConnEx.ClientPutTimerTest do
       id: 3,
       active?: true,
       depart_time: ~N[2024-01-18 15:52:00],
-      frequency: :single,
+      repeating?: false,
       climate?: true,
       charge?: false
     }
