@@ -1,17 +1,10 @@
 defmodule PorscheConnEx.ClientDeleteTimerTest do
-  use ExUnit.Case, async: true
+  use PorscheConnEx.Test.ClientCase
 
   alias PorscheConnEx.Client
   alias PorscheConnEx.Test.{MockSession, ServerResponses}
   alias PorscheConnEx.Test.DataFactory, as: Data
   import PorscheConnEx.Test.Bypass
-
-  setup do
-    bypass = Bypass.open()
-    {:ok, session} = MockSession.start_link()
-
-    {:ok, bypass: bypass, session: session}
-  end
 
   describe "delete_timer/4" do
     test "issues and completes pending request", %{session: session, bypass: bypass} do

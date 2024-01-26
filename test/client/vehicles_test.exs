@@ -1,5 +1,5 @@
 defmodule PorscheConnEx.ClientVehiclesTest do
-  use ExUnit.Case, async: true
+  use PorscheConnEx.Test.ClientCase
 
   alias PorscheConnEx.Client
   alias PorscheConnEx.Struct
@@ -8,13 +8,6 @@ defmodule PorscheConnEx.ClientVehiclesTest do
   import PorscheConnEx.Test.Bypass
 
   @url "/core/api/v3/de/de_DE/vehicles"
-
-  setup do
-    bypass = Bypass.open()
-    {:ok, session} = MockSession.start_link()
-
-    {:ok, bypass: bypass, session: session}
-  end
 
   describe "Client.vehicles/1" do
     test "without nickname, fetches list of vehicles", %{session: session, bypass: bypass} do

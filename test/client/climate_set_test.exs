@@ -1,17 +1,10 @@
 defmodule PorscheConnEx.ClientClimateSetTest do
-  use ExUnit.Case, async: true
+  use PorscheConnEx.Test.ClientCase
 
   alias PorscheConnEx.Client
   alias PorscheConnEx.Test.{MockSession, ServerResponses}
   alias PorscheConnEx.Test.DataFactory, as: Data
   import PorscheConnEx.Test.Bypass
-
-  setup do
-    bypass = Bypass.open()
-    {:ok, session} = MockSession.start_link()
-
-    {:ok, bypass: bypass, session: session}
-  end
 
   describe "climate_set/3" do
     test "issues and completes pending request", %{session: session, bypass: bypass} do

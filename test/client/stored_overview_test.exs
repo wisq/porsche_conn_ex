@@ -1,5 +1,5 @@
 defmodule PorscheConnEx.ClientStoredOverviewTest do
-  use ExUnit.Case, async: true
+  use PorscheConnEx.Test.ClientCase
 
   alias PorscheConnEx.Client
   alias PorscheConnEx.Struct
@@ -7,13 +7,6 @@ defmodule PorscheConnEx.ClientStoredOverviewTest do
   alias PorscheConnEx.Test.DataFactory, as: Data
   alias PorscheConnEx.Test.UnitFactory, as: Unit
   import PorscheConnEx.Test.Bypass
-
-  setup do
-    bypass = Bypass.open()
-    {:ok, session} = MockSession.start_link()
-
-    {:ok, bypass: bypass, session: session}
-  end
 
   test "stored_overview", %{session: session, bypass: bypass} do
     vin = Data.random_vin()

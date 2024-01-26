@@ -1,18 +1,11 @@
 defmodule PorscheConnEx.ClientEmobliityTest do
-  use ExUnit.Case, async: true
+  use PorscheConnEx.Test.ClientCase
 
   alias PorscheConnEx.Client
   alias PorscheConnEx.Test.{MockSession, ServerResponses}
   alias PorscheConnEx.Test.DataFactory, as: Data
   alias PorscheConnEx.Test.UnitFactory, as: Unit
   import PorscheConnEx.Test.Bypass
-
-  setup do
-    bypass = Bypass.open()
-    {:ok, session} = MockSession.start_link()
-
-    {:ok, bypass: bypass, session: session}
-  end
 
   describe "Client.emobility/3" do
     test "fetches emobility data", %{session: session, bypass: bypass} do
