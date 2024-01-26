@@ -20,7 +20,7 @@ defmodule PorscheConnEx.ClientStoredOverviewTest do
       end
     )
 
-    assert {:ok, overview} = Client.stored_overview(session, vin, Data.config(bypass))
+    assert {:ok, overview} = Client.stored_overview(session, vin)
     assert MockSession.count(session) == 1
 
     assert overview.vin == vin
@@ -88,7 +88,7 @@ defmodule PorscheConnEx.ClientStoredOverviewTest do
       end
     )
 
-    assert {:ok, overview} = Client.stored_overview(session, vin, Data.config(bypass))
+    assert {:ok, overview} = Client.stored_overview(session, vin)
     assert MockSession.count(session) == 1
 
     nil_tire = %Struct.Overview.TirePressure{

@@ -13,7 +13,6 @@ defmodule PorscheConnEx.ClientDeleteTimerTest do
       req_id = Data.random_request_id()
       wait_count = Enum.random(5..10)
       timer_id = Enum.random(1..5)
-      config = Data.config(bypass)
 
       base_url = "/e-mobility/de/de_DE/#{model}/#{vin}"
 
@@ -22,13 +21,13 @@ defmodule PorscheConnEx.ClientDeleteTimerTest do
       end)
 
       # Issue initial request:
-      assert {:ok, pending} = Client.delete_timer(session, vin, model, timer_id, config)
+      assert {:ok, pending} = Client.delete_timer(session, vin, model, timer_id)
       assert MockSession.count(session) == 1
 
       # Wait for final status:
       expect_action_in_progress(bypass, base_url, req_id, wait_count)
-      assert {:ok, :success} = Client.wait(session, pending, [delay: 1], config)
-      assert MockSession.count(session) == 1 + wait_count
+      assert {:ok, :success} = Client.wait(session, pending, delay: 1)
+      assert MockSession.count(session) == 2
     end
   end
 end

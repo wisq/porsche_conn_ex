@@ -1,8 +1,12 @@
 defmodule PorscheConnEx.Test.MockSession do
   use GenServer
 
-  def start_link(opts \\ []) do
-    GenServer.start_link(__MODULE__, nil, opts)
+  alias PorscheConnEx.Config
+  alias PorscheConnEx.Session.RequestData
+
+  def start_link(opts) do
+    {%Config{} = config, opts} = Keyword.pop!(opts, :config)
+    GenServer.start_link(__MODULE__, config, opts)
   end
 
   def count(pid) do
@@ -10,24 +14,27 @@ defmodule PorscheConnEx.Test.MockSession do
   end
 
   @impl true
-  def init(nil) do
-    {:ok, 0}
+  def init(%Config{} = config) do
+    {:ok, {config, 0}}
   end
 
   @impl true
-  def handle_call(:headers, _from, count) do
+  def handle_call(:request_data, _from, {config, count}) do
     {:reply,
-     %{
-       "Authorization" => "Bearer mock",
-       "origin" => "https://my.porsche.com",
-       "apikey" => "mock",
-       "x-vrs-url-country" => "de",
-       "x-vrs-url-language" => "de/de_DE"
-     }, count + 1}
+     %RequestData{
+       config: config,
+       headers: %{
+         "Authorization" => "Bearer mock",
+         "origin" => "https://my.porsche.com",
+         "apikey" => "mock",
+         "x-vrs-url-country" => "de",
+         "x-vrs-url-language" => "de/de_DE"
+       }
+     }, {config, count + 1}}
   end
 
   @impl true
-  def handle_call(:count, _from, count) do
-    {:reply, count, count}
+  def handle_call(:count, _from, {_config, count} = state) do
+    {:reply, count, state}
   end
 end

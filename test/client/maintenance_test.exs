@@ -13,7 +13,7 @@ defmodule PorscheConnEx.ClientMaintenanceTest do
       resp_json(conn, ServerResponses.maintenance())
     end)
 
-    assert {:ok, maint} = Client.maintenance(session, vin, Data.config(bypass))
+    assert {:ok, maint} = Client.maintenance(session, vin)
     assert MockSession.count(session) == 1
 
     assert maint.service_access? == true

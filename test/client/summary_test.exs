@@ -14,7 +14,7 @@ defmodule PorscheConnEx.ClientSummaryTest do
         resp_json(conn, ServerResponses.summary())
       end)
 
-      assert {:ok, summary} = Client.summary(session, vin, Data.config(bypass))
+      assert {:ok, summary} = Client.summary(session, vin)
       assert MockSession.count(session) == 1
 
       assert summary.model_description == "Taycan GTS"
@@ -29,7 +29,7 @@ defmodule PorscheConnEx.ClientSummaryTest do
         resp_json(conn, ServerResponses.summary(nickname))
       end)
 
-      assert {:ok, summary} = Client.summary(session, vin, Data.config(bypass))
+      assert {:ok, summary} = Client.summary(session, vin)
       assert MockSession.count(session) == 1
 
       assert summary.model_description == "Taycan GTS"
@@ -43,7 +43,7 @@ defmodule PorscheConnEx.ClientSummaryTest do
         Process.sleep(5000)
       end)
 
-      assert {:error, :timeout} = Client.summary(session, vin, Data.config(bypass))
+      assert {:error, :timeout} = Client.summary(session, vin)
 
       timeout_cleanup(bypass)
     end
@@ -55,7 +55,7 @@ defmodule PorscheConnEx.ClientSummaryTest do
         resp_json(conn, 502, ServerResponses.unknown_502_error())
       end)
 
-      assert {:error, :unknown} = Client.summary(session, vin, Data.config(bypass))
+      assert {:error, :unknown} = Client.summary(session, vin)
     end
   end
 end

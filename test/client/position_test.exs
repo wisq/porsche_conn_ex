@@ -13,7 +13,7 @@ defmodule PorscheConnEx.ClientPositionTest do
       resp_json(conn, ServerResponses.position())
     end)
 
-    assert {:ok, position} = Client.position(session, vin, Data.config(bypass))
+    assert {:ok, position} = Client.position(session, vin)
     assert MockSession.count(session) == 1
 
     assert position.coordinates.latitude == 45.444444

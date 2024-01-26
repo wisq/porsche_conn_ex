@@ -17,7 +17,7 @@ defmodule PorscheConnEx.ClientVehiclesTest do
         resp_json(conn, ServerResponses.vehicles(vin))
       end)
 
-      assert {:ok, [vehicle]} = Client.vehicles(session, Data.config(bypass))
+      assert {:ok, [vehicle]} = Client.vehicles(session)
       assert MockSession.count(session) == 1
 
       assert vehicle.vin == vin
@@ -46,7 +46,7 @@ defmodule PorscheConnEx.ClientVehiclesTest do
         resp_json(conn, ServerResponses.vehicles(vin, nickname))
       end)
 
-      assert {:ok, [%Struct.Vehicle{} = vehicle]} = Client.vehicles(session, Data.config(bypass))
+      assert {:ok, [%Struct.Vehicle{} = vehicle]} = Client.vehicles(session)
       assert MockSession.count(session) == 1
 
       assert vehicle.vin == vin
@@ -58,7 +58,7 @@ defmodule PorscheConnEx.ClientVehiclesTest do
         Process.sleep(5000)
       end)
 
-      assert {:error, :timeout} = Client.vehicles(session, Data.config(bypass))
+      assert {:error, :timeout} = Client.vehicles(session)
 
       timeout_cleanup(bypass)
     end

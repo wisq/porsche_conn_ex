@@ -1,5 +1,5 @@
 defmodule PorscheConnEx.ClientEmobliityTest do
-  use PorscheConnEx.Test.ClientCase
+  use ExUnit.Case, async: true
 
   alias PorscheConnEx.Client
   alias PorscheConnEx.Test.{MockSession, ServerResponses}
@@ -7,19 +7,29 @@ defmodule PorscheConnEx.ClientEmobliityTest do
   alias PorscheConnEx.Test.UnitFactory, as: Unit
   import PorscheConnEx.Test.Bypass
 
+  setup do
+    tz = Data.random_timezone()
+    bypass = Bypass.open()
+
+    {:ok, session} =
+      PorscheConnEx.Test.MockSession.start_link(
+        config: PorscheConnEx.Test.DataFactory.config(bypass, timezone: tz)
+      )
+
+    {:ok, bypass: bypass, session: session, tz: tz}
+  end
+
   describe "Client.emobility/3" do
-    test "fetches emobility data", %{session: session, bypass: bypass} do
+    test "fetches emobility data", %{session: session, bypass: bypass, tz: tz} do
       vin = Data.random_vin()
       model = Data.random_model()
-      tz = Data.random_timezone()
-      config = Data.config(bypass, timezone: tz)
 
       Bypass.expect_once(bypass, "GET", "/e-mobility/de/de_DE/#{model}/#{vin}", fn conn ->
         assert %{"timezone" => ^tz} = conn.query_params
         resp_json(conn, ServerResponses.emobility())
       end)
 
-      assert {:ok, emobility} = Client.emobility(session, vin, model, config)
+      assert {:ok, emobility} = Client.emobility(session, vin, model)
       assert MockSession.count(session) == 1
 
       assert charging = emobility.charging
@@ -106,7 +116,7 @@ defmodule PorscheConnEx.ClientEmobliityTest do
         Process.sleep(5000)
       end)
 
-      assert {:error, :timeout} = Client.emobility(session, vin, model, Data.config(bypass))
+      assert {:error, :timeout} = Client.emobility(session, vin, model)
 
       timeout_cleanup(bypass)
     end
@@ -119,7 +129,7 @@ defmodule PorscheConnEx.ClientEmobliityTest do
         resp_json(conn, 502, ServerResponses.unknown_502_error())
       end)
 
-      assert {:error, :unknown} = Client.emobility(session, vin, model, Data.config(bypass))
+      assert {:error, :unknown} = Client.emobility(session, vin, model)
     end
   end
 end

@@ -12,7 +12,6 @@ defmodule PorscheConnEx.ClientCurrentOverviewTest do
       vin = Data.random_vin()
       req_id = Data.random_request_id()
       wait_count = Enum.random(5..10)
-      config = Data.config(bypass)
 
       base_url = "/service-vehicle/de/de_DE/vehicle-data/#{vin}/current/request"
 
@@ -21,7 +20,7 @@ defmodule PorscheConnEx.ClientCurrentOverviewTest do
       end)
 
       # Issue initial request:
-      assert {:ok, pending} = Client.current_overview(session, vin, config)
+      assert {:ok, pending} = Client.current_overview(session, vin)
       assert MockSession.count(session) == 1
 
       expect_status_in_progress(bypass, base_url, req_id, wait_count)
@@ -32,8 +31,8 @@ defmodule PorscheConnEx.ClientCurrentOverviewTest do
 
       # Wait for final status:
       expect_status_in_progress(bypass, base_url, req_id, wait_count)
-      assert {:ok, overview} = Client.wait(session, pending, [delay: 1], config)
-      assert MockSession.count(session) == 2 + wait_count
+      assert {:ok, overview} = Client.wait(session, pending, delay: 1)
+      assert MockSession.count(session) == 2
 
       assert overview.vin == vin
       assert overview.car_model == "J1"

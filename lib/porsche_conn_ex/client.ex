@@ -16,32 +16,40 @@ defmodule PorscheConnEx.Client do
     )
   end
 
-  def vehicles(session, config \\ %Config{}) do
-    get(session, config, "/core/api/v3/#{Config.url(config)}/vehicles")
+  def vehicles(session) do
+    rdata = Session.request_data(session)
+
+    get(rdata, "/core/api/v3/#{Config.url(rdata.config)}/vehicles")
     |> load_as_list_of(Struct.Vehicle)
   end
 
-  def status(session, vin, config \\ %Config{}) do
-    get(session, config, "/vehicle-data/#{Config.url(config)}/status/#{vin}")
+  def status(session, vin) do
+    rdata = Session.request_data(session)
+
+    get(rdata, "/vehicle-data/#{Config.url(rdata.config)}/status/#{vin}")
     |> load_as(Struct.Status)
   end
 
-  def summary(session, vin, config \\ %Config{}) do
-    get(session, config, "/service-vehicle/vehicle-summary/#{vin}")
+  def summary(session, vin) do
+    rdata = Session.request_data(session)
+
+    get(rdata, "/service-vehicle/vehicle-summary/#{vin}")
     |> load_as(Struct.Summary)
   end
 
-  def stored_overview(session, vin, config \\ %Config{}) do
-    get(session, config, "/service-vehicle/#{Config.url(config)}/vehicle-data/#{vin}/stored")
+  def stored_overview(session, vin) do
+    rdata = Session.request_data(session)
+
+    get(rdata, "/service-vehicle/#{Config.url(rdata.config)}/vehicle-data/#{vin}/stored")
     |> load_as(Struct.Overview)
   end
 
-  def current_overview(session, vin, config \\ %Config{}) do
-    url = "/service-vehicle/#{Config.url(config)}/vehicle-data/#{vin}/current/request"
+  def current_overview(session, vin) do
+    rdata = Session.request_data(session)
+    url = "/service-vehicle/#{Config.url(rdata.config)}/vehicle-data/#{vin}/current/request"
 
     post(
-      session,
-      config,
+      rdata,
       url,
       # avoids "missing content-length" error
       body: ""
@@ -53,95 +61,111 @@ defmodule PorscheConnEx.Client do
     )
   end
 
-  def capabilities(session, vin, config \\ %Config{}) do
-    get(session, config, "/service-vehicle/vcs/capabilities/#{vin}")
+  def capabilities(session, vin) do
+    rdata = Session.request_data(session)
+
+    get(rdata, "/service-vehicle/vcs/capabilities/#{vin}")
     |> load_as(Struct.Capabilities)
   end
 
-  def maintenance(session, vin, config \\ %Config{}) do
-    get(session, config, "/predictive-maintenance/information/#{vin}")
+  def maintenance(session, vin) do
+    rdata = Session.request_data(session)
+
+    get(rdata, "/predictive-maintenance/information/#{vin}")
     |> load_as(Struct.Maintenance)
   end
 
-  def emobility(session, vin, model, config \\ %Config{}) do
+  def emobility(session, vin, model) do
+    rdata = Session.request_data(session)
+
     get(
-      session,
-      config,
-      "/e-mobility/#{Config.url(config)}/#{model}/#{vin}",
-      params: %{timezone: config.timezone}
+      rdata,
+      "/e-mobility/#{Config.url(rdata.config)}/#{model}/#{vin}",
+      params: %{timezone: rdata.config.timezone}
     )
     |> load_as(Struct.Emobility)
   end
 
-  def position(session, vin, config \\ %Config{}) do
-    get(session, config, "/service-vehicle/car-finder/#{vin}/position")
+  def position(session, vin) do
+    rdata = Session.request_data(session)
+
+    get(rdata, "/service-vehicle/car-finder/#{vin}/position")
     |> load_as(Struct.Position)
   end
 
-  def trips_short_term(session, vin, config \\ %Config{}) do
-    get(session, config, "/service-vehicle/#{Config.url(config)}/trips/#{vin}/SHORT_TERM")
+  def trips_short_term(session, vin) do
+    rdata = Session.request_data(session)
+
+    get(rdata, "/service-vehicle/#{Config.url(rdata.config)}/trips/#{vin}/SHORT_TERM")
     |> load_as_list_of(Struct.Trip)
   end
 
-  def trips_long_term(session, vin, config \\ %Config{}) do
-    get(session, config, "/service-vehicle/#{Config.url(config)}/trips/#{vin}/LONG_TERM")
+  def trips_long_term(session, vin) do
+    rdata = Session.request_data(session)
+
+    get(rdata, "/service-vehicle/#{Config.url(rdata.config)}/trips/#{vin}/LONG_TERM")
     |> load_as_list_of(Struct.Trip)
   end
 
-  def put_timer(session, vin, model, timer, config \\ %Config{}) do
-    base = "/e-mobility/#{Config.url(config)}/#{model}/#{vin}"
+  def put_timer(session, vin, model, timer) do
+    rdata = Session.request_data(session)
+    base = "/e-mobility/#{Config.url(rdata.config)}/#{model}/#{vin}"
 
     with {:ok, timer_json} <- Timer.dump(timer) do
-      put(session, config, "#{base}/timer", json: timer_json)
+      put(rdata, "#{base}/timer", json: timer_json)
       |> as_pending(poll_url: fn req_id -> "#{base}/action-status/#{req_id}?hasDX1=false" end)
     end
   end
 
-  def delete_timer(session, vin, model, timer_id, config \\ %Config{}) do
-    base = "/e-mobility/#{Config.url(config)}/#{model}/#{vin}"
+  def delete_timer(session, vin, model, timer_id) do
+    rdata = Session.request_data(session)
+    base = "/e-mobility/#{Config.url(rdata.config)}/#{model}/#{vin}"
 
-    delete(session, config, "#{base}/timer/#{timer_id}")
+    delete(rdata, "#{base}/timer/#{timer_id}")
     |> as_pending(poll_url: fn req_id -> "#{base}/action-status/#{req_id}?hasDX1=false" end)
   end
 
-  def put_charging_profile(session, vin, model, profile, config \\ %Config{}) do
-    base = "/e-mobility/#{Config.url(config)}/#{model}/#{vin}"
+  def put_charging_profile(session, vin, model, profile) do
+    rdata = Session.request_data(session)
+    base = "/e-mobility/#{Config.url(rdata.config)}/#{model}/#{vin}"
 
     with {:ok, profile_json} <- ChargingProfile.dump(profile) do
-      put(session, config, "#{base}/profile", json: profile_json)
+      put(rdata, "#{base}/profile", json: profile_json)
       |> as_pending(poll_url: fn req_id -> "#{base}/action-status/#{req_id}?hasDX1=false" end)
     end
   end
 
-  def climate_set(session, vin, climate, config \\ %Config{}) when is_boolean(climate) do
-    base = "/e-mobility/#{Config.url(config)}/#{vin}/toggle-direct-climatisation"
+  def climate_set(session, vin, climate) when is_boolean(climate) do
+    rdata = Session.request_data(session)
+    base = "/e-mobility/#{Config.url(rdata.config)}/#{vin}/toggle-direct-climatisation"
 
-    post(session, config, "#{base}/#{climate}", json: %{})
+    post(rdata, "#{base}/#{climate}", json: %{})
     |> as_pending(poll_url: fn req_id -> "#{base}/status/#{req_id}" end)
   end
 
-  defp get(session, config, url, opts \\ []) do
-    req_new(session, config, url, opts)
+  defp get(rdata, url, opts \\ []) do
+    req_new(rdata, url, opts)
     |> Req.get()
   end
 
-  defp post(session, config, url, opts) do
-    req_new(session, config, url, opts)
+  defp post(rdata, url, opts) do
+    req_new(rdata, url, opts)
     |> Req.post()
   end
 
-  defp put(session, config, url, opts) do
-    req_new(session, config, url, opts)
+  defp put(rdata, url, opts) do
+    req_new(rdata, url, opts)
     |> Req.put()
   end
 
-  defp delete(session, config, url, opts \\ []) do
-    req_new(session, config, url, opts)
+  defp delete(rdata, url, opts \\ []) do
+    req_new(rdata, url, opts)
     |> Req.delete()
   end
 
-  defp req_new(session, config, url, opts) do
-    headers = Session.headers(session)
+  defp req_new(rdata, url, opts) do
+    config = rdata.config
+    headers = rdata.headers
 
     opts
     |> Keyword.merge(
@@ -223,8 +247,10 @@ defmodule PorscheConnEx.Client do
     end)
   end
 
-  def poll(session, %PendingRequest{} = pending, config \\ %Config{}) do
-    get(session, config, pending.poll_url)
+  def poll(session, %PendingRequest{} = pending) do
+    rdata = Session.request_data(session)
+
+    get(rdata, pending.poll_url)
     |> handle_response(fn
       status, body when status in [200, 202] ->
         case body do
@@ -247,17 +273,15 @@ defmodule PorscheConnEx.Client do
     end)
   end
 
-  def complete(session, %PendingRequest{} = pending, config \\ %Config{}) do
-    get(session, config, pending.final_url)
+  def complete(session, %PendingRequest{} = pending) do
+    rdata = Session.request_data(session)
+
+    get(rdata, pending.final_url)
     |> pending.final_handler.()
   end
 
-  def wait(
-        session,
-        %PendingRequest{} = pending,
-        opts \\ [],
-        config \\ %Config{}
-      ) do
+  def wait(session, %PendingRequest{} = pending, opts \\ []) do
+    rdata = Session.request_data(session)
     wait_count = Keyword.get(opts, :count, 120)
     wait_delay = Keyword.get(opts, :delay, 1000)
 
@@ -265,7 +289,7 @@ defmodule PorscheConnEx.Client do
     |> Enum.reduce_while({:ok, :in_progress}, fn _, _ ->
       Process.sleep(wait_delay)
 
-      case poll(session, pending, config) do
+      case poll(rdata, pending) do
         {:ok, :in_progress} = rval -> {:cont, rval}
         _ = rval -> {:halt, rval}
       end
@@ -273,7 +297,7 @@ defmodule PorscheConnEx.Client do
     |> then(fn
       {:ok, :success} ->
         if pending.final_url do
-          complete(session, pending, config)
+          complete(rdata, pending)
         else
           {:ok, :success}
         end

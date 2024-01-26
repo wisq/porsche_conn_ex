@@ -5,7 +5,11 @@ defmodule PorscheConnEx.Test.ClientCase do
 
       setup do
         bypass = Bypass.open()
-        {:ok, session} = PorscheConnEx.Test.MockSession.start_link()
+
+        {:ok, session} =
+          PorscheConnEx.Test.MockSession.start_link(
+            config: PorscheConnEx.Test.DataFactory.config(bypass)
+          )
 
         {:ok, bypass: bypass, session: session}
       end

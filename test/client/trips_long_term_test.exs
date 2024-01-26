@@ -20,7 +20,7 @@ defmodule PorscheConnEx.ClientTripsLongTermTest do
         end
       )
 
-      assert {:ok, trips} = Client.trips_long_term(session, vin, Data.config(bypass))
+      assert {:ok, trips} = Client.trips_long_term(session, vin)
       assert MockSession.count(session) == 1
       assert [first, second] = trips
 
@@ -55,7 +55,7 @@ defmodule PorscheConnEx.ClientTripsLongTermTest do
         Process.sleep(5000)
       end)
 
-      assert {:error, :timeout} = Client.trips_long_term(session, vin, Data.config(bypass))
+      assert {:error, :timeout} = Client.trips_long_term(session, vin)
 
       timeout_cleanup(bypass)
     end
@@ -72,7 +72,7 @@ defmodule PorscheConnEx.ClientTripsLongTermTest do
         end
       )
 
-      assert {:error, :unknown} = Client.trips_long_term(session, vin, Data.config(bypass))
+      assert {:error, :unknown} = Client.trips_long_term(session, vin)
     end
   end
 end

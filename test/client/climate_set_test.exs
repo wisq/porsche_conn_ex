@@ -12,7 +12,6 @@ defmodule PorscheConnEx.ClientClimateSetTest do
       req_id = Data.random_request_id()
       wait_count = Enum.random(5..10)
       enable = [true, false] |> Enum.random()
-      config = Data.config(bypass)
 
       base_url = "/e-mobility/de/de_DE/#{vin}/toggle-direct-climatisation"
 
@@ -27,13 +26,13 @@ defmodule PorscheConnEx.ClientClimateSetTest do
       )
 
       # Issue initial request:
-      assert {:ok, pending} = Client.climate_set(session, vin, enable, config)
+      assert {:ok, pending} = Client.climate_set(session, vin, enable)
       assert MockSession.count(session) == 1
 
       # Wait for final status:
       expect_status_in_progress_reversed(bypass, base_url, req_id, wait_count)
-      assert {:ok, :success} = Client.wait(session, pending, [delay: 1], config)
-      assert MockSession.count(session) == 1 + wait_count
+      assert {:ok, :success} = Client.wait(session, pending, delay: 1)
+      assert MockSession.count(session) == 2
     end
 
     test "returns error if operation fails", %{session: session, bypass: bypass} do
@@ -61,9 +60,8 @@ defmodule PorscheConnEx.ClientClimateSetTest do
         ServerResponses.status_failed()
       )
 
-      config = Data.config(bypass)
-      assert {:ok, pending} = Client.climate_set(session, vin, enable, config)
-      assert {:error, :failed} = Client.wait(session, pending, [delay: 1], config)
+      assert {:ok, pending} = Client.climate_set(session, vin, enable)
+      assert {:error, :failed} = Client.wait(session, pending, delay: 1)
     end
 
     test "returns error if operation never succeeds", %{session: session, bypass: bypass} do
@@ -90,10 +88,9 @@ defmodule PorscheConnEx.ClientClimateSetTest do
         ServerResponses.status_failed()
       )
 
-      config = Data.config(bypass)
       wait_opts = [delay: 1, count: Enum.random(5..10)]
-      assert {:ok, pending} = Client.climate_set(session, vin, enable, config)
-      assert {:error, :in_progress} = Client.wait(session, pending, wait_opts, config)
+      assert {:ok, pending} = Client.climate_set(session, vin, enable)
+      assert {:error, :in_progress} = Client.wait(session, pending, wait_opts)
     end
   end
 end

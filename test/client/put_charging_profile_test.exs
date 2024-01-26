@@ -13,7 +13,6 @@ defmodule PorscheConnEx.ClientPutChargingProfileTest do
       model = Data.random_model()
       req_id = Data.random_request_id()
       wait_count = Enum.random(5..10)
-      config = Data.config(bypass)
 
       me = self()
       base_url = "/e-mobility/de/de_DE/#{model}/#{vin}"
@@ -43,13 +42,13 @@ defmodule PorscheConnEx.ClientPutChargingProfileTest do
       }
 
       # Issue initial request:
-      assert {:ok, pending} = Client.put_charging_profile(session, vin, model, profile, config)
+      assert {:ok, pending} = Client.put_charging_profile(session, vin, model, profile)
       assert MockSession.count(session) == 1
 
       # Wait for final status:
       expect_action_in_progress(bypass, base_url, req_id, wait_count)
-      assert {:ok, :success} = Client.wait(session, pending, [delay: 1], config)
-      assert MockSession.count(session) == 1 + wait_count
+      assert {:ok, :success} = Client.wait(session, pending, delay: 1)
+      assert MockSession.count(session) == 2
 
       assert_received {:profile_json, json}
 

@@ -69,14 +69,21 @@ defmodule PorscheConnEx.Session do
     end
   end
 
+  defmodule RequestData do
+    @enforce_keys [:config, :headers]
+    defstruct(@enforce_keys)
+  end
+
   def start_link(opts) do
     {config, opts} = Keyword.pop(opts, :config, [])
     {creds, opts} = Keyword.pop!(opts, :credentials)
     GenServer.start_link(__MODULE__, {Config.new(config), Credentials.new(creds)}, opts)
   end
 
-  def headers(pid) do
-    GenServer.call(pid, :headers)
+  def request_data(%RequestData{} = rdata), do: rdata
+
+  def request_data(pid) when is_pid(pid) or is_atom(pid) do
+    GenServer.call(pid, :request_data)
   end
 
   @impl true
@@ -89,15 +96,18 @@ defmodule PorscheConnEx.Session do
   end
 
   @impl true
-  def handle_call(:headers, _from, state) do
+  def handle_call(:request_data, _from, state) do
     {
       :reply,
-      %{
-        "Authorization" => state.token.authorization,
-        "origin" => "https://my.porsche.com",
-        "apikey" => state.token.api_key,
-        "x-vrs-url-country" => Config.url_country(state.config),
-        "x-vrs-url-language" => Config.url_language(state.config)
+      %RequestData{
+        config: state.config,
+        headers: %{
+          "Authorization" => state.token.authorization,
+          "origin" => "https://my.porsche.com",
+          "apikey" => state.token.api_key,
+          "x-vrs-url-country" => Config.url_country(state.config),
+          "x-vrs-url-language" => Config.url_language(state.config)
+        }
       },
       state,
       {:continue, :refresh}

@@ -20,7 +20,7 @@ defmodule PorscheConnEx.ClientTripsShortTermTest do
       end
     )
 
-    assert {:ok, trips} = Client.trips_short_term(session, vin, Data.config(bypass))
+    assert {:ok, trips} = Client.trips_short_term(session, vin)
     assert MockSession.count(session) == 1
     assert Enum.count(trips) == trip_count
 

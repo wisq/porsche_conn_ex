@@ -14,7 +14,7 @@ defmodule PorscheConnEx.ClientStatusTest do
       resp_json(conn, ServerResponses.status(vin))
     end)
 
-    assert {:ok, status} = Client.status(session, vin, Data.config(bypass))
+    assert {:ok, status} = Client.status(session, vin)
     assert MockSession.count(session) == 1
 
     assert status.vin == vin

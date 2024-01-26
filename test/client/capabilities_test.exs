@@ -13,7 +13,7 @@ defmodule PorscheConnEx.ClientCapabilitiesTest do
       resp_json(conn, ServerResponses.capabilities())
     end)
 
-    assert {:ok, caps} = Client.capabilities(session, vin, Data.config(bypass))
+    assert {:ok, caps} = Client.capabilities(session, vin)
     assert MockSession.count(session) == 1
 
     assert caps.car_model == "J1"
