@@ -205,6 +205,7 @@ defmodule PorscheConnEx.Client do
     |> Keyword.update(:headers, headers, &Map.merge(&1, headers))
     |> Keyword.put(:max_retries, 1)
     |> Req.new()
+    |> maybe_add_debug()
   end
 
   defp handle({:ok, %{status: status, body: body}})
@@ -229,5 +230,45 @@ defmodule PorscheConnEx.Client do
       {list, :ok} -> {:ok, list}
       {_, {:error, _} = err} -> err
     end)
+  end
+
+  defp maybe_add_debug(req) do
+    if Application.get_env(:porsche_conn_ex, :debug_http, false) do
+      add_debug(req)
+    else
+      req
+    end
+  end
+
+  defp add_debug(req) do
+    [decompress | other_steps] =
+      req.response_steps
+      |> Enum.with_index()
+      |> Enum.sort_by(fn
+        {{:decompress_body, _}, _} -> -1
+        {_, idx} -> idx
+      end)
+      |> Enum.map(fn {step, _} -> step end)
+
+    %Req.Request{req | response_steps: [decompress, {:debug, &debug_dump/1} | other_steps]}
+  end
+
+  defp debug_dump({request, response}) do
+    file = DateTime.utc_now() |> DateTime.to_unix(:microsecond)
+    path = "/tmp/pcx/#{file}.txt"
+
+    File.write(path, [
+      inspect(request, pretty: true),
+      "\n-----\n",
+      inspect(response, pretty: true),
+      "\n-----\n",
+      response.body
+    ])
+    |> then(fn
+      :ok -> Logger.debug("Wrote request dump to #{path}")
+      err -> Logger.warning("Got #{inspect(err)} writing to #{path}")
+    end)
+
+    {request, response}
   end
 end
