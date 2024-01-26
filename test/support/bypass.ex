@@ -1,10 +1,10 @@
 defmodule PorscheConnEx.Test.Bypass do
   alias PorscheConnEx.Test.{StatusCounter, ServerResponses}
 
-  def resp_json(conn, body) do
+  def resp_json(conn, status \\ 200, body) do
     conn
     |> Plug.Conn.put_resp_header("content-type", "application/json")
-    |> Plug.Conn.resp(200, body)
+    |> Plug.Conn.resp(status, body)
   end
 
   def expect_action_in_progress(bypass, base_url, req_id, count) do
@@ -45,5 +45,11 @@ defmodule PorscheConnEx.Test.Bypass do
         )
       end
     )
+  end
+
+  # This prevents annoying "exit: shutdown" errors when the tests end.
+  def timeout_cleanup(bypass) do
+    GenServer.stop(bypass.pid)
+    ExUnit.Callbacks.on_exit({Bypass, bypass.pid}, fn -> :noop end)
   end
 end

@@ -1164,4 +1164,15 @@ defmodule PorscheConnEx.Test.ServerResponses do
     } ]
     """
   end
+
+  def unknown_502_error do
+    """
+    {
+      "pcckErrorKey" : "GRAY_SLICE_ERROR_UNKNOWN_MSG",
+      "pcckErrorMessage" : null,
+      "pcckErrorCode" : null,
+      "pcckIsBusinessError" : false
+    }
+    """
+  end
 end

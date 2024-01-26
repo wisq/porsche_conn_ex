@@ -10,22 +10,22 @@ defmodule PorscheConnEx.Client do
 
   def vehicles(session, config \\ %Config{}) do
     get(session, config, "/core/api/v3/#{Config.url(config)}/vehicles")
-    |> list_from_api(Struct.Vehicle)
+    |> load_as_list_of(Struct.Vehicle)
   end
 
   def status(session, vin, config \\ %Config{}) do
     get(session, config, "/vehicle-data/#{Config.url(config)}/status/#{vin}")
-    |> from_api(Struct.Status)
+    |> load_as(Struct.Status)
   end
 
   def summary(session, vin, config \\ %Config{}) do
     get(session, config, "/service-vehicle/vehicle-summary/#{vin}")
-    |> from_api(Struct.Summary)
+    |> load_as(Struct.Summary)
   end
 
   def stored_overview(session, vin, config \\ %Config{}) do
     get(session, config, "/service-vehicle/#{Config.url(config)}/vehicle-data/#{vin}/stored")
-    |> from_api(Struct.Overview)
+    |> load_as(Struct.Overview)
   end
 
   def current_overview(session, vin, config \\ %Config{}) do
@@ -44,17 +44,17 @@ defmodule PorscheConnEx.Client do
       fn req_id -> "#{url}/#{req_id}/status" end,
       fn req_id -> "#{url}/#{req_id}" end
     )
-    |> from_api(Struct.Overview)
+    |> load_as(Struct.Overview)
   end
 
   def capabilities(session, vin, config \\ %Config{}) do
     get(session, config, "/service-vehicle/vcs/capabilities/#{vin}")
-    |> from_api(Struct.Capabilities)
+    |> load_as(Struct.Capabilities)
   end
 
   def maintenance(session, vin, config \\ %Config{}) do
     get(session, config, "/predictive-maintenance/information/#{vin}")
-    |> from_api(Struct.Maintenance)
+    |> load_as(Struct.Maintenance)
   end
 
   def emobility(session, vin, model, config \\ %Config{}) do
@@ -64,22 +64,22 @@ defmodule PorscheConnEx.Client do
       "/e-mobility/#{Config.url(config)}/#{model}/#{vin}",
       params: %{timezone: config.timezone}
     )
-    |> from_api(Struct.Emobility)
+    |> load_as(Struct.Emobility)
   end
 
   def position(session, vin, config \\ %Config{}) do
     get(session, config, "/service-vehicle/car-finder/#{vin}/position")
-    |> from_api(Struct.Position)
+    |> load_as(Struct.Position)
   end
 
   def trips_short_term(session, vin, config \\ %Config{}) do
     get(session, config, "/service-vehicle/#{Config.url(config)}/trips/#{vin}/SHORT_TERM")
-    |> list_from_api(Struct.Trip)
+    |> load_as_list_of(Struct.Trip)
   end
 
   def trips_long_term(session, vin, config \\ %Config{}) do
     get(session, config, "/service-vehicle/#{Config.url(config)}/trips/#{vin}/LONG_TERM")
-    |> list_from_api(Struct.Trip)
+    |> load_as_list_of(Struct.Trip)
   end
 
   def put_timer(session, vin, model, timer, config \\ %Config{}) do
@@ -133,35 +133,89 @@ defmodule PorscheConnEx.Client do
   defp get(session, config, url, opts \\ []) do
     req_new(session, config, url, opts)
     |> Req.get()
-    |> handle()
   end
 
   defp post(session, config, url, opts) do
     req_new(session, config, url, opts)
     |> Req.post()
-    |> handle()
   end
 
   defp put(session, config, url, opts) do
     req_new(session, config, url, opts)
     |> Req.put()
-    |> handle()
   end
 
   defp delete(session, config, url, opts \\ []) do
     req_new(session, config, url, opts)
     |> Req.delete()
-    |> handle()
   end
 
-  defp and_wait(req_result, session, config, wait_url_fn, final_url_fn \\ nil)
+  defp req_new(session, config, url, opts) do
+    headers = Session.headers(session)
 
-  defp and_wait({:ok, %{"requestId" => req_id}}, s, c, w, f) do
-    wait(req_id, s, c, w, f)
+    opts
+    |> Keyword.merge(
+      url: url,
+      base_url: config.api_url,
+      receive_timeout: config.receive_timeout,
+      max_retries: config.max_retries
+    )
+    |> Keyword.update(:headers, headers, &Map.merge(&1, headers))
+    |> Req.new()
+    |> maybe_add_debug()
   end
 
-  defp and_wait({:ok, %{"actionId" => req_id}}, s, c, w, f) do
-    wait(req_id, s, c, w, f)
+  defp handle_response({:ok, %{status: status, body: body}}, fun), do: fun.(status, body)
+  # transport error
+  defp handle_response({:error, %{reason: reason}}, _), do: {:error, reason}
+  # unknown error
+  defp handle_response({:error, _}, _), do: {:error, :unknown}
+
+  defp load_as(result, module) do
+    handle_response(result, fn
+      200, map when is_map(map) -> module.load(map)
+      200, _ -> {:error, :unexpected_data}
+      _, _ -> {:error, :unknown}
+    end)
+  end
+
+  defp load_as_list_of(result, module) do
+    handle_response(result, fn
+      200, list when is_list(list) ->
+        list
+        |> Enum.flat_map_reduce(:ok, fn item, _ ->
+          case module.load(item) do
+            {:ok, struct} -> {[struct], :ok}
+            {:error, _} = err -> {:halt, err}
+          end
+        end)
+        |> then(fn
+          {list, :ok} -> {:ok, list}
+          {_, {:error, _} = err} -> err
+        end)
+
+      200, _ ->
+        {:error, :unexpected_data}
+
+      _, _ ->
+        {:error, :unknown}
+    end)
+  end
+
+  defp and_wait(result, session, config, wait_url_fn, final_url_fn \\ nil) do
+    handle_response(result, fn
+      200, %{"requestId" => req_id} ->
+        wait(req_id, session, config, wait_url_fn, final_url_fn)
+
+      200, %{"actionId" => req_id} ->
+        wait(req_id, session, config, wait_url_fn, final_url_fn)
+
+      200, _ ->
+        {:error, :unexpected_data}
+
+      _, _ ->
+        {:error, :unknown}
+    end)
   end
 
   defp wait(req_id, session, config, wait_url_fn, final_url_fn) do
@@ -171,64 +225,43 @@ defmodule PorscheConnEx.Client do
     1..@wait_secs
     |> Enum.reduce_while(nil, fn _, _ ->
       Process.sleep(config.status_delay)
-      {:ok, body} = get(session, config, wait_url)
 
-      status =
-        case body do
-          %{"status" => st} -> st
-          %{"actionState" => st} -> st
-        end
+      get(session, config, wait_url)
+      |> handle_response(fn
+        200, %{"status" => status} ->
+          {:ok, status}
 
-      case status do
-        "IN_PROGRESS" -> {:cont, status}
-        _ -> {:halt, status}
-      end
-    end)
-    |> then(fn status ->
-      if final_url do
-        get(session, config, final_url)
-      else
-        case status do
-          "SUCCESS" -> {:ok, status}
-          _ -> {:error, status}
-        end
-      end
-    end)
-  end
+        200, %{"actionState" => status} ->
+          {:ok, status}
 
-  defp req_new(session, config, url, opts) do
-    headers = Session.headers(session)
+        200, _ ->
+          {:error, :unexpected_data}
 
-    opts
-    |> Keyword.put(:url, url)
-    |> Keyword.put(:base_url, config.api_url)
-    |> Keyword.update(:headers, headers, &Map.merge(&1, headers))
-    |> Keyword.put(:max_retries, 1)
-    |> Req.new()
-    |> maybe_add_debug()
-  end
+        502, %{"pcckErrorKey" => "EC.TIMERS_AND_PROFILES.ERROR_EXECUTION_FAILED"} ->
+          {:error, :failed}
 
-  defp handle({:ok, %{status: status, body: body}})
-       when status in [200, 202] and (is_map(body) or is_list(body)) do
-    {:ok, body}
-  end
-
-  defp handle({:ok, resp}), do: {:error, resp}
-  defp handle({:error, err}), do: {:error, err}
-
-  defp from_api({:ok, body}, module) when is_map(body), do: module.load(body)
-
-  defp list_from_api({:ok, list}, module) when is_list(list) do
-    list
-    |> Enum.flat_map_reduce(:ok, fn item, _ ->
-      case module.load(item) do
-        {:ok, struct} -> {[struct], :ok}
+        _, _ ->
+          {:error, :unknown}
+      end)
+      |> then(fn
+        {:ok, "IN_PROGRESS" = status} -> {:cont, {:status, status}}
+        {:ok, status} -> {:halt, {:status, status}}
         {:error, _} = err -> {:halt, err}
-      end
+      end)
     end)
     |> then(fn
-      {list, :ok} -> {:ok, list}
-      {_, {:error, _} = err} -> err
+      {:status, "SUCCESS" = status} ->
+        if final_url do
+          get(session, config, final_url)
+        else
+          {:ok, status}
+        end
+
+      {:status, status} ->
+        {:error, status}
+
+      {:error, _} = err ->
+        err
     end)
   end
 

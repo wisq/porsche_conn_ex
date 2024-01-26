@@ -4,7 +4,9 @@ defmodule PorscheConnEx.Test.DataFactory do
   def config(bypass, params \\ []) do
     %PorscheConnEx.Config{
       api_url: "http://localhost:#{bypass.port}",
-      status_delay: 1
+      status_delay: 1,
+      max_retries: 0,
+      receive_timeout: 200
     }
     |> struct!(params)
   end
