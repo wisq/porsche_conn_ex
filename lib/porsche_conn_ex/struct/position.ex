@@ -5,8 +5,6 @@ defmodule PorscheConnEx.Struct.Position do
     value(:wgs84, key: "WGS84")
   end
 
-  alias __MODULE__.{ReferenceSystem}
-
   defmodule Coordinates do
     use PorscheConnEx.Struct
 

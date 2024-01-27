@@ -7,8 +7,6 @@ defmodule PorscheConnEx.Struct.Overview.Windows do
     value(nil, key: "UNSUPPORTED")
   end
 
-  alias __MODULE__.OpenStatus
-
   defmodule Sunroof do
     use PorscheConnEx.Struct
 

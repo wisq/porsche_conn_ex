@@ -11,8 +11,6 @@ defmodule PorscheConnEx.Struct.Emobility.DirectClimate do
     value(:electric, key: "electric")
   end
 
-  alias __MODULE__.{State, HeaterSource}
-
   param do
     field(:state, State, key: "climatisationState", required: true)
     field(:without_hv_power, :boolean, key: "climatisationWithoutHVpower", required: true)

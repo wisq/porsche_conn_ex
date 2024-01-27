@@ -6,8 +6,6 @@ defmodule PorscheConnEx.Struct.Unit.Distance do
     value(:mi, key: "MILES")
   end
 
-  alias __MODULE__.Unit
-
   param do
     field(:unit, Unit, required: true)
     field(:value, :float, required: true)

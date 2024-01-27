@@ -8,8 +8,6 @@ defmodule PorscheConnEx.Struct.Status.Range do
     value(nil, key: "UNSUPPORTED")
   end
 
-  alias __MODULE__.EngineType
-
   param do
     field(:engine_type, EngineType, key: "engineType", required: true)
     field(:distance, Struct.Unit.Distance, required: false)

@@ -5,8 +5,6 @@ defmodule PorscheConnEx.Struct.Unit.Pressure do
     value(:bar, key: "BAR")
   end
 
-  alias __MODULE__.Unit
-
   param do
     field(:unit, Unit, required: true)
     field(:value, :float, required: true)

@@ -6,8 +6,6 @@ defmodule PorscheConnEx.Struct.Unit.Speed do
     value(:mi_per_hour, key: "MPH")
   end
 
-  alias __MODULE__.Unit
-
   param do
     field(:unit, Unit, required: true)
     field(:value, :float, required: true)

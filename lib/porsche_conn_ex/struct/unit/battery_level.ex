@@ -5,8 +5,6 @@ defmodule PorscheConnEx.Struct.Unit.BatteryLevel do
     value(:percent, key: "PERCENT")
   end
 
-  alias __MODULE__.Unit
-
   param do
     field(:unit, Unit, required: true)
     field(:value, :integer, required: true)

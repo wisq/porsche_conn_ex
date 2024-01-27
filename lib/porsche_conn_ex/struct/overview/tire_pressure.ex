@@ -8,8 +8,6 @@ defmodule PorscheConnEx.Struct.Overview.TirePressure do
     value(:divergent, key: "DIVERGENT")
   end
 
-  alias __MODULE__.Status
-
   param do
     field(:current, Struct.Unit.Pressure, key: "currentPressure")
     field(:optimal, Struct.Unit.Pressure, key: "optimalPressure")

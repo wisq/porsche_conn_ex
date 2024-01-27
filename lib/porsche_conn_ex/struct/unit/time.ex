@@ -6,8 +6,6 @@ defmodule PorscheConnEx.Struct.Unit.Time do
     value(:day, key: "DAYS")
   end
 
-  alias __MODULE__.Unit
-
   param do
     field(:unit, Unit, required: true)
     field(:value, :integer, required: true)

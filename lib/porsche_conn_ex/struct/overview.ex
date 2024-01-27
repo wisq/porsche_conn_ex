@@ -31,8 +31,6 @@ defmodule PorscheConnEx.Struct.Overview do
     value(:completed, key: "CHARGING_COMPLETED")
   end
 
-  alias __MODULE__.{OpenStatus, ActiveStatus, OnOff, ChargingState, ChargingStatus}
-
   param do
     field(:vin, :string, required: true)
     field(:car_model, :string, key: "carModel", required: true)

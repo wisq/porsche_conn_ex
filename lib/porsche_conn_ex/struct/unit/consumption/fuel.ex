@@ -6,8 +6,6 @@ defmodule PorscheConnEx.Struct.Unit.Consumption.Fuel do
     value(:miles_per_gallon, key: "MILES_PER_GALLON")
   end
 
-  alias __MODULE__.Unit
-
   param do
     field(:unit, Unit, required: true)
     field(:value, :float, required: true)

@@ -7,8 +7,6 @@ defmodule PorscheConnEx.Struct.Trip do
     value(:short_term, key: "SHORT_TERM")
   end
 
-  alias __MODULE__.Type
-
   param do
     field(:id, :integer, required: true)
     field(:type, Type, required: true)

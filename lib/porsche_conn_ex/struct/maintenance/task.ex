@@ -34,8 +34,6 @@ defmodule PorscheConnEx.Struct.Maintenance.Task do
       value(:cyclic, key: "CYCLIC")
     end
 
-    alias __MODULE__.{ModelState, ModelVisibility, Source, Event}
-
     param do
       field(:model_id, :string, key: "modelId", required: true)
       field(:model_state, ModelState, key: "modelState", required: true)

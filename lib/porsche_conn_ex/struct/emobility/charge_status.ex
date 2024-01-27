@@ -68,17 +68,6 @@ defmodule PorscheConnEx.Struct.Emobility.ChargeStatus do
     def load(str), do: Timex.parse(str, "{YYYY}-{0M}-{0D}T{h24}:{m}")
   end
 
-  alias __MODULE__.{
-    Mode,
-    Plug,
-    PlugLock,
-    State,
-    Reason,
-    ExternalPower,
-    LedColor,
-    LedState
-  }
-
   param do
     field(:mode, Mode, key: "chargingMode", required: true)
     field(:plug, Plug, key: "plugState", required: true)

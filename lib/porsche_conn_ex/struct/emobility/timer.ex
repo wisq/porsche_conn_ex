@@ -40,8 +40,6 @@ defmodule PorscheConnEx.Struct.Emobility.Timer do
     def dump(ndt), do: Timex.format(ndt, @format)
   end
 
-  alias __MODULE__.Repeating
-
   param do
     field(:id, :integer, key: "timerID", required: true)
     field(:active?, :boolean, key: "active", required: true)

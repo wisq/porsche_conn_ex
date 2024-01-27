@@ -1,6 +1,5 @@
 defmodule PorscheConnEx.Struct.Capabilities do
   use PorscheConnEx.Struct
-  # alias PorscheConnEx.{Struct, Type}
 
   enum SteeringWheelPosition do
     value(:left, key: "LEFT")
@@ -15,8 +14,6 @@ defmodule PorscheConnEx.Struct.Capabilities do
       field(:rear_seat?, :boolean, key: "rearSeatHeatingAvailable", required: true)
     end
   end
-
-  alias __MODULE__.SteeringWheelPosition
 
   param do
     field(:car_model, :string, key: "carModel", required: true)

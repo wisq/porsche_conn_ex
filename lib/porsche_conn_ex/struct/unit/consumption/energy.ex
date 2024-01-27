@@ -6,8 +6,6 @@ defmodule PorscheConnEx.Struct.Unit.Consumption.Energy do
     value(:miles_per_kwh, key: "MILES_PER_KWH")
   end
 
-  alias __MODULE__.Unit
-
   param do
     field(:unit, Unit, required: true)
     field(:value, :float, required: true)

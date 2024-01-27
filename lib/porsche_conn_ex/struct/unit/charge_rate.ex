@@ -5,8 +5,6 @@ defmodule PorscheConnEx.Struct.Unit.ChargeRate do
     value(:km_per_minute, key: "KM_PER_MIN")
   end
 
-  alias __MODULE__.Unit
-
   param do
     field(:unit, Unit, required: true)
     field(:value, :float, required: true)
