@@ -1183,4 +1183,12 @@ defmodule PorscheConnEx.Test.ServerResponses do
     }
     """
   end
+
+  def service_access_502_error do
+    """
+    {
+      "pccErrorCode" : "Source system: [SERVICE_ACCESS], message: [Getting Service Access Failed], error code: [null], translation key: [null], class=TechnicalException, http status: [null], http headers: [null], cause: [class java.util.concurrent.ExecutionException]"
+    }
+    """
+  end
 end

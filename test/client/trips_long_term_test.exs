@@ -8,7 +8,7 @@ defmodule PorscheConnEx.ClientTripsLongTermTest do
   import PorscheConnEx.Test.Bypass
 
   describe "Client.trips_long_term/2" do
-    test "trips_long_term", %{session: session, bypass: bypass} do
+    test "returns a list of long-term trip epochs", %{session: session, bypass: bypass} do
       vin = Data.random_vin()
 
       Bypass.expect_once(
