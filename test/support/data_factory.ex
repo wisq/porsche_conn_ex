@@ -1,6 +1,4 @@
 defmodule PorscheConnEx.Test.DataFactory do
-  use ExUnit.Case, async: true
-
   def config(bypass, params \\ []) do
     %PorscheConnEx.Config{
       api_url: "http://localhost:#{bypass.port}",
