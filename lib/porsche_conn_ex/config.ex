@@ -6,8 +6,7 @@ defmodule PorscheConnEx.Config do
     country: "DE",
     timezone: "Etc/UTC",
     api_url: "https://api.porsche.com",
-    max_retries: 1,
-    receive_timeout: 15_000
+    http_options: []
   )
 
   def new(%Config{} = config), do: config

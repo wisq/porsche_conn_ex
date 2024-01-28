@@ -173,13 +173,12 @@ defmodule PorscheConnEx.Client do
     config = rdata.config
     headers = rdata.headers
 
-    opts
+    config.http_options
     |> Keyword.merge(
       url: url,
-      base_url: config.api_url,
-      receive_timeout: config.receive_timeout,
-      max_retries: config.max_retries
+      base_url: config.api_url
     )
+    |> Keyword.merge(opts)
     |> Keyword.update(:headers, headers, &Map.merge(&1, headers))
     |> Req.new()
     |> maybe_add_debug()
