@@ -1,4 +1,16 @@
 defmodule PorscheConnEx.Session do
+  @moduledoc """
+  Handles configuration and authentication of an API session.
+
+  Starting a session will acquire an access token from the Porsche Connect API
+  at startup, and then acquire a new token whenever the current token is
+  nearing expiry.  It also serves as stateful storage of the
+  `PorscheConnEx.Config` structure used to configure the session.
+
+  All `PorscheConnEx.Client` calls require both HTTP authentication headers and
+  the `PorscheConnEx.Config` structure, which are bundled together into a
+  `PorscheConnEx.Session.RequestData` structure.
+  """
   require Logger
   use GenServer
 
@@ -15,6 +27,7 @@ defmodule PorscheConnEx.Session do
   @retry_delay {1, :minute}
 
   defmodule Credentials do
+    @moduledoc false
     @derive {Inspect, except: [:password]}
     @enforce_keys [:username, :password]
     defstruct(
@@ -28,6 +41,7 @@ defmodule PorscheConnEx.Session do
   end
 
   defmodule State do
+    @moduledoc false
     @enforce_keys [:config, :credentials, :cookie_jar]
     defstruct(
       config: nil,
@@ -40,6 +54,7 @@ defmodule PorscheConnEx.Session do
   end
 
   defmodule Token do
+    @moduledoc false
     @enforce_keys [:authorization, :api_key, :expires_at]
     defstruct(@enforce_keys)
 
@@ -74,11 +89,55 @@ defmodule PorscheConnEx.Session do
     defstruct(@enforce_keys)
   end
 
+  @doc """
+  Starts a session and authenticates with the API.
+
+  ## Options
+
+    * `credentials` (required) - a keyword list or map containing
+      * `username` (required) - your Porsche Connect username
+      * `password` (required) - your Porsche Connect password
+    * `config` (optional) - a keyword list, a map, or a `PorscheConnEx.Config` structure
+      * see that module for fields and other details
+
+  This function also accepts all the options accepted by `GenServer.start_link/3`.
+
+  ## Return values
+
+  Same as `GenServer.start_link/3`.
+  """
   def start_link(opts) do
     {config, opts} = Keyword.pop(opts, :config, [])
     {creds, opts} = Keyword.pop!(opts, :credentials)
     GenServer.start_link(__MODULE__, {Config.new(config), Credentials.new(creds)}, opts)
   end
+
+  @doc """
+  Returns a session's configuration and authentication details.
+
+  ## Arguments
+
+  - `pid_or_rdata` can be either
+    - the PID of a running `Session` process,
+    - the registered name of a running `Session` process, or
+    - an existing `PorscheConnEx.Session.RequestData` structure.
+
+  ## Return value
+
+  Returns a `PorscheConnEx.Session.RequestData` structure containing the
+  starting configuration and current authentication details associated with the
+  session.
+
+  If given an existing `PorscheConnEx.Session.RequestData` structure, then that
+  structure will be returned verbatim.  This means that `PorscheConnEx.Client`
+  calls can all effectively also receive a `RequestData` structure as their
+  first argument, in lieu of a running session.  (This is used in e.g.
+  `PorscheConnEx.Client.wait` to avoid unnecessary requests.)
+
+  Beware that authentication tokens do expire, and you should not used a given
+  `RequestData` structure for more than a few minutes before fetching another.
+  """
+  def request_data(pid_or_rdata)
 
   def request_data(%RequestData{} = rdata), do: rdata
 

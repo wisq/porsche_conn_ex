@@ -1,4 +1,6 @@
 defmodule PorscheConnEx.Cookies do
+  @moduledoc false
+
   def using_jar(%Req.Request{} = request, jar) do
     request
     |> Req.Request.append_request_steps(load_cookies: &load(jar, &1))
