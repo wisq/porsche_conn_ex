@@ -22,6 +22,16 @@ defmodule PorscheConnEx.Test.UnitFactory do
     }
   end
 
+  def distance_miles(km, mi) do
+    %Unit.Distance{
+      value: mi,
+      unit: :mi,
+      original_value: mi,
+      original_unit: :mi,
+      km: km
+    }
+  end
+
   def time(value, unit) when unit in [:day] do
     %Unit.Time{
       value: value,
@@ -41,6 +51,15 @@ defmodule PorscheConnEx.Test.UnitFactory do
       current: %Unit.Pressure{value: current, unit: :bar},
       optimal: %Unit.Pressure{value: optimal, unit: :bar},
       difference: %Unit.Pressure{value: diff, unit: :bar},
+      status: status
+    }
+  end
+
+  def tire_pressure_psi(current, optimal, diff, status) do
+    %Struct.Overview.TirePressure{
+      current: %Unit.Pressure{value: current, unit: :psi},
+      optimal: %Unit.Pressure{value: optimal, unit: :psi},
+      difference: %Unit.Pressure{value: diff, unit: :psi},
       status: status
     }
   end

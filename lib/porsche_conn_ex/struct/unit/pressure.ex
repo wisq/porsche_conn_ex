@@ -3,6 +3,7 @@ defmodule PorscheConnEx.Struct.Unit.Pressure do
 
   enum Unit do
     value(:bar, key: "BAR")
+    value(:psi, key: "PSI")
   end
 
   param do

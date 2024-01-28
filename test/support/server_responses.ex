@@ -402,6 +402,200 @@ defmodule PorscheConnEx.Test.ServerResponses do
     """
   end
 
+  def overview_US(vin) do
+    """
+    {
+      "vin" : "#{vin}",
+      "oilLevel" : null,
+      "fuelLevel" : null,
+      "batteryLevel" : {
+        "value" : 80,
+        "unit" : "PERCENT",
+        "unitTranslationKey" : "GRAY_SLICE_UNIT_PERCENT",
+        "unitTranslationKeyV2" : "TC.UNIT.PERCENT"
+      },
+      "remainingRanges" : {
+        "conventionalRange" : {
+          "distance" : null,
+          "engineType" : "UNSUPPORTED",
+          "isPrimary" : false
+        },
+        "electricalRange" : {
+          "distance" : {
+            "value" : 159.6924,
+            "unit" : "MILES",
+            "originalValue" : 159.6924,
+            "originalUnit" : "MILES",
+            "valueInKilometers" : 257,
+            "unitTranslationKey" : "GRAY_SLICE_UNIT_MILES",
+            "unitTranslationKeyV2" : "TC.UNIT.MILES"
+          },
+          "engineType" : "ELECTRIC",
+          "isPrimary" : true
+        }
+      },
+      "mileage" : {
+        "value" : 5533.31,
+        "unit" : "MILES",
+        "originalValue" : 8905,
+        "originalUnit" : "KILOMETERS",
+        "valueInKilometers" : 8905,
+        "unitTranslationKey" : "GRAY_SLICE_UNIT_MILES",
+        "unitTranslationKeyV2" : "TC.UNIT.MILES"
+      },
+      "parkingLight" : "OFF",
+      "parkingLightStatus" : null,
+      "parkingBreak" : "ACTIVE",
+      "parkingBreakStatus" : null,
+      "doors" : {
+        "frontLeft" : "CLOSED_LOCKED",
+        "frontRight" : "CLOSED_LOCKED",
+        "backLeft" : "CLOSED_LOCKED",
+        "backRight" : "CLOSED_LOCKED",
+        "frontTrunk" : "CLOSED_UNLOCKED",
+        "backTrunk" : "CLOSED_LOCKED",
+        "overallLockStatus" : "CLOSED_LOCKED"
+      },
+      "serviceIntervals" : {
+        "oilService" : null,
+        "inspection" : {
+          "distance" : {
+            "value" : -13173.07,
+            "unit" : "MILES",
+            "originalValue" : -21200,
+            "originalUnit" : "KILOMETERS",
+            "valueInKilometers" : -21200,
+            "unitTranslationKey" : "GRAY_SLICE_UNIT_MILES",
+            "unitTranslationKeyV2" : "TC.UNIT.MILES"
+          },
+          "time" : {
+            "value" : -103,
+            "unit" : "DAYS",
+            "unitTranslationKey" : "GRAY_SLICE_UNIT_DAY",
+            "unitTranslationKeyV2" : "TC.UNIT.DAYS"
+          }
+        }
+      },
+      "tires" : {
+        "frontLeft" : {
+          "currentPressure" : {
+            "value" : 36.25943,
+            "unit" : "PSI",
+            "valueInBar" : 2.5,
+            "unitTranslationKey" : "GRAY_SLICE_UNIT_PSI",
+            "unitTranslationKeyV2" : "TC.UNIT.PSI"
+          },
+          "optimalPressure" : {
+            "value" : 40.61057,
+            "unit" : "PSI",
+            "valueInBar" : 2.8,
+            "unitTranslationKey" : "GRAY_SLICE_UNIT_PSI",
+            "unitTranslationKeyV2" : "TC.UNIT.PSI"
+          },
+          "differencePressure" : {
+            "value" : 4.351132,
+            "unit" : "PSI",
+            "valueInBar" : 0.3,
+            "unitTranslationKey" : "GRAY_SLICE_UNIT_PSI",
+            "unitTranslationKeyV2" : "TC.UNIT.PSI"
+          },
+          "tirePressureDifferenceStatus" : "DIVERGENT"
+        },
+        "frontRight" : {
+          "currentPressure" : {
+            "value" : 36.25943,
+            "unit" : "PSI",
+            "valueInBar" : 2.5,
+            "unitTranslationKey" : "GRAY_SLICE_UNIT_PSI",
+            "unitTranslationKeyV2" : "TC.UNIT.PSI"
+          },
+          "optimalPressure" : {
+            "value" : 40.61057,
+            "unit" : "PSI",
+            "valueInBar" : 2.8,
+            "unitTranslationKey" : "GRAY_SLICE_UNIT_PSI",
+            "unitTranslationKeyV2" : "TC.UNIT.PSI"
+          },
+          "differencePressure" : {
+            "value" : 4.351132,
+            "unit" : "PSI",
+            "valueInBar" : 0.3,
+            "unitTranslationKey" : "GRAY_SLICE_UNIT_PSI",
+            "unitTranslationKeyV2" : "TC.UNIT.PSI"
+          },
+          "tirePressureDifferenceStatus" : "DIVERGENT"
+        },
+        "backLeft" : {
+          "currentPressure" : {
+            "value" : 34.80906,
+            "unit" : "PSI",
+            "valueInBar" : 2.4,
+            "unitTranslationKey" : "GRAY_SLICE_UNIT_PSI",
+            "unitTranslationKeyV2" : "TC.UNIT.PSI"
+          },
+          "optimalPressure" : {
+            "value" : 37.70981,
+            "unit" : "PSI",
+            "valueInBar" : 2.6,
+            "unitTranslationKey" : "GRAY_SLICE_UNIT_PSI",
+            "unitTranslationKeyV2" : "TC.UNIT.PSI"
+          },
+          "differencePressure" : {
+            "value" : 2.900755,
+            "unit" : "PSI",
+            "valueInBar" : 0.2,
+            "unitTranslationKey" : "GRAY_SLICE_UNIT_PSI",
+            "unitTranslationKeyV2" : "TC.UNIT.PSI"
+          },
+          "tirePressureDifferenceStatus" : "DIVERGENT"
+        },
+        "backRight" : {
+          "currentPressure" : {
+            "value" : 34.80906,
+            "unit" : "PSI",
+            "valueInBar" : 2.4,
+            "unitTranslationKey" : "GRAY_SLICE_UNIT_PSI",
+            "unitTranslationKeyV2" : "TC.UNIT.PSI"
+          },
+          "optimalPressure" : {
+            "value" : 37.70981,
+            "unit" : "PSI",
+            "valueInBar" : 2.6,
+            "unitTranslationKey" : "GRAY_SLICE_UNIT_PSI",
+            "unitTranslationKeyV2" : "TC.UNIT.PSI"
+          },
+          "differencePressure" : {
+            "value" : 2.900755,
+            "unit" : "PSI",
+            "valueInBar" : 0.2,
+            "unitTranslationKey" : "GRAY_SLICE_UNIT_PSI",
+            "unitTranslationKeyV2" : "TC.UNIT.PSI"
+          },
+          "tirePressureDifferenceStatus" : "DIVERGENT"
+        }
+      },
+      "windows" : {
+        "frontLeft" : "CLOSED",
+        "frontRight" : "CLOSED",
+        "backLeft" : "CLOSED",
+        "backRight" : "CLOSED",
+        "roof" : "UNSUPPORTED",
+        "maintenanceHatch" : "UNSUPPORTED",
+        "sunroof" : {
+          "status" : "UNSUPPORTED",
+          "positionInPercent" : null
+        }
+      },
+      "parkingTime" : "28.01.2024 08:42:37",
+      "overallOpenStatus" : "CLOSED",
+      "chargingStatus" : "CHARGING_COMPLETED",
+      "carModel" : "J1",
+      "engineType" : "BEV",
+      "chargingState" : "COMPLETED"
+    }
+    """
+  end
+
   def capabilities do
     """
     {

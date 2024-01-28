@@ -106,6 +106,75 @@ defmodule PorscheConnEx.ClientStoredOverviewTest do
       assert overview.tires.back_right == nil_tire
     end
 
+    test "returns vehicle overview, with imperial units", %{session: session, bypass: bypass} do
+      vin = Data.random_vin()
+
+      Bypass.expect_once(
+        bypass,
+        "GET",
+        "/service-vehicle/de/de_DE/vehicle-data/#{vin}/stored",
+        fn conn ->
+          resp_json(conn, ServerResponses.overview_US(vin))
+        end
+      )
+
+      assert {:ok, overview} = Client.stored_overview(session, vin)
+      assert MockSession.count(session) == 1
+
+      assert overview.vin == vin
+      assert overview.car_model == "J1"
+      assert overview.engine_type == "BEV"
+      assert overview.mileage == Unit.distance_km_to_miles(8905.0, 5533.31)
+      assert overview.battery_level == Unit.battery_level(80)
+      assert overview.charging_state == :completed
+      assert overview.charging_status == :completed
+
+      assert overview.doors.front_left == lock(:closed, :locked)
+      assert overview.doors.front_right == lock(:closed, :locked)
+      assert overview.doors.back_left == lock(:closed, :locked)
+      assert overview.doors.back_right == lock(:closed, :locked)
+      assert overview.doors.trunk == lock(:closed, :locked)
+      assert overview.doors.hood == lock(:closed, :unlocked)
+      assert overview.doors.overall == lock(:closed, :locked)
+
+      assert overview.windows.front_left == :closed
+      assert overview.windows.front_right == :closed
+      assert overview.windows.back_left == :closed
+      assert overview.windows.back_right == :closed
+      assert overview.windows.maintenance_hatch == nil
+      assert overview.windows.roof == nil
+      assert overview.windows.sunroof.percent == nil
+      assert overview.windows.sunroof.status == nil
+
+      tires = overview.tires
+      assert tires.front_left == Unit.tire_pressure_psi(36.25943, 40.61057, 4.351132, :divergent)
+      assert tires.front_right == Unit.tire_pressure_psi(36.25943, 40.61057, 4.351132, :divergent)
+      assert tires.back_left == Unit.tire_pressure_psi(34.80906, 37.70981, 2.900755, :divergent)
+      assert tires.back_right == Unit.tire_pressure_psi(34.80906, 37.70981, 2.900755, :divergent)
+
+      assert overview.open_status == :closed
+      assert overview.parking_brake == :active
+      assert overview.parking_brake_status == nil
+      assert overview.parking_light == :off
+      assert overview.parking_light_status == nil
+      assert overview.parking_time == ~U[2024-01-28 08:42:37Z]
+
+      assert %{electrical: elec, conventional: conv} = overview.remaining_ranges
+      assert elec.distance == Unit.distance_miles(257.0, 159.6924)
+      assert elec.engine_type == :electric
+      assert elec.primary? == true
+      assert conv.distance == nil
+      assert conv.engine_type == nil
+      assert conv.primary? == false
+
+      assert %{"inspection" => inspect, "oilService" => nil} = overview.service_intervals
+      assert inspect.distance == Unit.distance_km_to_miles(-21200.0, -13173.07)
+      assert inspect.time == Unit.time(-103, :day)
+
+      assert overview.oil_level == nil
+      assert overview.fuel_level == nil
+    end
+
     test "handles timeout", %{session: session, bypass: bypass} do
       vin = Data.random_vin()
 
