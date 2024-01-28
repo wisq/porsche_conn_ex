@@ -13,6 +13,10 @@ defmodule PorscheConnEx.Test.MockSession do
     GenServer.call(pid, :count)
   end
 
+  def update_config(pid, params) do
+    GenServer.call(pid, {:update_config, params})
+  end
+
   @impl true
   def init(%Config{} = config) do
     {:ok, {config, 0}}
@@ -36,5 +40,10 @@ defmodule PorscheConnEx.Test.MockSession do
   @impl true
   def handle_call(:count, _from, {_config, count} = state) do
     {:reply, count, state}
+  end
+
+  @impl true
+  def handle_call({:update_config, params}, _from, {old_config, count}) do
+    {:reply, :ok, {struct!(old_config, params), count}}
   end
 end

@@ -29,7 +29,7 @@ defmodule PorscheConnEx.Config do
   - `en_CA` (Canada)
 
   When choosing an unsupported locale, the initial authentication will succeed,
-  but most other requests will fail with `{:error, :unknown}`.
+  but most other requests will fail with `{:error, :not_found}`.
   """
   alias __MODULE__
 

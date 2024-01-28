@@ -34,9 +34,13 @@ defmodule PorscheConnEx.Client do
   error value from this module will be `{:error, :unknown}`.  Hopefully, the
   cause of the error will be reasonably obvious based on context.
 
-  Lower-level errors will tend to be more descriptive.  For example, HTTP
-  socket errors (including timeouts) will return a `Mint.TransportError`
-  structure, DNS errors will return `{:error, :nxdomain}`, etc.
+  Lower-level errors will tend to be more descriptive.  These may include, but
+  are not limited to, the following:
+
+  - `{:error, :nxdomain}` - cannot find the API DNS name (are you offline?)
+  - `{:error, :not_found}` - any "404 Not Found" HTTP error
+    - usually caused by choosing an unknown locale in your configuration
+  - `{:error, :timeout}` - the HTTP request timed out
   """
   require Logger
 
@@ -622,11 +626,19 @@ defmodule PorscheConnEx.Client do
     |> maybe_add_debug()
   end
 
-  defp handle_response({:ok, %{status: status, body: body}}, fun), do: fun.(status, body)
-  # transport error
-  defp handle_response({:error, %{reason: reason}}, _), do: {:error, reason}
+  # successful(?)
+  defp handle_response({:ok, %{status: status, body: body}}, fun)
+       when status >= 200 and status < 300,
+       do: fun.(status, body)
+
+  # 404 error (usually bad locale)
+  defp handle_response({:ok, %{status: 404}}, _), do: {:error, :not_found}
+  # other HTTP errors
+  defp handle_response({:ok, %{status: _}}, _), do: {:error, :unknown}
+  # transport error (nxdomain, timeout, etc)
+  defp handle_response({:error, %Mint.TransportError{reason: reason}}, _), do: {:error, reason}
   # unknown error
-  defp handle_response({:error, _}, _), do: {:error, :unknown}
+  defp handle_response({:error, _} = err, _), do: err
 
   defp load_as(result, module) do
     handle_response(result, fn
