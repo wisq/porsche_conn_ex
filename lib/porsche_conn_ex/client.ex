@@ -141,6 +141,14 @@ defmodule PorscheConnEx.Client do
     end
   end
 
+  def delete_charging_profile(session, vin, model, profile_id) do
+    rdata = Session.request_data(session)
+    base = "/e-mobility/#{Config.url(rdata.config)}/#{model}/#{vin}"
+
+    delete(rdata, "#{base}/profile/#{profile_id}")
+    |> as_pending(poll_url: fn req_id -> "#{base}/action-status/#{req_id}?hasDX1=false" end)
+  end
+
   def climate_set(session, vin, climate) when is_boolean(climate) do
     rdata = Session.request_data(session)
     base = "/e-mobility/#{Config.url(rdata.config)}/#{vin}/toggle-direct-climatisation"
