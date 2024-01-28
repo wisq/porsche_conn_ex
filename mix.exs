@@ -35,6 +35,7 @@ defmodule PorscheConnEx.MixProject do
       {:parameter, "~> 0.13"},
       {:timex, "~> 3.7.11"},
       {:bypass, "~> 2.1", only: :test},
+      {:ex_doc, "~> 0.31", only: :dev, runtime: false},
       {:mix_test_watch, "~> 1.0", only: :dev, runtime: false},
       {:ex_git_test, "~> 0.1.2", only: [:dev, :test], runtime: false}
     ]

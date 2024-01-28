@@ -1,4 +1,43 @@
 defmodule PorscheConnEx.Client do
+  @moduledoc """
+  Issues requests to the Porsche Connect API.
+
+  ## Common arguments
+
+  All functions in this module require one of the following as their first argument:
+
+  - a `PorscheConnEx.Session` process (by PID or by name)
+  - a `PorscheConnEx.Session.RequestData` structure
+
+  This will both configure and authenticate the API call, based
+  on the starting arguments for the `PorscheConnEx.Session` process.
+
+  Most calls require the [17-character
+  VIN](https://en.wikipedia.org/wiki/Vehicle_identification_number) of the
+  vehicle to be queried or altered.  This can be retrieved using
+  `PorscheConnEx.Client.vehicles/1`.
+
+  Several calls related to electric vehicles also require the vehicle model.
+  This can be retrieved using `PorscheConnEx.Client.capabilities/2`.
+
+  ## Blocking & timeouts
+
+  The actual HTTP request will be performed in the calling process and will
+  block until complete.  While there is no explicit per-call timeout, the
+  effective timeout can be influenced by setting `http_options` — see
+  `PorscheConnEx.Config` for details.
+
+  ## Error values
+
+  The Porsche Connect API tends to be fairly opaque with errors, generating the
+  same "unknown error" result for most errors.  As a result, the most common
+  error value from this module will be `{:error, :unknown}`.  Hopefully, the
+  cause of the error will be reasonably obvious based on context.
+
+  Lower-level errors will tend to be more descriptive.  For example, HTTP
+  socket errors (including timeouts) will return a `Mint.TransportError`
+  structure, DNS errors will return `{:error, :nxdomain}`, etc.
+  """
   require Logger
 
   alias PorscheConnEx.Session
@@ -7,6 +46,59 @@ defmodule PorscheConnEx.Client do
   alias PorscheConnEx.Struct.Emobility.{Timer, ChargingProfile}
 
   defmodule PendingRequest do
+    @moduledoc """
+    Return value from API calls that may take a long time to complete.
+
+    Some `PorscheConnEx.Client` calls will return `{:ok, %PendingRequest{...}}`
+    to indicate that their request has been accepted but not necessarily
+    completed yet.  To determine the eventual fate of the request, see below.
+
+    ## For write requests
+
+    Once a write request has been submitted, no further action is required on
+    the part of the library user — if possible, the requested action will be
+    send and performed on the vehicle. However, if the vehicle cannot be
+    reached within a certain amount of time, the call will ultimately fail, and
+    nothing will happen.
+
+    To discover the fate of your request, you can use one of two approaches:
+
+    - call `PorscheConnEx.Client.poll/2` repeatedly to check the status of the
+      request, waiting for a status other than `:in_progress`
+    - call `PorscheConnEx.Client.wait/3` to do the above for you, polling
+      repeatedly until it receives a status other than `:in_progress`
+
+    Note that, in some cases, you may not care about what happens to the
+    request.  For example, if your code is periodically checking
+    `PorscheConnEx.Client.emobility/3` and updating timers and/or charging profiles
+    based on that data, then it may be fine to just "fire and forget" requests,
+    since any failures will presumably be noticed and retried on the next check.
+
+    ## For read requests
+
+    There is currently only one read request that uses pending requests —
+    `PorscheConnEx.Client.current_overview/2`.  Obviously, it would not make
+    sense to just leave this request pending, since the whole point is to
+    retrieve the most recent vehicle overview data.
+
+    Read requests differ from write requests in that, once the request has
+    succeeded, there is an extra call required to retrieve the final output
+    data.  As such, there are two possible approaches:
+
+    - call `PorscheConnEx.Client.poll/2` repeatedly to check the status of the
+      request until you get a status other than `:in_progress`, then run
+      `PorscheConnEx.Client.complete/2` to retrieve the final results (but only
+      if the status is `:success`)
+    - call `PorscheConnEx.Client.wait/3` to do all of the above for you — i.e.
+      polling repeatedly until it receives a status other than `:in_progress`,
+      then retrieving the final results for you (if status is `:success`)
+
+    Note that `PorscheConnEx.Client.complete/2` will **not** prevent you from
+    trying to retrieve the final results of a failed or still-in-progress
+    request, but the results will almost certainly fail to parse due to missing
+    data.  Wait for a poll result of `:success` first.
+    """
+
     @enforce_keys [:id, :poll_url]
     defstruct(
       id: nil,
@@ -16,6 +108,23 @@ defmodule PorscheConnEx.Client do
     )
   end
 
+  @doc """
+  Returns a list of vehicles assigned to the current account.
+
+  ## Arguments
+
+  ## Arguments
+
+  - `session` is a `PorscheConnEx.Session` pid/name or a
+    `PorscheConnEx.Session.RequestData` structure.
+
+  ## Return values
+
+  On success, returns `{:ok, list}`, where `list` is a list of
+  `PorscheConnEx.Struct.Vehicle` structures.
+
+  On error, returns `{:error, _}`.
+  """
   def vehicles(session) do
     rdata = Session.request_data(session)
 
@@ -23,6 +132,22 @@ defmodule PorscheConnEx.Client do
     |> load_as_list_of(Struct.Vehicle)
   end
 
+  @doc """
+  Returns general status information about a particular vehicle.
+
+  ## Arguments
+
+  - `session` is a `PorscheConnEx.Session` pid/name or a
+    `PorscheConnEx.Session.RequestData` structure.
+  - `vin` is the VIN of the vehicle to be queried.
+
+  ## Return values
+
+  On success, returns `{:ok, status}`, where `status` is a
+  `PorscheConnEx.Struct.Status` structure.
+
+  On error, returns `{:error, _}`.
+  """
   def status(session, vin) do
     rdata = Session.request_data(session)
 
@@ -30,6 +155,22 @@ defmodule PorscheConnEx.Client do
     |> load_as(Struct.Status)
   end
 
+  @doc """
+  Returns extremely basic information about a particular vehicle.
+
+  ## Arguments
+
+  - `session` is a `PorscheConnEx.Session` pid/name or a
+    `PorscheConnEx.Session.RequestData` structure.
+  - `vin` is the VIN of the vehicle to be queried.
+
+  ## Return values
+
+  On success, returns `{:ok, summary}`, where `summary` is a
+  `PorscheConnEx.Struct.Summary` structure.
+
+  On error, returns `{:error, _}`.
+  """
   def summary(session, vin) do
     rdata = Session.request_data(session)
 
@@ -37,6 +178,25 @@ defmodule PorscheConnEx.Client do
     |> load_as(Struct.Summary)
   end
 
+  @doc """
+  Returns recent overview information about a particular vehicle.
+
+  The vehicle is not queried directly; instead, this call retrieves data stored
+  server-side about the vehicle, based on the vehicle's most recent update.
+
+  ## Arguments
+
+  - `session` is a `PorscheConnEx.Session` pid/name or a
+    `PorscheConnEx.Session.RequestData` structure.
+  - `vin` is the VIN of the vehicle to be queried.
+
+  ## Return values
+
+  On success, returns `{:ok, overview}`, where `overview` is a
+  `PorscheConnEx.Struct.Overview` structure.
+
+  On error, returns `{:error, _}`.
+  """
   def stored_overview(session, vin) do
     rdata = Session.request_data(session)
 
@@ -44,6 +204,30 @@ defmodule PorscheConnEx.Client do
     |> load_as(Struct.Overview)
   end
 
+  @doc """
+  Fetches current overview information about a particular vehicle.
+
+  The vehicle will be queried directly, and the information received should be
+  fully up-to-date.  This may take a while, or fail, especially if the vehicle
+  is turned off or has limited cellular signal.
+
+  ## Arguments
+
+  - `session` is a `PorscheConnEx.Session` pid/name or a
+    `PorscheConnEx.Session.RequestData` structure.
+  - `vin` is the VIN of the vehicle to be queried.
+
+  ## Return values
+
+  On success, returns `{:ok, pending}`, where `pending` is a
+  `PorscheConnEx.Client.PendingRequest` structure.
+
+  To wait for and retrieve the results, use `PorscheConnEx.Client.wait/3`.
+  Alternatively, you may call `PorscheConnEx.Client.poll/2` and
+  `PorscheConnEx.Client.complete/2` directly.
+
+  On error, returns `{:error, _}`.
+  """
   def current_overview(session, vin) do
     rdata = Session.request_data(session)
     url = "/service-vehicle/#{Config.url(rdata.config)}/vehicle-data/#{vin}/current/request"
@@ -61,6 +245,25 @@ defmodule PorscheConnEx.Client do
     )
   end
 
+  @doc """
+  Returns information about the capabilities of a particular vehicle.
+
+  This includes the model identifier, which is used in several other calls
+  relating to electric vehicle batteries and charging.
+
+  ## Arguments
+
+  - `session` is a `PorscheConnEx.Session` pid/name or a
+    `PorscheConnEx.Session.RequestData` structure.
+  - `vin` is the VIN of the vehicle to be queried.
+
+  ## Return values
+
+  On success, returns `{:ok, capabs}`, where `capabs` is a
+  `PorscheConnEx.Struct.Capabilities` structure.
+
+  On error, returns `{:error, _}`.
+  """
   def capabilities(session, vin) do
     rdata = Session.request_data(session)
 
@@ -68,6 +271,22 @@ defmodule PorscheConnEx.Client do
     |> load_as(Struct.Capabilities)
   end
 
+  @doc """
+  Returns a list of maintenance events regarding a particular vehicle.
+
+  ## Arguments
+
+  - `session` is a `PorscheConnEx.Session` pid/name or a
+    `PorscheConnEx.Session.RequestData` structure.
+  - `vin` is the VIN of the vehicle to be queried.
+
+  ## Return values
+
+  On success, returns `{:ok, list}`, where `list` is a list of
+  `PorscheConnEx.Struct.Maintenance` structures.
+
+  On error, returns `{:error, _}`.
+  """
   def maintenance(session, vin) do
     rdata = Session.request_data(session)
 
@@ -75,6 +294,24 @@ defmodule PorscheConnEx.Client do
     |> load_as(Struct.Maintenance)
   end
 
+  @doc """
+  Returns comprehensive data about the electric charging capabilities and
+  behaviour of a particular vehicle.
+
+  ## Arguments
+
+  - `session` is a `PorscheConnEx.Session` pid/name or a
+    `PorscheConnEx.Session.RequestData` structure.
+  - `vin` is the VIN of the vehicle to be queried.
+  - `model` is the model identifier of the vehicle to be queried.
+
+  ## Return values
+
+  On success, returns `{:ok, emob}`, where `emob` is a
+  `PorscheConnEx.Struct.Emobility` structure.
+
+  On error, returns `{:error, _}`.
+  """
   def emobility(session, vin, model) do
     rdata = Session.request_data(session)
 
@@ -86,6 +323,22 @@ defmodule PorscheConnEx.Client do
     |> load_as(Struct.Emobility)
   end
 
+  @doc """
+  Returns the current global position of a particular vehicle.
+
+  ## Arguments
+
+  - `session` is a `PorscheConnEx.Session` pid/name or a
+    `PorscheConnEx.Session.RequestData` structure.
+  - `vin` is the VIN of the vehicle to be queried.
+
+  ## Return values
+
+  On success, returns `{:ok, position}`, where `position` is a
+  `PorscheConnEx.Struct.Position` structure.
+
+  On error, returns `{:error, _}`.
+  """
   def position(session, vin) do
     rdata = Session.request_data(session)
 
@@ -93,6 +346,25 @@ defmodule PorscheConnEx.Client do
     |> load_as(Struct.Position)
   end
 
+  @doc """
+  Returns a list of short-term trips taken by a particular vehicle.
+
+  These trips are automatically generated, presumably based on when the vehicle
+  is turned on/off, parked, etc.
+
+  ## Arguments
+
+  - `session` is a `PorscheConnEx.Session` pid/name or a
+    `PorscheConnEx.Session.RequestData` structure.
+  - `vin` is the VIN of the vehicle to be queried.
+
+  ## Return values
+
+  On success, returns `{:ok, list}`, where `list` is a list of
+  `PorscheConnEx.Struct.Trip` structures.
+
+  On error, returns `{:error, _}`.
+  """
   def trips_short_term(session, vin) do
     rdata = Session.request_data(session)
 
@@ -100,6 +372,25 @@ defmodule PorscheConnEx.Client do
     |> load_as_list_of(Struct.Trip)
   end
 
+  @doc """
+  Returns a list of long-term trips taken by a particular vehicle.
+
+  These trips are generated when the user clears the short-term trip list.  The
+  most recent one should be a summary of all the short-term trips.
+
+  ## Arguments
+
+  - `session` is a `PorscheConnEx.Session` pid/name or a
+    `PorscheConnEx.Session.RequestData` structure.
+  - `vin` is the VIN of the vehicle to be queried.
+
+  ## Return values
+
+  On success, returns `{:ok, list}`, where `list` is a list of
+  `PorscheConnEx.Struct.Trip` structures.
+
+  On error, returns `{:error, _}`.
+  """
   def trips_long_term(session, vin) do
     rdata = Session.request_data(session)
 
@@ -107,6 +398,36 @@ defmodule PorscheConnEx.Client do
     |> load_as_list_of(Struct.Trip)
   end
 
+  @doc """
+  Creates or updates a timer for an electric vehicle.
+
+  Timers are used to schedule charging, and/or to climatise (preheat/cool) the
+  vehicle, e.g. in preparation for an upcoming trip.
+
+  ## Arguments
+
+  - `session` is a `PorscheConnEx.Session` pid/name or a
+    `PorscheConnEx.Session.RequestData` structure.
+  - `vin` is the VIN of the vehicle to be updated.
+  - `model` is the model identifier of the vehicle to be updated.
+  - `timer` is a `PorscheConnEx.Struct.Emobility.Timer` structure.
+
+  ## Timer slots
+
+  There are five slots available for timers, identified by the `timer.id` field.
+  If `timer` has a non-nil `id` value, then it will overwrite that slot.
+
+  If `timer` has a nil `id` value, then it will be placed in the first
+  empty slot.  If no slots are available, this function will return an error.
+
+  ## Return values
+
+  On success, returns `{:ok, pending}`, where `pending` is a
+  `PorscheConnEx.Client.PendingRequest` structure.  See that structure's
+  documentation for details.
+
+  On error, returns `{:error, _}`.
+  """
   def put_timer(session, vin, model, timer) do
     rdata = Session.request_data(session)
     base = "/e-mobility/#{Config.url(rdata.config)}/#{model}/#{vin}"
@@ -120,6 +441,27 @@ defmodule PorscheConnEx.Client do
     end
   end
 
+  @doc """
+  Deletes a timer for an electric vehicle.
+
+  ## Arguments
+
+  - `session` is a `PorscheConnEx.Session` pid/name or a
+    `PorscheConnEx.Session.RequestData` structure.
+  - `vin` is the VIN of the vehicle to be updated.
+  - `model` is the model identifier of the vehicle to be updated.
+  - `timer_id` is an integer indicating the slot to be deleted.
+
+  For details about the `timer_id` value, see `PorscheConnEx.Client.put_timer/4`.
+
+  ## Return values
+
+  On success, returns `{:ok, pending}`, where `pending` is a
+  `PorscheConnEx.Client.PendingRequest` structure.  See that structure's
+  documentation for details.
+
+  On error, returns `{:error, _}`.
+  """
   def delete_timer(session, vin, model, timer_id) do
     rdata = Session.request_data(session)
     base = "/e-mobility/#{Config.url(rdata.config)}/#{model}/#{vin}"
@@ -128,6 +470,42 @@ defmodule PorscheConnEx.Client do
     |> as_pending(poll_url: fn req_id -> "#{base}/action-status/#{req_id}?hasDX1=false" end)
   end
 
+  @doc """
+  Creates or updates a charging profile for an electric vehicle.
+
+  Charging profiles define basic charging parameters, such as charging targets,
+  preferred charging hours, etc.  They can also be tied to a specific
+  geographical location, such as a home or office.
+
+  ## Arguments
+
+  - `session` is a `PorscheConnEx.Session` pid/name or a
+    `PorscheConnEx.Session.RequestData` structure.
+  - `vin` is the VIN of the vehicle to be updated.
+  - `model` is the model identifier of the vehicle to be updated.
+  - `profile` is a `PorscheConnEx.Struct.Emobility.ChargingProfile` structure.
+
+  ## Profile slots
+
+  There are a limited number of slots available for charging profiles,
+  identified by the `profile.id` field.  From testing to date, it appears that
+  profile #4 is the "General" (default) profile, and profiles 5 through 7 are
+  "local" (user-defined) profiles.
+
+  If `profile` has a non-nil `id` value, then it will overwrite that slot.
+
+  If `profile` has a nil `id` value, then it will be placed in the first empty
+  "local" slot.  If no such slots are available, this function will return an
+  error.
+
+  ## Return values
+
+  On success, returns `{:ok, pending}`, where `pending` is a
+  `PorscheConnEx.Client.PendingRequest` structure.  See that structure's
+  documentation for details.
+
+  On error, returns `{:error, _}`.
+  """
   def put_charging_profile(session, vin, model, profile) do
     rdata = Session.request_data(session)
     base = "/e-mobility/#{Config.url(rdata.config)}/#{model}/#{vin}"
@@ -141,6 +519,32 @@ defmodule PorscheConnEx.Client do
     end
   end
 
+  @doc """
+  Deletes a charging profile for an electric vehicle.
+
+  ## Arguments
+
+  - `session` is a `PorscheConnEx.Session` pid/name or a
+    `PorscheConnEx.Session.RequestData` structure.
+  - `vin` is the VIN of the vehicle to be updated.
+  - `model` is the model identifier of the vehicle to be updated.
+  - `profile_id` is an integer indicating the slot to be deleted.
+
+  For details about the `profile_id` value, see
+  `PorscheConnEx.Client.put_charging_profile/4`.
+
+  Note that you probably shouldn't try to delete the "General" profile (#4), or
+  any other non-user-defined profiles.  (I would assume you'd get an error if
+  you tried, but I'm not brave enough to find out.)
+
+  ## Return values
+
+  On success, returns `{:ok, pending}`, where `pending` is a
+  `PorscheConnEx.Client.PendingRequest` structure.  See that structure's
+  documentation for details.
+
+  On error, returns `{:error, _}`.
+  """
   def delete_charging_profile(session, vin, model, profile_id) do
     rdata = Session.request_data(session)
     base = "/e-mobility/#{Config.url(rdata.config)}/#{model}/#{vin}"
@@ -149,6 +553,32 @@ defmodule PorscheConnEx.Client do
     |> as_pending(poll_url: fn req_id -> "#{base}/action-status/#{req_id}?hasDX1=false" end)
   end
 
+  @doc """
+  Starts or cancels the "direct climatisation" (preheat/cool) feature.
+
+  ## Arguments
+
+  - `session` is a `PorscheConnEx.Session` pid/name or a
+    `PorscheConnEx.Session.RequestData` structure.
+  - `vin` is the VIN of the vehicle to be updated.
+  - `climate` is a boolean indicating whether to turn on climatisation (`true`) or turn it off (`false`).
+
+  ## Climatisation timer
+
+  When climatisation is off, turning it on will enable it for the next 60
+  minutes, after which time it will automatically turn off again.
+
+  If climatisation is already in the indicated state, no action will occur, and
+  this timer will not be reset.
+
+  ## Return values
+
+  On success, returns `{:ok, pending}`, where `pending` is a
+  `PorscheConnEx.Client.PendingRequest` structure.  See that structure's
+  documentation for details.
+
+  On error, returns `{:error, _}`.
+  """
   def climate_set(session, vin, climate) when is_boolean(climate) do
     rdata = Session.request_data(session)
     base = "/e-mobility/#{Config.url(rdata.config)}/#{vin}/toggle-direct-climatisation"
@@ -260,6 +690,24 @@ defmodule PorscheConnEx.Client do
     end)
   end
 
+  @doc """
+  Checks the status of a pending request.
+
+  See `PorscheConnEx.Client.PendingRequest` for usage details.
+
+  ## Arguments
+
+  - `session` is a `PorscheConnEx.Session` pid/name or a
+    `PorscheConnEx.Session.RequestData` structure.
+  - `pending` is a `PorscheConnEx.Client.PendingRequest` structure.
+
+  ## Return values
+
+  - Returns `{:ok, :in_progress}` if the request is still ongoing.
+  - Returns `{:ok, :success}` if the request completed successfully.
+  - Returns `{:error, :failed}` if the request failed.
+  - Returns `{:error, _}` on other errors.
+  """
   def poll(session, %PendingRequest{} = pending) do
     rdata = Session.request_data(session)
 
@@ -286,17 +734,70 @@ defmodule PorscheConnEx.Client do
     end)
   end
 
-  def complete(session, %PendingRequest{} = pending) do
+  @doc """
+  Retrieves the final result of a pending request.
+
+  See `PorscheConnEx.Client.PendingRequest` for usage details.  Note that this
+  function only applies to requests that read data, and will not match
+  write-only requests.
+
+  ## Arguments
+
+  - `session` is a `PorscheConnEx.Session` pid/name or a
+    `PorscheConnEx.Session.RequestData` structure.
+  - `pending` is a `PorscheConnEx.Client.PendingRequest` structure.
+
+  ## Return values
+
+  On success, returns `{:ok, result}`, where the nature of `result` depends on
+  the type of request being completed.
+
+  On error, returns `{:error, _}`.
+  """
+  def complete(session, %PendingRequest{final_url: final_url, final_handler: final_handler})
+      when not is_nil(final_url) and not is_nil(final_handler) do
     rdata = Session.request_data(session)
 
-    get(rdata, pending.final_url)
-    |> pending.final_handler.()
+    get(rdata, final_url)
+    |> final_handler.()
   end
 
+  @default_wait_count 120
+  @default_wait_delay 1000
+
+  @doc """
+  Polls a pending request until it finishes, then completes it if applicable.
+
+  See `PorscheConnEx.Client.PendingRequest` for usage details.
+
+  ## Arguments
+
+  - `session` is a `PorscheConnEx.Session` pid/name or a
+    `PorscheConnEx.Session.RequestData` structure.
+  - `pending` is a `PorscheConnEx.Client.PendingRequest` structure.
+  - `opts` is a keyword-list of options and their values:
+    - `count` (default: #{@default_wait_count}) is the maximum number of times to poll before giving up.
+    - `delay` (default: #{@default_wait_delay}) is the delay (in milliseconds) to wait between poll attempts.
+
+  ## Return values
+
+  If the request ultimately finishes successfully, returns `{:ok, result}`,
+  where the nature of `result` depends on the type of request being completed.
+  (For write-only operations, `result` will just be `:success`, as per the return
+  value of `poll/2`.)
+
+  If the request fails, returns `{:error, :failed}` as per the return value of `poll/2`.
+
+  If the result is still pending after `count` polls, returns `{:error,
+  :in_progress}`.  You may call `poll/2` or `wait/2` again if you still want to
+  continue waiting.
+
+  On other errors, returns `{:error, _}`.
+  """
   def wait(session, %PendingRequest{} = pending, opts \\ []) do
     rdata = Session.request_data(session)
-    wait_count = Keyword.get(opts, :count, 120)
-    wait_delay = Keyword.get(opts, :delay, 1000)
+    wait_count = Keyword.get(opts, :count, @default_wait_count)
+    wait_delay = Keyword.get(opts, :delay, @default_wait_delay)
 
     1..wait_count//1
     |> Enum.reduce_while({:ok, :in_progress}, fn _, _ ->
