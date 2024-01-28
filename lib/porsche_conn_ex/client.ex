@@ -565,7 +565,7 @@ defmodule PorscheConnEx.Client do
   - `session` is a `PorscheConnEx.Session` pid/name or a
     `PorscheConnEx.Session.RequestData` structure.
   - `vin` is the VIN of the vehicle to be updated.
-  - `climate` is a boolean indicating whether to turn on climatisation (`true`) or turn it off (`false`).
+  - `on_off` is a boolean indicating whether to turn on climatisation (`true`) or turn it off (`false`).
 
   ## Climatisation timer
 
@@ -583,11 +583,11 @@ defmodule PorscheConnEx.Client do
 
   On error, returns `{:error, _}`.
   """
-  def climate_set(session, vin, climate) when is_boolean(climate) do
+  def set_climate(session, vin, on_off) when is_boolean(on_off) do
     rdata = Session.request_data(session)
     base = "/e-mobility/#{Config.url(rdata.config)}/#{vin}/toggle-direct-climatisation"
 
-    post(rdata, "#{base}/#{climate}", json: %{})
+    post(rdata, "#{base}/#{on_off}", json: %{})
     |> as_pending(poll_url: fn req_id -> "#{base}/status/#{req_id}" end)
   end
 

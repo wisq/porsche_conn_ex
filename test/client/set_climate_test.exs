@@ -1,4 +1,4 @@
-defmodule PorscheConnEx.ClientClimateSetTest do
+defmodule PorscheConnEx.ClientSetClimateTest do
   use PorscheConnEx.Test.ClientCase
 
   alias PorscheConnEx.Client
@@ -6,7 +6,7 @@ defmodule PorscheConnEx.ClientClimateSetTest do
   alias PorscheConnEx.Test.DataFactory, as: Data
   import PorscheConnEx.Test.Bypass
 
-  describe "climate_set/3" do
+  describe "set_climate/3" do
     test "issues and completes pending request", %{session: session, bypass: bypass} do
       vin = Data.random_vin()
       req_id = Data.random_request_id()
@@ -26,7 +26,7 @@ defmodule PorscheConnEx.ClientClimateSetTest do
       )
 
       # Issue initial request:
-      assert {:ok, pending} = Client.climate_set(session, vin, enable)
+      assert {:ok, pending} = Client.set_climate(session, vin, enable)
       assert MockSession.count(session) == 1
 
       # Wait for final status:
@@ -60,7 +60,7 @@ defmodule PorscheConnEx.ClientClimateSetTest do
         ServerResponses.status_failed()
       )
 
-      assert {:ok, pending} = Client.climate_set(session, vin, enable)
+      assert {:ok, pending} = Client.set_climate(session, vin, enable)
       assert {:error, :failed} = Client.wait(session, pending, delay: 1)
     end
 
@@ -89,7 +89,7 @@ defmodule PorscheConnEx.ClientClimateSetTest do
       )
 
       wait_opts = [delay: 1, count: Enum.random(5..10)]
-      assert {:ok, pending} = Client.climate_set(session, vin, enable)
+      assert {:ok, pending} = Client.set_climate(session, vin, enable)
       assert {:error, :in_progress} = Client.wait(session, pending, wait_opts)
     end
   end

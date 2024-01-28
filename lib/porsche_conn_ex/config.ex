@@ -15,21 +15,25 @@ defmodule PorscheConnEx.Config do
   The `language` and `country` fields, when put together, should form a valid [locale name](https://en.wikipedia.org/wiki/Locale_(computer_software)).
 
   The chosen locale may affect various aspects of the API.  The most obvious
-  effect is to choose the units used (metric versus imperial).  Note that this
-  library was designed and tested using `de_DE`, on the assumption that German
-  would be the most compatible locale for a German car.
+  effect is to choose the units used (metric versus imperial).
 
   The following locales are known to work:
 
   - `de_DE` (Germany) - metric units
   - `en_US` (United States) - imperial units
 
-  The following locales are known to **NOT** work.
+  The following locales are known to **NOT** work:
 
   - `en_CA` (Canada)
 
   When choosing an unsupported locale, the initial authentication will succeed,
   but most other requests will fail with `{:error, :not_found}`.
+
+  Note that this library was designed and tested using `de_DE` (and also
+  defaults to this), on the assumption that German would be the most logical
+  locale for a German car. Some effort has been made to test against `en_US`
+  and imperial units as well, but there may still be bugs when working in
+  non-German locales.
   """
   alias __MODULE__
 
