@@ -45,4 +45,16 @@ defmodule PorscheConnEx.Struct.Emobility.ChargingProfile.ChargingOptions do
     |> Map.put(:mode, mode)
     |> super()
   end
+
+  def dump(%__MODULE__{mode: mode} = struct) do
+    with {:ok, map} <- super(struct) do
+      {:ok,
+       map
+       |> Map.delete("mode")
+       |> Map.merge(%{
+         "smartChargingEnabled" => mode == :smart,
+         "preferredChargingEnabled" => mode == :preferred_time
+       })}
+    end
+  end
 end

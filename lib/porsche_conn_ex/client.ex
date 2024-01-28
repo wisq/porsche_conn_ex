@@ -112,7 +112,10 @@ defmodule PorscheConnEx.Client do
     base = "/e-mobility/#{Config.url(rdata.config)}/#{model}/#{vin}"
 
     with {:ok, timer_json} <- Timer.dump(timer) do
-      put(rdata, "#{base}/timer", json: timer_json)
+      case timer.id do
+        nil -> post(rdata, "#{base}/timer", json: timer_json)
+        n when is_integer(n) -> put(rdata, "#{base}/timer", json: timer_json)
+      end
       |> as_pending(poll_url: fn req_id -> "#{base}/action-status/#{req_id}?hasDX1=false" end)
     end
   end
@@ -130,7 +133,10 @@ defmodule PorscheConnEx.Client do
     base = "/e-mobility/#{Config.url(rdata.config)}/#{model}/#{vin}"
 
     with {:ok, profile_json} <- ChargingProfile.dump(profile) do
-      put(rdata, "#{base}/profile", json: profile_json)
+      case profile.id do
+        nil -> post(rdata, "#{base}/profile", json: profile_json)
+        n when is_integer(n) -> put(rdata, "#{base}/profile", json: profile_json)
+      end
       |> as_pending(poll_url: fn req_id -> "#{base}/action-status/#{req_id}?hasDX1=false" end)
     end
   end

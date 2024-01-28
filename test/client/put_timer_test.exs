@@ -2,7 +2,7 @@ defmodule PorscheConnEx.ClientPutTimerTest do
   use PorscheConnEx.Test.ClientCase
 
   alias PorscheConnEx.Client
-  alias PorscheConnEx.Struct
+  alias PorscheConnEx.Struct.Emobility.Timer
   alias PorscheConnEx.Test.{MockSession, ServerResponses}
   alias PorscheConnEx.Test.DataFactory, as: Data
   import PorscheConnEx.Test.Bypass
@@ -23,7 +23,7 @@ defmodule PorscheConnEx.ClientPutTimerTest do
         resp_json(conn, ServerResponses.action_in_progress(req_id))
       end)
 
-      timer = %Struct.Emobility.Timer{
+      timer = %Timer{
         id: 3,
         active?: true,
         depart_time: ~N[2024-01-18 15:52:00],
@@ -51,6 +51,46 @@ defmodule PorscheConnEx.ClientPutTimerTest do
                "weekDays" => nil,
                "climatised" => true,
                "chargeOption" => false,
+               "targetChargeLevel" => nil
+             }
+    end
+
+    test "uses POST instead of PUT if timer.id is nil", %{session: session, bypass: bypass} do
+      vin = Data.random_vin()
+      model = Data.random_model()
+      req_id = Data.random_request_id()
+
+      me = self()
+      base_url = "/e-mobility/de/de_DE/#{model}/#{vin}"
+
+      Bypass.expect_once(bypass, "POST", "#{base_url}/timer", fn conn ->
+        {:ok, body, conn} = conn |> Plug.Conn.read_body()
+        send(me, {:timer_json, body |> Jason.decode!()})
+        resp_json(conn, ServerResponses.action_in_progress(req_id))
+      end)
+
+      timer = %Timer{
+        id: nil,
+        active?: true,
+        depart_time: ~N[2024-01-20 23:11:00],
+        repeating?: false,
+        climate?: false,
+        charge?: true
+      }
+
+      assert {:ok, _pending} = Client.put_timer(session, vin, model, timer)
+      assert MockSession.count(session) == 1
+
+      assert_received {:timer_json, json}
+
+      assert json == %{
+               "timerID" => nil,
+               "active" => true,
+               "departureDateTime" => "2024-01-20T23:11:00.000Z",
+               "frequency" => "SINGLE",
+               "weekDays" => nil,
+               "climatised" => false,
+               "chargeOption" => true,
                "targetChargeLevel" => nil
              }
     end
