@@ -3,6 +3,7 @@ defmodule PorscheConnEx.Struct.Unit.ChargeRate do
 
   enum Unit do
     value(:km_per_minute, key: "KM_PER_MIN")
+    value(:mi_per_minute, key: "MILES_PER_MIN")
   end
 
   param do
@@ -25,5 +26,6 @@ defimpl Inspect, for: PorscheConnEx.Struct.Unit.ChargeRate do
 
   defp unit(:km_per_minute), do: "km/m"
   defp unit(:km_per_hour), do: "km/h"
+  defp unit(:mi_per_minute), do: "mi/m"
   defp unit(other), do: inspect(other)
 end

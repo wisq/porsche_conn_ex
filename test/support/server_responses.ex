@@ -930,6 +930,197 @@ defmodule PorscheConnEx.Test.ServerResponses do
     """
   end
 
+  def emobility_US do
+    """
+    {
+      "batteryChargeStatus" : {
+        "plugState" : "CONNECTED",
+        "lockState" : "LOCKED",
+        "chargingState" : "COMPLETED",
+        "chargingReason" : "TIMER4",
+        "externalPowerSupplyState" : "STATION_CONNECTED",
+        "ledColor" : "GREEN",
+        "ledState" : "PERMANENT_ON",
+        "chargingMode" : "OFF",
+        "stateOfChargeInPercentage" : 80,
+        "remainingChargeTimeUntil100PercentInMinutes" : 0,
+        "remainingERange" : {
+          "value" : 159.6924,
+          "unit" : "MILES",
+          "originalValue" : 257,
+          "originalUnit" : "KILOMETERS",
+          "valueInKilometers" : 257,
+          "unitTranslationKey" : "GRAY_SLICE_UNIT_MILES",
+          "unitTranslationKeyV2" : "TC.UNIT.MILES"
+        },
+        "remainingCRange" : null,
+        "chargingTargetDateTime" : "2024-01-28T03:10",
+        "status" : null,
+        "chargeRate" : {
+          "value" : 0,
+          "unit" : "MILES_PER_MIN",
+          "valueInKmPerHour" : 0,
+          "unitTranslationKey" : "EM.COMMON.UNIT.MILES_PER_MIN",
+          "unitTranslationKeyV2" : "TC.UNIT.MILES_PER_MIN"
+        },
+        "chargingPower" : 0,
+        "chargingTargetDateTimeOplEnforced" : null,
+        "chargingInDCMode" : false
+      },
+      "directCharge" : {
+        "disabled" : false,
+        "isActive" : false
+      },
+      "directClimatisation" : {
+        "climatisationState" : "OFF",
+        "remainingClimatisationTime" : null,
+        "targetTemperature" : "2930",
+        "climatisationWithoutHVpower" : "true",
+        "heaterSource" : "electric"
+      },
+      "timers" : [ {
+        "timerID" : "1",
+        "departureDateTime" : "2024-01-30T13:52:00.000Z",
+        "preferredChargingTimeEnabled" : false,
+        "preferredChargingStartTime" : null,
+        "preferredChargingEndTime" : null,
+        "frequency" : "SINGLE",
+        "climatised" : true,
+        "weekDays" : null,
+        "active" : true,
+        "chargeOption" : false,
+        "targetChargeLevel" : 85,
+        "climatisationTimer" : false,
+        "e3_CLIMATISATION_TIMER_ID" : "4"
+      }, {
+        "timerID" : "2",
+        "departureDateTime" : "2024-01-30T15:10:00.000Z",
+        "preferredChargingTimeEnabled" : false,
+        "preferredChargingStartTime" : null,
+        "preferredChargingEndTime" : null,
+        "frequency" : "SINGLE",
+        "climatised" : true,
+        "weekDays" : null,
+        "active" : true,
+        "chargeOption" : false,
+        "targetChargeLevel" : 85,
+        "climatisationTimer" : false,
+        "e3_CLIMATISATION_TIMER_ID" : "4"
+      }, {
+        "timerID" : "3",
+        "departureDateTime" : "2024-01-31T17:00:00.000Z",
+        "preferredChargingTimeEnabled" : false,
+        "preferredChargingStartTime" : null,
+        "preferredChargingEndTime" : null,
+        "frequency" : "SINGLE",
+        "climatised" : true,
+        "weekDays" : null,
+        "active" : true,
+        "chargeOption" : false,
+        "targetChargeLevel" : 85,
+        "climatisationTimer" : false,
+        "e3_CLIMATISATION_TIMER_ID" : "4"
+      }, {
+        "timerID" : "4",
+        "departureDateTime" : "2024-01-31T14:19:00.000Z",
+        "preferredChargingTimeEnabled" : false,
+        "preferredChargingStartTime" : null,
+        "preferredChargingEndTime" : null,
+        "frequency" : "SINGLE",
+        "climatised" : true,
+        "weekDays" : null,
+        "active" : true,
+        "chargeOption" : false,
+        "targetChargeLevel" : 85,
+        "climatisationTimer" : true,
+        "e3_CLIMATISATION_TIMER_ID" : "4"
+      }, {
+        "timerID" : "5",
+        "departureDateTime" : "2024-01-28T07:00:00.000Z",
+        "preferredChargingTimeEnabled" : false,
+        "preferredChargingStartTime" : null,
+        "preferredChargingEndTime" : null,
+        "frequency" : "CYCLIC",
+        "climatised" : false,
+        "weekDays" : {
+          "MONDAY" : true,
+          "FRIDAY" : true,
+          "WEDNESDAY" : true,
+          "SUNDAY" : true,
+          "THURSDAY" : true,
+          "TUESDAY" : true,
+          "SATURDAY" : true
+        },
+        "active" : true,
+        "chargeOption" : true,
+        "targetChargeLevel" : 80,
+        "climatisationTimer" : false,
+        "e3_CLIMATISATION_TIMER_ID" : "4"
+      } ],
+      "climateTimer" : null,
+      "chargingProfiles" : {
+        "currentProfileId" : 5,
+        "profiles" : [ {
+          "profileId" : 4,
+          "profileName" : "Allgemein",
+          "profileActive" : true,
+          "profileOptions" : {
+            "autoPlugUnlockEnabled" : false,
+            "energyCostOptimisationEnabled" : false,
+            "energyMixOptimisationEnabled" : false,
+            "powerLimitationEnabled" : false,
+            "timeBasedEnabled" : false,
+            "usePrivateCurrentEnabled" : true
+          },
+          "chargingOptions" : {
+            "minimumChargeLevel" : 30,
+            "targetChargeLevel" : 100,
+            "smartChargingEnabled" : true,
+            "preferredChargingEnabled" : false,
+            "preferredChargingTimeStart" : "19:00",
+            "preferredChargingTimeEnd" : "07:00"
+          },
+          "position" : null,
+          "timerActionList" : {
+            "timerAction" : [ 1, 2, 3, 4, 5 ]
+          }
+        }, {
+          "profileId" : 5,
+          "profileName" : "Home",
+          "profileActive" : true,
+          "profileOptions" : {
+            "autoPlugUnlockEnabled" : false,
+            "energyCostOptimisationEnabled" : false,
+            "energyMixOptimisationEnabled" : false,
+            "powerLimitationEnabled" : false,
+            "timeBasedEnabled" : false,
+            "usePrivateCurrentEnabled" : true
+          },
+          "chargingOptions" : {
+            "minimumChargeLevel" : 30,
+            "targetChargeLevel" : 100,
+            "smartChargingEnabled" : false,
+            "preferredChargingEnabled" : true,
+            "preferredChargingTimeStart" : "19:00",
+            "preferredChargingTimeEnd" : "07:00"
+          },
+          "position" : {
+            "latitude" : 45.444444,
+            "longitude" : -75.693889,
+            "radius" : 250,
+            "radiusUnit" : "noUnit"
+          },
+          "timerActionList" : {
+            "timerAction" : [ 1, 2, 3, 4, 5 ]
+          }
+        } ]
+      },
+      "departureInformation" : null,
+      "errorInfo" : [ ]
+    }
+    """
+  end
+
   def position do
     """
     {

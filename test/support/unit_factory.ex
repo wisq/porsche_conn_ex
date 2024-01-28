@@ -12,6 +12,16 @@ defmodule PorscheConnEx.Test.UnitFactory do
     }
   end
 
+  def distance_km_to_miles(km, mi) do
+    %Unit.Distance{
+      value: mi,
+      unit: :mi,
+      original_value: km,
+      original_unit: :km,
+      km: km
+    }
+  end
+
   def time(value, unit) when unit in [:day] do
     %Unit.Time{
       value: value,
@@ -39,6 +49,14 @@ defmodule PorscheConnEx.Test.UnitFactory do
     %Unit.ChargeRate{
       value: km_per_minute,
       unit: :km_per_minute,
+      km_per_hour: km_per_hour
+    }
+  end
+
+  def charge_rate_miles(mi_per_minute, km_per_hour) do
+    %Unit.ChargeRate{
+      value: mi_per_minute,
+      unit: :mi_per_minute,
       km_per_hour: km_per_hour
     }
   end
