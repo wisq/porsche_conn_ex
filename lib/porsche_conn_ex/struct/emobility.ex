@@ -1,7 +1,29 @@
 defmodule PorscheConnEx.Struct.Emobility do
   use PorscheConnEx.Struct
 
+  alias PorscheConnEx.Docs
   alias __MODULE__, as: E
+
+  @moduledoc """
+  Structure containing information about the electric charging status and
+  behaviour of a particular vehicle.
+
+  This is the structure returned by `PorscheConnEx.Client.emobility/3`.
+
+  ## Fields
+
+  - `charging` (#{Docs.type(E.ChargeStatus)}) — information about the vehicle's charging status
+    - contains #{Docs.count_fields(E.ChargeStatus)} sub-fields
+  - `direct_charge` (#{Docs.type(E.DirectCharge)}) — info about the vehicle's "Direct Charge" setting
+    - contains #{Docs.count_fields(E.DirectCharge)} sub-fields
+  - `direct_climate` (#{Docs.type(E.DirectClimate)}) — info about the vehicle's pre-heat/cool setting
+    - contains #{Docs.count_fields(E.DirectClimate)} sub-fields
+  - `timers` (list of #{Docs.type(E.Timer)}s) — all charging/climatisation timers (user-created)
+  - `charging_profiles` (list of #{Docs.type(E.ChargingProfile)}s) — all charging profiles (built-in and user-created)
+  - `current_charging_profile` (#{Docs.type(E.ChargingProfile)}) — the currently active charging profile
+
+  For a list of sub-fields, see the relevant module documentation.
+  """
 
   defmodule TimerList do
     use PorscheConnEx.Type.StructList, of: E.Timer
@@ -16,8 +38,8 @@ defmodule PorscheConnEx.Struct.Emobility do
     field(:direct_charge, E.DirectCharge, key: "directCharge", required: true)
     field(:direct_climate, E.DirectClimate, key: "directClimatisation", required: true)
     field(:timers, TimerList, required: true)
-    field(:current_charging_profile_id, :integer, required: true)
     field(:charging_profiles, ChargingProfileList, required: true)
+    field(:current_charging_profile, E.ChargingProfile, virtual: true)
   end
 
   # I'm choosing to flatten this a bit, since the sight of
@@ -26,11 +48,15 @@ defmodule PorscheConnEx.Struct.Emobility do
     with {:ok, block} <- Map.fetch(params, "chargingProfiles"),
          {:ok, current_id} <- Map.fetch(block, "currentProfileId"),
          {:ok, profiles} <- Map.fetch(block, "profiles") do
-      params
-      |> Map.delete("chargingProfiles")
-      |> Map.put("current_charging_profile_id", current_id)
-      |> Map.put("charging_profiles", profiles)
-      |> super()
+      params =
+        params
+        |> Map.delete("chargingProfiles")
+        |> Map.put("charging_profiles", profiles)
+
+      with {:ok, emob} <- super(params) do
+        current_profile = emob.charging_profiles |> Enum.find(&(&1.id == current_id))
+        {:ok, %__MODULE__{emob | current_charging_profile: current_profile}}
+      end
     end
   end
 end

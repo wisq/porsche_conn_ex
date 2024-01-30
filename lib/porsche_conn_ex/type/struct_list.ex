@@ -1,6 +1,8 @@
 defmodule PorscheConnEx.Type.StructList do
+  @moduledoc false
   defmacro __using__(of: module) do
     quote do
+      @moduledoc false
       use Parameter.Parametrizable
 
       @impl true

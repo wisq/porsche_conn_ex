@@ -25,7 +25,7 @@ defmodule PorscheConnEx.ClientPutTimerTest do
 
       timer = %Timer{
         id: 3,
-        active?: true,
+        enabled?: true,
         depart_time: ~N[2024-01-18 15:52:00],
         repeating?: false,
         climate?: true,
@@ -71,7 +71,7 @@ defmodule PorscheConnEx.ClientPutTimerTest do
 
       timer = %Timer{
         id: nil,
-        active?: true,
+        enabled?: true,
         depart_time: ~N[2024-01-20 23:11:00],
         repeating?: false,
         climate?: false,

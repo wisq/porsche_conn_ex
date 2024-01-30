@@ -299,8 +299,8 @@ defmodule PorscheConnEx.Client do
   end
 
   @doc """
-  Returns comprehensive data about the electric charging capabilities and
-  behaviour of a particular vehicle.
+  Returns comprehensive data about the electric charging status and behaviour
+  of a particular vehicle.
 
   ## Arguments
 
@@ -479,7 +479,8 @@ defmodule PorscheConnEx.Client do
 
   Charging profiles define basic charging parameters, such as charging targets,
   preferred charging hours, etc.  They can also be tied to a specific
-  geographical location, such as a home or office.
+  geographical location, such as a home or office, in which case they will
+  automatically de/activate based on the vehicle's location.
 
   ## Arguments
 

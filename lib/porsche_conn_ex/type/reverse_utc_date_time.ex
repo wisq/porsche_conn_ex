@@ -1,4 +1,5 @@
 defmodule PorscheConnEx.Type.ReverseUtcDateTime do
+  @moduledoc false
   use Parameter.Parametrizable
 
   @format "{0D}.{0M}.{YYYY} {h24}:{m}:{s}"

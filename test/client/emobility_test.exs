@@ -46,7 +46,7 @@ defmodule PorscheConnEx.ClientEmobliityTest do
       assert charging.remaining_electric_range == Unit.distance_km_to_km(248)
       assert charging.remaining_conventional_range == nil
       assert charging.target_time == ~N[2024-01-17 19:55:00]
-      assert charging.target_opl_enforced == nil
+      assert charging.target_time_opl_enforced == nil
       assert charging.rate == Unit.charge_rate(0, 0)
       assert charging.kilowatts == 0
       assert charging.dc_mode? == false
@@ -58,13 +58,13 @@ defmodule PorscheConnEx.ClientEmobliityTest do
       assert climate.state == :off
       assert climate.remaining_minutes == nil
       assert climate.target_temperature == Unit.temperature(2930, 20)
-      assert climate.without_hv_power == false
+      assert climate.without_hv_power? == false
       assert climate.heater_source == :electric
 
       assert [first, _, _, _, last] = emobility.timers
 
       assert first.id == 1
-      assert first.active? == true
+      assert first.enabled? == true
       assert first.depart_time == ~N[2024-01-20 18:41:00]
       assert first.climate? == true
       assert first.charge? == false
@@ -73,7 +73,7 @@ defmodule PorscheConnEx.ClientEmobliityTest do
       assert first.target_charge == 85
 
       assert last.id == 5
-      assert last.active? == true
+      assert last.enabled? == true
       assert last.depart_time == ~N[2024-01-17 07:00:00]
       assert last.climate? == false
       assert last.charge? == true
@@ -81,15 +81,14 @@ defmodule PorscheConnEx.ClientEmobliityTest do
       assert last.weekdays == [1, 2, 3, 4, 5, 6, 7]
       assert last.target_charge == 80
 
-      assert emobility.current_charging_profile_id == 5
       assert Enum.count(emobility.charging_profiles) == 2
       assert [%{id: 4} = profile4, %{id: 5} = profile5] = emobility.charging_profiles
+      assert emobility.current_charging_profile == profile5
 
       assert profile4.id == 4
       assert profile4.name == "Allgemein"
-      assert profile4.active == true
+      assert profile4.enabled? == true
       assert profile4.charging.minimum_charge == 30
-      assert profile4.charging.target_charge == 100
       assert profile4.charging.mode == :smart
       assert profile4.charging.preferred_time_start == ~T[19:00:00]
       assert profile4.charging.preferred_time_end == ~T[07:00:00]
@@ -97,9 +96,8 @@ defmodule PorscheConnEx.ClientEmobliityTest do
 
       assert profile5.id == 5
       assert profile5.name == "Home"
-      assert profile5.active == true
+      assert profile5.enabled? == true
       assert profile5.charging.minimum_charge == 30
-      assert profile5.charging.target_charge == 100
       assert profile5.charging.mode == :preferred_time
       assert profile5.charging.preferred_time_start == ~T[19:00:00]
       assert profile5.charging.preferred_time_end == ~T[07:00:00]
@@ -134,7 +132,7 @@ defmodule PorscheConnEx.ClientEmobliityTest do
       assert charging.remaining_electric_range == Unit.distance_km_to_miles(257, 159.6924)
       assert charging.remaining_conventional_range == nil
       assert charging.target_time == ~N[2024-01-28 03:10:00]
-      assert charging.target_opl_enforced == nil
+      assert charging.target_time_opl_enforced == nil
       assert charging.rate == Unit.charge_rate_miles(0, 0)
       assert charging.kilowatts == 0
       assert charging.dc_mode? == false
@@ -146,13 +144,13 @@ defmodule PorscheConnEx.ClientEmobliityTest do
       assert climate.state == :off
       assert climate.remaining_minutes == nil
       assert climate.target_temperature == Unit.temperature(2930, 20)
-      assert climate.without_hv_power == true
+      assert climate.without_hv_power? == true
       assert climate.heater_source == :electric
 
       assert [first, _, _, _, last] = emobility.timers
 
       assert first.id == 1
-      assert first.active? == true
+      assert first.enabled? == true
       assert first.depart_time == ~N[2024-01-30 13:52:00]
       assert first.climate? == true
       assert first.charge? == false
@@ -161,7 +159,7 @@ defmodule PorscheConnEx.ClientEmobliityTest do
       assert first.target_charge == 85
 
       assert last.id == 5
-      assert last.active? == true
+      assert last.enabled? == true
       assert last.depart_time == ~N[2024-01-28 07:00:00]
       assert last.climate? == false
       assert last.charge? == true
@@ -169,15 +167,14 @@ defmodule PorscheConnEx.ClientEmobliityTest do
       assert last.weekdays == [1, 2, 3, 4, 5, 6, 7]
       assert last.target_charge == 80
 
-      assert emobility.current_charging_profile_id == 5
       assert Enum.count(emobility.charging_profiles) == 2
       assert [%{id: 4} = profile4, %{id: 5} = profile5] = emobility.charging_profiles
+      assert emobility.current_charging_profile == profile5
 
       assert profile4.id == 4
       assert profile4.name == "Allgemein"
-      assert profile4.active == true
+      assert profile4.enabled? == true
       assert profile4.charging.minimum_charge == 30
-      assert profile4.charging.target_charge == 100
       assert profile4.charging.mode == :smart
       assert profile4.charging.preferred_time_start == ~T[19:00:00]
       assert profile4.charging.preferred_time_end == ~T[07:00:00]
@@ -185,9 +182,8 @@ defmodule PorscheConnEx.ClientEmobliityTest do
 
       assert profile5.id == 5
       assert profile5.name == "Home"
-      assert profile5.active == true
+      assert profile5.enabled? == true
       assert profile5.charging.minimum_charge == 30
-      assert profile5.charging.target_charge == 100
       assert profile5.charging.mode == :preferred_time
       assert profile5.charging.preferred_time_start == ~T[19:00:00]
       assert profile5.charging.preferred_time_end == ~T[07:00:00]

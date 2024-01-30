@@ -1,6 +1,8 @@
 defmodule PorscheConnEx.Type.StructMap do
+  @moduledoc false
   defmacro __using__(opts) do
     quote bind_quoted: [opts: opts] do
+      @moduledoc false
       use Parameter.Parametrizable
 
       {module, opts} = Keyword.pop!(opts, :of)

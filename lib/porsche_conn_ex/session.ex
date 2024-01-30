@@ -128,13 +128,13 @@ defmodule PorscheConnEx.Session do
   starting configuration and current authentication details associated with the
   session.
 
-  If given an existing `PorscheConnEx.Session.RequestData` structure, then that
-  structure will be returned verbatim.  This means that `PorscheConnEx.Client`
-  calls can all effectively also receive a `RequestData` structure as their
-  first argument, in lieu of a running session.  (This is used in e.g.
-  `PorscheConnEx.Client.wait` to avoid unnecessary requests.)
+  If given an existing `RequestData` structure, then that structure will be
+  returned verbatim.  This means that `PorscheConnEx.Client` calls can all
+  effectively also receive a `RequestData` structure as their first argument,
+  in lieu of a running session.  (This is used in e.g.
+  `PorscheConnEx.Client.wait/2` to avoid unnecessary requests.)
 
-  Beware that authentication tokens do expire, and you should not used a given
+  Beware that authentication tokens do expire, and you should not use a given
   `RequestData` structure for more than a few minutes before fetching another.
   """
   def request_data(pid_or_rdata)

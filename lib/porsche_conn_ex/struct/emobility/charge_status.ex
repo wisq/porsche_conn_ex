@@ -1,10 +1,54 @@
 defmodule PorscheConnEx.Struct.Emobility.ChargeStatus do
+  alias PorscheConnEx.Docs
+  alias PorscheConnEx.Struct.Unit
+
+  @moduledoc """
+  Structure containing information about the electric charging status of a
+  particular vehicle.
+
+  ## Fields
+
+  - `mode` (atom) — the current charging mode — `:off`, `:ac`, `:dc`, or `:unknown`
+    - `:dc` is currently speculative; I have not tested the API while hooked up to a DC Fast Charger.
+  - `plug` (atom) — the status of the physical charging plug — `:connected` or `:disconnected`
+  - `plug_lock` (atom) — the lock status of the charging plug — `:locked` or `:unlocked`
+  - `state` (atom) — the current charging state — `:off`, `:charging`, `:completed`, or `:error`
+  - `reason` (atom or tuple) — the reason for the current charging state
+    - `:immediate` if charging due to "direct charge" / user request / etc
+    - `{:timer, n}` if charging due to an upcoming timer in slot `n`
+    - `:invalid` if there is no reason to charge / charging negotiation is in progess / etc
+    - Note that if there is no immediate charging / climatisation activity, this value is unreliable — the API tends to return `{:timer, 4}`, regardless of whether timer #4 is the next timer or not.
+  - `external_power` (atom) — the status of the external power connection
+    - `:station_connected` when connected to a charging station but not actively drawing power
+    - `:available` when actively drawing power from a charging station
+    - `:unavailable` when not connected to a charging station
+  - `led_color` (atom) — the charging LED colour — `:white`, `:green`, `:blue`, `:red`, or `:off`
+  - `led_state` (atom) — the charging LED state — `:flash`, `:blink`, `:pulse`, `:solid`, or `:off`
+  - `percent` (integer) — the current percentage of charge (0 to 100)
+  - `minutes_to_full` (integer) — the estimated number of minutes until target charge is reached
+    - Note that the API appears to calculate this value only when charging parameters change, meaning it will be valid at the start of a charge, but will remain the same (and become quite out of date) until suddenly dropping to zero when charging is complete.
+  - `remaining_electric_range` (#{Docs.type(Unit.Distance)}) — the estimated remaining electric travel range
+  - `remaining_conventional_range` (#{Docs.type(Unit.Distance)}) — the estimated remaining conventional travel range
+  - `rate` (#{Docs.type(Unit.ChargeRate)}) — the current charge rate, in terms of range increase over time
+  - `kilowatts` (float) — the current charge rate, in kilowatts
+  - `dc_mode?` (boolean) — whether the vehicle is charging in DC mode
+    - This appears to refer to DC power, not Direct Charging.  More research needed.
+    - If this is redundant due to `mode` above, then I'll remove it.
+  - `target_time` (`NaiveDateTime`) — the local time that the vehicle intends to complete its next charge
+  - `target_time_opl_enforced` (any) — unknown
+    - Has always been `nil` in my testing so far.  Sounds like it may be a boolean?
+  """
   use PorscheConnEx.Struct
-  alias PorscheConnEx.Struct
+
+  def field_docs, do: @moduledoc |> Docs.section("Fields")
 
   enum Mode do
     value(:off, key: "OFF")
     value(:ac, key: "AC")
+    # Just guessing here — I need to go hook up to a DC Fast Charger to see if
+    # this is the actual code used.  (There may also be other enums that are
+    # different when using a DCFC.)
+    value(:dc, key: "DC")
     value(:unknown, key: "UNKNOWN")
   end
 
@@ -19,13 +63,15 @@ defmodule PorscheConnEx.Struct.Emobility.ChargeStatus do
   end
 
   enum State do
-    value(:completed, key: "COMPLETED")
-    value(:charging, key: "CHARGING")
-    value(:error, key: "ERROR")
     value(:off, key: "OFF")
+    value(:charging, key: "CHARGING")
+    value(:completed, key: "COMPLETED")
+    value(:error, key: "ERROR")
   end
 
   defmodule Reason do
+    @moduledoc false
+
     def load("IMMEDIATE"), do: {:ok, :immediate}
     def load("INVALID"), do: {:ok, :invalid}
 
@@ -65,6 +111,7 @@ defmodule PorscheConnEx.Struct.Emobility.ChargeStatus do
   end
 
   defmodule TargetTime do
+    @moduledoc false
     def load(str), do: Timex.parse(str, "{YYYY}-{0M}-{0D}T{h24}:{m}")
   end
 
@@ -79,14 +126,14 @@ defmodule PorscheConnEx.Struct.Emobility.ChargeStatus do
     field(:led_state, LedState, key: "ledState", required: true)
     field(:percent, :integer, key: "stateOfChargeInPercentage", required: true)
     field(:minutes_to_full, :integer, key: "remainingChargeTimeUntil100PercentInMinutes")
-    field(:remaining_electric_range, Struct.Unit.Distance, key: "remainingERange", required: true)
-    field(:remaining_conventional_range, Struct.Unit.Distance, key: "remainingCRange")
-    field(:target_time, TargetTime, key: "chargingTargetDateTime", required: true)
-    field(:rate, Struct.Unit.ChargeRate, key: "chargeRate", required: true)
+    field(:remaining_electric_range, Unit.Distance, key: "remainingERange", required: true)
+    field(:remaining_conventional_range, Unit.Distance, key: "remainingCRange")
+    field(:rate, Unit.ChargeRate, key: "chargeRate", required: true)
     field(:kilowatts, :float, key: "chargingPower", required: true)
     field(:dc_mode?, :boolean, key: "chargingInDCMode", required: true)
 
-    # No idea what this is.  Always nil for me.
-    field(:target_opl_enforced, :any, key: "chargingTargetDateTimeOplEnforced")
+    field(:target_time, TargetTime, key: "chargingTargetDateTime", required: true)
+    # No idea what this is.  Always nil for me.
+    field(:target_time_opl_enforced, :any, key: "chargingTargetDateTimeOplEnforced")
   end
 end

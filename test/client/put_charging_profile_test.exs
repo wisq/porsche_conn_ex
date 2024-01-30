@@ -10,10 +10,9 @@ defmodule PorscheConnEx.ClientPutChargingProfileTest do
   @profile_struct %ChargingProfile{
     id: 3,
     name: "Test",
-    active: true,
+    enabled?: true,
     charging: %ChargingProfile.ChargingOptions{
       minimum_charge: 35,
-      target_charge: 100,
       mode: :preferred_time,
       preferred_time_start: ~T[01:02:00],
       preferred_time_end: ~T[03:04:00]
@@ -31,7 +30,6 @@ defmodule PorscheConnEx.ClientPutChargingProfileTest do
     "profileActive" => true,
     "chargingOptions" => %{
       "minimumChargeLevel" => 35,
-      "targetChargeLevel" => 100,
       "smartChargingEnabled" => false,
       "preferredChargingEnabled" => true,
       "preferredChargingTimeEnd" => "03:04",
