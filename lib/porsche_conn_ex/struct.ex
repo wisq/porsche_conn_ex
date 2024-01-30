@@ -25,6 +25,8 @@ defmodule PorscheConnEx.Struct do
   end
 
   defmodule Enum do
+    @moduledoc false
+
     defmacro enum(module, block) do
       quote do
         Parameter.Enum.enum unquote(module) do

@@ -85,6 +85,21 @@ defmodule PorscheConnEx.Session do
   end
 
   defmodule RequestData do
+    @moduledoc """
+    Structure containing the necessary data to perform API calls.
+
+    Created and returned by `PorscheConnEx.Session.request_data/1`.
+
+    ## Fields
+
+    - `config` — a `PorscheConnEx.Config` structure containing API configuration
+    - `headers` — a `Map` of HTTP authentication headers
+
+    By altering this structure, you can, in theory, authenticate with the API
+    using one configuration, then make calls with a different configuration.
+    I'm not sure why you'd do this, though, and I wouldn't recommend it — some
+    aspects of the API are defined at authentication rather than per-request.
+    """
     @enforce_keys [:config, :headers]
     defstruct(@enforce_keys)
   end
@@ -104,7 +119,8 @@ defmodule PorscheConnEx.Session do
 
   ## Return values
 
-  Same as `GenServer.start_link/3`.
+  Same as `GenServer.start_link/3`.  Note that this function will block until
+  the initial API authentication is complete.
   """
   def start_link(opts) do
     {config, opts} = Keyword.pop(opts, :config, [])
