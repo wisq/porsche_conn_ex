@@ -10,6 +10,8 @@ defmodule PorscheConnEx.Struct.Emobility do
 
   This is the structure returned by `PorscheConnEx.Client.emobility/3`.
 
+  Note that there is some overlap between this structure, `PorscheConnEx.Struct.Status`, and `PorscheConnEx.Struct.Overview`.
+
   ## Fields
 
   - `charging` (#{Docs.type(E.ChargeStatus)}) — information about the vehicle's charging status

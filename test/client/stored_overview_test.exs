@@ -208,12 +208,12 @@ defmodule PorscheConnEx.ClientStoredOverviewTest do
 
   def lock(open, locked) do
     %Struct.Status.LockStatus{
-      open:
+      open?:
         case open do
           :open -> true
           :closed -> false
         end,
-      locked:
+      locked?:
         case locked do
           :locked -> true
           :unlocked -> false

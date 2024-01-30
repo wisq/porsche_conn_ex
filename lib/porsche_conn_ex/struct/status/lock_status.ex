@@ -1,13 +1,27 @@
 defmodule PorscheConnEx.Struct.Status.LockStatus do
-  @enforce_keys [:open, :locked]
+  @moduledoc """
+  Structure describing the open/closed and locked/unlocked status of a vehicle door.
+
+  ## Fields
+
+  - `open?` (boolean) — whether the door is physically open
+  - `locked?` (boolean) — whether the door is locked to prevent it opening
+
+  Note that while the vehicle hood also uses this structure, it is always
+  considered unlocked, and is not counted in the overall locked/unlocked state
+  of the vehicle.
+  """
+
+  @enforce_keys [:open?, :locked?]
   defstruct(@enforce_keys)
 
+  @doc false
   def load(term) do
     [open, locked] = String.split(term, "_")
 
     with {:ok, open} <- open_from_api(open),
          {:ok, locked} <- locked_from_api(locked) do
-      {:ok, %__MODULE__{open: open, locked: locked}}
+      {:ok, %__MODULE__{open?: open, locked?: locked}}
     else
       :error -> {:error, "invalid LockStatus: #{inspect(term)}"}
     end
@@ -23,11 +37,13 @@ defmodule PorscheConnEx.Struct.Status.LockStatus do
 end
 
 defimpl Inspect, for: PorscheConnEx.Struct.Status.LockStatus do
-  def inspect(ls, _opts) do
+  alias PorscheConnEx.Struct.Status.LockStatus
+
+  def inspect(%LockStatus{open?: open, locked?: locked}, _opts) do
     inner =
       [
-        if(ls.open, do: "open", else: "closed"),
-        if(ls.locked, do: "locked", else: "unlocked")
+        if(open, do: "open", else: "closed"),
+        if(locked, do: "locked", else: "unlocked")
       ]
       |> Enum.join(",")
 

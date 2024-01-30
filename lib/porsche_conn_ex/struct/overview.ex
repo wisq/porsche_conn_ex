@@ -11,6 +11,8 @@ defmodule PorscheConnEx.Struct.Overview do
   This is the structure returned by `PorscheConnEx.Client.stored_overview/2`
   and `PorscheConnEx.Client.current_overview/2`.
 
+  Note that there is significant overlap between this structure, `PorscheConnEx.Struct.Status`, and `PorscheConnEx.Struct.Emobility`.
+
   ## Fields
 
   - `vin` (string) — the 17-character Vehicle Identification Number
