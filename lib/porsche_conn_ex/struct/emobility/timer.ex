@@ -15,9 +15,6 @@ defmodule PorscheConnEx.Struct.Emobility.Timer do
   - `id` (integer) — the ID (slot number) of the timer (1 to 5)
   - `enabled?` (boolean) — whether the timer can trigger or not
   - `depart_time` (`NaiveDateTime`) — the local time the user intends to depart
-    - Note that this **end time** of charging / climatisation, and **not** the start time.
-    - All activity will occur prior to this point, on the assumption that this is when the user will actually require a fully charged / climatised vehicle.
-    - The actual start time will depend on several factors, including current battery charge, current temperature, whether the vehicle is plugged in, etc.
     - For repeating timers, this will be the next upcoming occurrence.
   - `repeating?` (boolean) — whether the event is a one-off (`false`) or repeats (`true`)
   - `weekdays` (list of integers, or `nil`) — a list indicating [ISO weekday numbers](`t:Calendar.ISO.day_of_week/0`)
@@ -27,6 +24,19 @@ defmodule PorscheConnEx.Struct.Emobility.Timer do
   - `charge?` (boolean) — whether the timer will charge the vehicle
   - `target_charge` (integer) — the target charge percentage (0 to 100)
     - The official UIs limit you to 5% increments, but the API allows any value.
+
+  Note that `depart_time` is the **end time** of charging / climatisation, and
+  **not** the start time.  All activity will occur in the minutes prior to
+  `depart_time`, on the assumption that this is when the user will actually want
+  a fully charged / climatised vehicle.
+
+  The actual start time will depend on several factors, including current
+  battery charge, current temperature, etc.  In particular, testing so far
+  seems to indicates that climatisation timers will start sooner (i.e.
+  preheat/cool for longer) if the vehicle is plugged in, since the vehicle is
+  more willing to spend wall power than battery power.  (It may even charge
+  the battery while doing so, ignoring any charge targets or preferred charging
+  hours.)
 
   ## Charging behaviour
 

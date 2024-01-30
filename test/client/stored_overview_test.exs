@@ -46,7 +46,7 @@ defmodule PorscheConnEx.ClientStoredOverviewTest do
       assert overview.windows.back_right == :closed
       assert overview.windows.maintenance_hatch == nil
       assert overview.windows.roof == nil
-      assert overview.windows.sunroof.percent == nil
+      assert overview.windows.sunroof.position == nil
       assert overview.windows.sunroof.status == nil
 
       assert overview.tires.front_left == Unit.tire_pressure(2.4, 2.7, 0.3, :divergent)
@@ -54,14 +54,14 @@ defmodule PorscheConnEx.ClientStoredOverviewTest do
       assert overview.tires.back_left == Unit.tire_pressure(2.3, 2.5, 0.2, :divergent)
       assert overview.tires.back_right == Unit.tire_pressure(2.3, 2.4, 0.1, :divergent)
 
-      assert overview.open_status == :closed
-      assert overview.parking_brake == :inactive
+      assert overview.open? == false
+      assert overview.parking_brake? == false
       assert overview.parking_brake_status == nil
       assert overview.parking_light == :off
       assert overview.parking_light_status == nil
       assert overview.parking_time == ~U[2024-01-17 21:48:10Z]
 
-      assert %{electrical: elec, conventional: conv} = overview.remaining_ranges
+      assert %{electric: elec, conventional: conv} = overview.remaining_ranges
       assert elec.distance == Unit.distance_km_to_km(247.0)
       assert elec.engine_type == :electric
       assert elec.primary? == true
@@ -143,7 +143,7 @@ defmodule PorscheConnEx.ClientStoredOverviewTest do
       assert overview.windows.back_right == :closed
       assert overview.windows.maintenance_hatch == nil
       assert overview.windows.roof == nil
-      assert overview.windows.sunroof.percent == nil
+      assert overview.windows.sunroof.position == nil
       assert overview.windows.sunroof.status == nil
 
       tires = overview.tires
@@ -152,14 +152,14 @@ defmodule PorscheConnEx.ClientStoredOverviewTest do
       assert tires.back_left == Unit.tire_pressure_psi(34.80906, 37.70981, 2.900755, :divergent)
       assert tires.back_right == Unit.tire_pressure_psi(34.80906, 37.70981, 2.900755, :divergent)
 
-      assert overview.open_status == :closed
-      assert overview.parking_brake == :active
+      assert overview.open? == false
+      assert overview.parking_brake? == true
       assert overview.parking_brake_status == nil
       assert overview.parking_light == :off
       assert overview.parking_light_status == nil
       assert overview.parking_time == ~U[2024-01-28 08:42:37Z]
 
-      assert %{electrical: elec, conventional: conv} = overview.remaining_ranges
+      assert %{electric: elec, conventional: conv} = overview.remaining_ranges
       assert elec.distance == Unit.distance_miles(257.0, 159.6924)
       assert elec.engine_type == :electric
       assert elec.primary? == true

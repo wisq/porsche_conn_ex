@@ -741,6 +741,7 @@ defmodule PorscheConnEx.Client do
     end)
     |> then(fn
       {:ok, "IN_PROGRESS"} -> {:ok, :in_progress}
+      {:ok, "SUCCESSFUL"} -> {:ok, :success}
       {:ok, "SUCCESS"} -> {:ok, :success}
       {:ok, "FAIL"} -> {:error, :failed}
       {:error, _} = err -> err

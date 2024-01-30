@@ -9,7 +9,23 @@ defmodule PorscheConnEx.MixProject do
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       consolidate_protocols: Mix.env() != :dev,
-      deps: deps()
+      deps: deps(),
+      docs: [
+        groups_for_modules: [
+          "API client": [
+            PorscheConnEx.Client,
+            PorscheConnEx.Client.PendingRequest,
+            PorscheConnEx.Config,
+            PorscheConnEx.Session,
+            PorscheConnEx.Session.RequestData
+          ],
+          "Data structures": ~r/^PorscheConnEx\.Struct\./
+        ],
+        nest_modules_by_prefix: [
+          PorscheConnEx,
+          PorscheConnEx.Struct
+        ]
+      ]
     ]
   end
 

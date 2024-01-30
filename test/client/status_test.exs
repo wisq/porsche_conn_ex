@@ -23,7 +23,7 @@ defmodule PorscheConnEx.ClientStatusTest do
       assert status.mileage == Unit.distance_km_to_km(9001.0)
       assert status.overall_lock_status.locked
 
-      assert %{electrical: elec, conventional: conv} = status.remaining_ranges
+      assert %{electric: elec, conventional: conv} = status.remaining_ranges
       assert elec.distance == Unit.distance_km_to_km(247.0)
       assert elec.engine_type == :electric
       assert elec.primary? == nil

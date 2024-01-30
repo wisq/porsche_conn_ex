@@ -1,4 +1,23 @@
 defmodule PorscheConnEx.Struct.Overview.Windows do
+  @moduledoc """
+  Structure containing information about the open/closed state of all windows.
+
+  ## Fields
+
+  - `front_left` (open status)
+  - `front_right` (open status)
+  - `back_left` (open status)
+  - `back_right` (open status)
+  - `maintenance_hatch` (open status)
+  - `roof` (open status)
+  - `sunroof` (struct)
+    - `position` (integer) — the sunroof open position as a percent value
+    - `status` (open status)
+
+  All "open status" fields will be either `:open`, `:closed`, or `nil` if not
+  present on the vehicle.
+  """
+
   use PorscheConnEx.Struct
 
   enum OpenStatus do
@@ -8,10 +27,13 @@ defmodule PorscheConnEx.Struct.Overview.Windows do
   end
 
   defmodule Sunroof do
+    @moduledoc false
     use PorscheConnEx.Struct
 
     param do
-      field(:percent, :any, key: "positionInPercent")
+      # I've not seen this as anything other than `nil`, but based on the name,
+      # I'm going to assume it's an integer.
+      field(:position, :integer, key: "positionInPercent")
       field(:status, OpenStatus, required: true)
     end
   end

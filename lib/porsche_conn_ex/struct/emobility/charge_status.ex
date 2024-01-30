@@ -35,8 +35,8 @@ defmodule PorscheConnEx.Struct.Emobility.ChargeStatus do
     - This appears to refer to DC power, not Direct Charging.  More research needed.
     - If this is redundant due to `mode` above, then I'll remove it.
   - `target_time` (`NaiveDateTime`) — the local time that the vehicle intends to complete its next charge
-  - `target_time_opl_enforced` (any) — unknown
-    - Has always been `nil` in my testing so far.  Sounds like it may be a boolean?
+  - `target_time_opl_enforced` (unknown) — has always been `nil` in testing
+    - Sounds like it may be a boolean?
   """
   use PorscheConnEx.Struct
 

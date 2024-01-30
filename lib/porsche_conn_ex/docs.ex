@@ -25,7 +25,7 @@ defmodule PorscheConnEx.Docs do
 
   def type(module) do
     short_name = module |> Module.split() |> Enum.at(-1)
-    "[#{short_name}](`#{module}`)"
+    "[`#{short_name}`](`#{module}`)"
   end
 
   def count_fields(module) do

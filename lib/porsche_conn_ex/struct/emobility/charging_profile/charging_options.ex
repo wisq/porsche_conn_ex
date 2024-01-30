@@ -7,9 +7,17 @@ defmodule PorscheConnEx.Struct.Emobility.ChargingProfile.ChargingOptions do
   - `minimum_charge` (integer) — charge immediately if below this charge percentage (0 to 100)
   - `mode` (atom) — determines how the profile decides when to charge
     - when set to `:smart`, the vehicle will negotiate the best charging time with the charger
-    - when set to `:preferred_time`, the vehicle will charge between the assigned hours, when possible
+    - when set to `:preferred_time`, the vehicle will try to charge between the hours below
   - `preferred_time_start` (`Time`) — the start of the preferred hours (each day)
   - `preferred_time_end` (`Time`) — the end of the preferred hours (each day)
+
+  If `preferred_time_end` is later in the day than `preferred_time_start`, then
+  charging will occur between the two times.
+
+  If `preferred_time_end` is earlier in the day than `preferred_time_start`,
+  then this indicates an overnight charging period, and the preferred hours
+  will be any time later than `preferred_start_end` or earlier than
+  `preferred_time_start`.
 
   ## Charging behaviour
 
@@ -17,12 +25,12 @@ defmodule PorscheConnEx.Struct.Emobility.ChargingProfile.ChargingOptions do
   will begin immediately.  (This also occurs if `minimum_charge` is ever raised
   above the vehicle's current charge.)
 
-  Once the minimum charge is reached, the vehicle will choose when to charge
-  based on the preferred hours and the next upcoming
-  [timer](`PorscheConnEx.Emobility.Timer`) that has `charge?` set to `true`.  The
-  timer defines the charge target (battery percentage) and the point at which
-  the car should have reached that target (time), while the preferred hours
-  help define when the actual charging will occur.
+  Once the minimum charge is reached, the vehicle will choose when (and how
+  much) to charge based on the preferred hours and the next upcoming
+  [timer](`PorscheConnEx.Struct.Emobility.Timer`) that has `charge?` set to `true`.
+  This timer will define the target charge level and the time at which that
+  charge should be achieved, while the preferred hours help define when the
+  actual charging will occur.
 
   If the next timer occurs during the preferred hours, then the timer will
   execute normally — charging will start some time before the `depart_time`,
@@ -32,10 +40,14 @@ defmodule PorscheConnEx.Struct.Emobility.ChargingProfile.ChargingOptions do
   will start charging some time before `preferred_time_end`, and attempt to
   reach `target_charge` by the time preferred hours end.
 
-  If the vehicle is used after the end of preferred hours, but before a timer,
-  and the vehicle no longer meets the requested `target_charge`, it's currently
-  unknown whether the vehicle will "top up" outside of preferred hours, or just
-  fail to meet the charge target.  More testing needed.
+  Current unknowns (more testing needed):
+
+  - If the vehicle is used after the end of preferred hours, but before a timer,
+    and the vehicle no longer meets the requested `target_charge`, will the vehicle
+    "top up" outside of preferred hours, or just fail to meet the charge target?
+  - If preferred hours end at 6am, and you have a timer at 8am that requests
+    70% charge, and a timer at 10am that requests 80% charge, will it "look
+    ahead" and charge to 80% by 6am, or just 70%?
   """
 
   use PorscheConnEx.Struct
