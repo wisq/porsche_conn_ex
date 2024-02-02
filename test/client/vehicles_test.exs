@@ -29,7 +29,7 @@ defmodule PorscheConnEx.ClientVehiclesTest do
       assert vehicle.login_method == "PORSCHE_ID"
       assert vehicle.exterior_color == "vulkangraumetallic/vulkangraumetallic"
       assert vehicle.exterior_color_hex == "#252625"
-      assert vehicle.attributes == []
+      assert vehicle.attributes == %{}
 
       assert vehicle.valid_from == ~U[2024-01-01 01:02:03.000Z]
       assert vehicle.pending_relationship_termination_at == nil
@@ -51,7 +51,7 @@ defmodule PorscheConnEx.ClientVehiclesTest do
       assert MockSession.count(session) == 1
 
       assert vehicle.vin == vin
-      assert [%{name: "licenseplate", value: ^nickname}] = vehicle.attributes
+      assert vehicle.attributes == %{"licenseplate" => nickname}
     end
 
     test "handles timeout", %{session: session, bypass: bypass} do
