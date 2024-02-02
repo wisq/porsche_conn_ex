@@ -24,7 +24,14 @@ defmodule PorscheConnEx.Docs do
   end
 
   def type(module) do
-    short_name = module |> Module.split() |> Enum.at(-1)
+    short_name =
+      case module |> Module.split() do
+        ["PorscheConnEx", "Struct", "Unit" | rest] -> rest
+        ["PorscheConnEx", "Struct" | rest] -> rest
+        ["PorscheConnEx" | rest] -> rest
+      end
+      |> Enum.join(".")
+
     "[`#{short_name}`](`#{module}`)"
   end
 
