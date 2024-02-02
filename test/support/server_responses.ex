@@ -1558,6 +1558,136 @@ defmodule PorscheConnEx.Test.ServerResponses do
     """
   end
 
+  def trips_long_term_US do
+    """
+    [ {
+      "type" : "LONG_TERM",
+      "id" : 2140611149,
+      "averageSpeed" : {
+        "value" : 18.01976,
+        "unit" : "MPH",
+        "valueInKmh" : 28.99999,
+        "unitTranslationKey" : "GRAY_SLICE_UNIT_MPH",
+        "unitTranslationKeyV2" : "TC.UNIT.MPH"
+      },
+      "averageFuelConsumption" : {
+        "value" : 0,
+        "unit" : "MILES_PER_GALLON_US",
+        "valueInLitersPer100Km" : 0,
+        "unitTranslationKey" : "GRAY_SLICE_UNIT_MILES_PER_GALLON_US",
+        "unitTranslationKeyV2" : "TC.UNIT.MILES_PER_GALLON_US"
+      },
+      "tripMileage" : {
+        "value" : 1262.005,
+        "unit" : "MILES",
+        "originalValue" : 2031,
+        "originalUnit" : "KILOMETERS",
+        "valueInKilometers" : 2031,
+        "unitTranslationKey" : "GRAY_SLICE_UNIT_MILES",
+        "unitTranslationKeyV2" : "TC.UNIT.MILES"
+      },
+      "travelTime" : 4241,
+      "startMileage" : {
+        "value" : 4347.734,
+        "unit" : "MILES",
+        "originalValue" : 6997,
+        "originalUnit" : "KILOMETERS",
+        "valueInKilometers" : 6997,
+        "unitTranslationKey" : "GRAY_SLICE_UNIT_MILES",
+        "unitTranslationKeyV2" : "TC.UNIT.MILES"
+      },
+      "endMileage" : {
+        "value" : 5610.36,
+        "unit" : "MILES",
+        "originalValue" : 9029,
+        "originalUnit" : "KILOMETERS",
+        "valueInKilometers" : 9029,
+        "unitTranslationKey" : "GRAY_SLICE_UNIT_MILES",
+        "unitTranslationKeyV2" : "TC.UNIT.MILES"
+      },
+      "timestamp" : "2024-02-01T22:20:07Z",
+      "zeroEmissionDistance" : {
+        "value" : 1262.626,
+        "unit" : "MILES",
+        "originalValue" : 2032,
+        "originalUnit" : "KILOMETERS",
+        "valueInKilometers" : 2032,
+        "unitTranslationKey" : "GRAY_SLICE_UNIT_MILES",
+        "unitTranslationKeyV2" : "TC.UNIT.MILES"
+      },
+      "averageElectricEngineConsumption" : {
+        "value" : 1.877254,
+        "unit" : "MILES_PER_KWH",
+        "valueKwhPer100Km" : 33.10001,
+        "unitTranslationKey" : "TC.UNIT.MILES_PER_KWH",
+        "unitTranslationKeyV2" : "TC.UNIT.MILES_PER_KWH"
+      }
+    }, {
+      "type" : "LONG_TERM",
+      "id" : 2140211878,
+      "averageSpeed" : {
+        "value" : 25.47622,
+        "unit" : "MPH",
+        "valueInKmh" : 41,
+        "unitTranslationKey" : "GRAY_SLICE_UNIT_MPH",
+        "unitTranslationKeyV2" : "TC.UNIT.MPH"
+      },
+      "averageFuelConsumption" : {
+        "value" : 0,
+        "unit" : "MILES_PER_GALLON_US",
+        "valueInLitersPer100Km" : 0,
+        "unitTranslationKey" : "GRAY_SLICE_UNIT_MILES_PER_GALLON_US",
+        "unitTranslationKeyV2" : "TC.UNIT.MILES_PER_GALLON_US"
+      },
+      "tripMileage" : {
+        "value" : 4347.734,
+        "unit" : "MILES",
+        "originalValue" : 6997,
+        "originalUnit" : "KILOMETERS",
+        "valueInKilometers" : 6997,
+        "unitTranslationKey" : "GRAY_SLICE_UNIT_MILES",
+        "unitTranslationKeyV2" : "TC.UNIT.MILES"
+      },
+      "travelTime" : 10415,
+      "startMileage" : {
+        "value" : 0,
+        "unit" : "MILES",
+        "originalValue" : 0,
+        "originalUnit" : "KILOMETERS",
+        "valueInKilometers" : 0,
+        "unitTranslationKey" : "GRAY_SLICE_UNIT_MILES",
+        "unitTranslationKeyV2" : "TC.UNIT.MILES"
+      },
+      "endMileage" : {
+        "value" : 4347.734,
+        "unit" : "MILES",
+        "originalValue" : 6997,
+        "originalUnit" : "KILOMETERS",
+        "valueInKilometers" : 6997,
+        "unitTranslationKey" : "GRAY_SLICE_UNIT_MILES",
+        "unitTranslationKeyV2" : "TC.UNIT.MILES"
+      },
+      "timestamp" : "2023-12-08T23:45:25Z",
+      "zeroEmissionDistance" : {
+        "value" : 4347.734,
+        "unit" : "MILES",
+        "originalValue" : 6997,
+        "originalUnit" : "KILOMETERS",
+        "valueInKilometers" : 6997,
+        "unitTranslationKey" : "GRAY_SLICE_UNIT_MILES",
+        "unitTranslationKeyV2" : "TC.UNIT.MILES"
+      },
+      "averageElectricEngineConsumption" : {
+        "value" : 6.540749,
+        "unit" : "MILES_PER_KWH",
+        "valueKwhPer100Km" : 9.500001,
+        "unitTranslationKey" : "TC.UNIT.MILES_PER_KWH",
+        "unitTranslationKeyV2" : "TC.UNIT.MILES_PER_KWH"
+      }
+    } ]
+    """
+  end
+
   def unknown_502_error do
     """
     {

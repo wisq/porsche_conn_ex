@@ -88,6 +88,14 @@ defmodule PorscheConnEx.Test.UnitFactory do
     }
   end
 
+  def speed_mph(mph, kmh) do
+    %Unit.Speed{
+      value: mph,
+      unit: :mi_per_hour,
+      km_per_hour: kmh
+    }
+  end
+
   def fuel_consumption_km(value) do
     %Unit.Consumption.Fuel{
       value: value,
@@ -96,11 +104,27 @@ defmodule PorscheConnEx.Test.UnitFactory do
     }
   end
 
+  def fuel_consumption_mpg(mpg, lp100km) do
+    %Unit.Consumption.Fuel{
+      value: mpg,
+      unit: :miles_per_gallon,
+      litres_per_100km: lp100km
+    }
+  end
+
   def energy_consumption_km(value) do
     %Unit.Consumption.Energy{
       value: value,
       unit: :kwh_per_100km,
       kwh_per_100km: value
+    }
+  end
+
+  def energy_consumption_mi(mi, km) do
+    %Unit.Consumption.Energy{
+      value: mi,
+      unit: :miles_per_kwh,
+      kwh_per_100km: km
     }
   end
 end

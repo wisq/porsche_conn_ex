@@ -48,6 +48,46 @@ defmodule PorscheConnEx.ClientTripsLongTermTest do
       assert second.start_mileage == Unit.distance_km(0.0)
     end
 
+    test "handles US/imperial units", %{session: session, bypass: bypass} do
+      vin = Data.random_vin()
+
+      Bypass.expect_once(
+        bypass,
+        "GET",
+        "/service-vehicle/de/de_DE/trips/#{vin}/LONG_TERM",
+        fn conn ->
+          resp_json(conn, ServerResponses.trips_long_term_US())
+        end
+      )
+
+      assert {:ok, trips} = Client.trips_long_term(session, vin)
+      assert MockSession.count(session) == 1
+      assert [first, second] = trips
+
+      assert first.id == 2_140_611_149
+      assert first.type == :long_term
+      assert first.timestamp == ~U[2024-02-01 22:20:07Z]
+      assert first.minutes == 4241
+      assert first.average_speed == Unit.speed_mph(18.01976, 28.99999)
+      assert first.zero_emission_distance == Unit.distance_miles(1262.626, 2032.0)
+      assert first.average_fuel_consumption == Unit.fuel_consumption_mpg(0.0, 0.0)
+      assert first.average_energy_consumption == Unit.energy_consumption_mi(1.877254, 33.10001)
+
+      assert second.id == 2_140_211_878
+      assert second.type == :long_term
+      assert second.timestamp == ~U[2023-12-08 23:45:25Z]
+      assert second.minutes == 10415
+      assert second.average_speed == Unit.speed_mph(25.47622, 41.0)
+      assert second.zero_emission_distance == Unit.distance_miles(4347.734, 6997.0)
+      assert second.average_fuel_consumption == Unit.fuel_consumption_mpg(0.0, 0.0)
+      assert second.average_energy_consumption == Unit.energy_consumption_mi(6.540749, 9.500001)
+
+      assert first.end_mileage == Unit.distance_miles(5610.36, 9029.0)
+      assert first.start_mileage == Unit.distance_miles(4347.734, 6997.0)
+      assert second.end_mileage == Unit.distance_miles(4347.734, 6997.0)
+      assert second.start_mileage == Unit.distance_miles(0.0, 0.0)
+    end
+
     test "handles timeout", %{session: session, bypass: bypass} do
       vin = Data.random_vin()
 
