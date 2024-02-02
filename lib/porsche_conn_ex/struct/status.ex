@@ -40,4 +40,15 @@ defmodule PorscheConnEx.Struct.Status do
     field(:oil_level, :any, key: "oilLevel")
     field(:fuel_level, :any, key: "fuelLevel")
   end
+
+  @type t :: %__MODULE__{
+          vin: binary,
+          mileage: Unit.Distance.t(),
+          battery_level: Unit.BatteryLevel.t(),
+          remaining_ranges: S.RemainingRanges.t(),
+          service_intervals: %{optional(binary) => S.ServiceInterval.t()},
+          doors: S.LockStatus.t(),
+          oil_level: any,
+          fuel_level: any
+        }
 end

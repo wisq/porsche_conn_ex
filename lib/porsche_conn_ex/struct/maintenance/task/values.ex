@@ -36,17 +36,25 @@ defmodule PorscheConnEx.Struct.Maintenance.Task.Values do
     value(:active, key: "active")
   end
 
+  @type model_state :: :active
+
   enum ModelVisibility do
     value(:visible, key: "visible")
   end
+
+  @type model_visibility :: :visible
 
   enum Source do
     value(:vehicle, key: "Vehicle")
   end
 
+  @type source :: :vehicle
+
   enum Event do
     value(:cyclic, key: "CYCLIC")
   end
+
+  @type event :: :cyclic
 
   param do
     field(:model_id, :string, key: "modelId", required: true)
@@ -59,6 +67,18 @@ defmodule PorscheConnEx.Struct.Maintenance.Task.Values do
     field(:criticality, :integer, required: true)
     field(:warnings, {:map, :integer}, required: true)
   end
+
+  @type t :: %__MODULE__{
+          model_id: binary,
+          model_state: model_state,
+          model_name: binary,
+          model_visibility: model_visibility,
+          source: source,
+          event: event,
+          odometer_last_reset: integer,
+          criticality: integer,
+          warnings: %{optional(integer) => integer}
+        }
 
   def load(params) when is_map(params) do
     {warnings, params} =

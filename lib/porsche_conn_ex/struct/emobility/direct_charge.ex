@@ -22,4 +22,9 @@ defmodule PorscheConnEx.Struct.Emobility.DirectCharge do
     field(:disabled?, :boolean, key: "disabled", required: true)
     field(:active?, :boolean, key: "isActive", required: true)
   end
+
+  @type t :: %__MODULE__{
+          disabled?: boolean,
+          active?: boolean
+        }
 end

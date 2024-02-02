@@ -21,4 +21,11 @@ defmodule PorscheConnEx.Struct.Overview.Tires do
     field(:back_left, TirePressure, key: "backLeft", required: true)
     field(:back_right, TirePressure, key: "backRight", required: true)
   end
+
+  @type t :: %__MODULE__{
+          front_left: TirePressure.t(),
+          front_right: TirePressure.t(),
+          back_left: TirePressure.t(),
+          back_right: TirePressure.t()
+        }
 end

@@ -24,11 +24,19 @@ defmodule PorscheConnEx.Struct.Unit.Pressure do
     value(:psi, key: "PSI")
   end
 
+  @type unit :: :bar | :psi
+
   param do
     field(:unit, Unit, required: true)
     field(:value, :float, required: true)
     field(:bar, :float, key: "valueInBar", required: true)
   end
+
+  @type t :: %__MODULE__{
+          unit: unit,
+          value: float,
+          bar: float
+        }
 end
 
 defimpl Inspect, for: PorscheConnEx.Struct.Unit.Pressure do

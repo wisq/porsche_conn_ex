@@ -26,6 +26,8 @@ defmodule PorscheConnEx.Struct.Overview.Windows do
     value(nil, key: "UNSUPPORTED")
   end
 
+  @type open_status :: :open | :closed | nil
+
   defmodule Sunroof do
     @moduledoc false
     use PorscheConnEx.Struct
@@ -47,4 +49,14 @@ defmodule PorscheConnEx.Struct.Overview.Windows do
     field(:roof, OpenStatus, required: true)
     field(:sunroof, Sunroof, required: true)
   end
+
+  @type t :: %__MODULE__{
+          front_left: open_status,
+          front_right: open_status,
+          back_left: open_status,
+          back_right: open_status,
+          maintenance_hatch: open_status,
+          roof: open_status,
+          sunroof: open_status
+        }
 end

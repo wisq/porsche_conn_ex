@@ -27,4 +27,14 @@ defmodule PorscheConnEx.Struct.Overview.Doors do
     field(:hood, LockStatus, key: "frontTrunk", required: true)
     field(:overall, LockStatus, key: "overallLockStatus", required: true)
   end
+
+  @type t :: %__MODULE__{
+          front_left: LockStatus.t(),
+          front_right: LockStatus.t(),
+          back_left: LockStatus.t(),
+          back_right: LockStatus.t(),
+          trunk: LockStatus.t(),
+          hood: LockStatus.t(),
+          overall: LockStatus.t()
+        }
 end

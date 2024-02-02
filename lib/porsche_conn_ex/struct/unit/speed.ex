@@ -25,11 +25,19 @@ defmodule PorscheConnEx.Struct.Unit.Speed do
     value(:mi_per_hour, key: "MPH")
   end
 
+  @type unit :: :km_per_hour | :mi_per_hour
+
   param do
     field(:unit, Unit, required: true)
     field(:value, :float, required: true)
     field(:km_per_hour, :float, key: "valueInKmh", required: true)
   end
+
+  @type t :: %__MODULE__{
+          unit: unit,
+          value: float,
+          km_per_hour: float
+        }
 end
 
 defimpl Inspect, for: PorscheConnEx.Struct.Unit.Speed do

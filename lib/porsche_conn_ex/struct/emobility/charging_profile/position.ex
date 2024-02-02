@@ -16,4 +16,10 @@ defmodule PorscheConnEx.Struct.Emobility.ChargingProfile.Position do
     field(:longitude, :float, required: true)
     field(:radius, :integer, required: true)
   end
+
+  @type t :: %__MODULE__{
+          latitude: float,
+          longitude: float,
+          radius: integer
+        }
 end

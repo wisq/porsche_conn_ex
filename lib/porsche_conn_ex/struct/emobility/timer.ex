@@ -129,4 +129,17 @@ defmodule PorscheConnEx.Struct.Emobility.Timer do
     #    - not sure if it's safe to use them
     #
   end
+
+  @type id :: 1..5
+  @type weekday :: 1..7
+  @type t :: %__MODULE__{
+          id: id,
+          enabled?: boolean,
+          depart_time: DateTime.t(),
+          repeating?: boolean,
+          weekdays: [weekday],
+          climate?: boolean,
+          charge?: boolean,
+          target_charge: 0..100
+        }
 end

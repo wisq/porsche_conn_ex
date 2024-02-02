@@ -40,6 +40,15 @@ defmodule PorscheConnEx.Struct.Emobility.ChargingProfile do
     field(:position, CP.Position)
   end
 
+  @type id :: 4..7
+  @type t :: %__MODULE__{
+          id: id,
+          name: binary,
+          enabled?: boolean,
+          charging: CP.ChargingOptions.t(),
+          position: CP.Position.t()
+        }
+
   # I'm not going to bother parsing these options, because
   #
   #   - they don't seem to be exposed in the car or app UI at all;

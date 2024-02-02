@@ -23,4 +23,11 @@ defmodule PorscheConnEx.Struct.Maintenance.Task.Description do
     field(:criticality, :string, key: "criticalityText", required: true)
     field(:notification, :any, key: "notificationText", required: false)
   end
+
+  @type t :: %__MODULE__{
+          short_name: binary,
+          long_name: binary,
+          criticality: binary,
+          notification: any
+        }
 end

@@ -15,6 +15,11 @@ defmodule PorscheConnEx.Struct.Status.LockStatus do
   @enforce_keys [:open?, :locked?]
   defstruct(@enforce_keys)
 
+  @type t :: %__MODULE__{
+          open?: boolean,
+          locked?: boolean
+        }
+
   @doc false
   def load(term) do
     [open, locked] = String.split(term, "_")

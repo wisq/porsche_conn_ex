@@ -45,6 +45,14 @@ defmodule PorscheConnEx.Config do
     http_options: []
   )
 
+  @type t :: %__MODULE__{
+          language: binary,
+          country: binary,
+          timezone: binary,
+          api_url: binary,
+          http_options: Keyword.t()
+        }
+
   @doc """
   Creates a new configuration object.
 

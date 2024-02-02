@@ -25,6 +25,12 @@ defmodule PorscheConnEx.Struct.Unit.BatteryLevel do
     field(:unit, Unit, required: true)
     field(:value, :integer, required: true)
   end
+
+  @type unit :: :percent
+  @type t :: %__MODULE__{
+          unit: unit,
+          value: 0..100
+        }
 end
 
 defimpl Inspect, for: PorscheConnEx.Struct.Unit.BatteryLevel do

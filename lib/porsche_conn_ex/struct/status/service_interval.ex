@@ -22,6 +22,11 @@ defmodule PorscheConnEx.Struct.Status.ServiceInterval do
     field(:distance, Unit.Distance)
     field(:time, Unit.Time)
   end
+
+  @type t :: %__MODULE__{
+          distance: Unit.Distance.t(),
+          time: Unit.Time.t()
+        }
 end
 
 defmodule PorscheConnEx.Struct.Status.ServiceIntervalMap do

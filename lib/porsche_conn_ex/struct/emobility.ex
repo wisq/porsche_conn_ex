@@ -44,6 +44,15 @@ defmodule PorscheConnEx.Struct.Emobility do
     field(:current_charging_profile, E.ChargingProfile, virtual: true)
   end
 
+  @type t :: %__MODULE__{
+          charging: E.ChargeStatus.t(),
+          direct_charge: E.DirectCharge.t(),
+          direct_climate: E.DirectClimate.t(),
+          timers: [E.Timer.t()],
+          charging_profiles: [E.ChargingProfile.t()],
+          current_charging_profile: E.ChargingProfile.t()
+        }
+
   # I'm choosing to flatten this a bit, since the sight of
   # `emobility.charging_profiles.profiles` offends me.
   def load(params) when is_map(params) do

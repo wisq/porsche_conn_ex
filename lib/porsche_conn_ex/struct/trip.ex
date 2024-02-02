@@ -59,4 +59,18 @@ defmodule PorscheConnEx.Struct.Trip do
       required: true
     )
   end
+
+  @type t :: %__MODULE__{
+          id: integer,
+          type: atom,
+          timestamp: DateTime.t(),
+          minutes: integer,
+          start_mileage: Unit.Distance.t(),
+          end_mileage: Unit.Distance.t(),
+          distance: Unit.Distance.t(),
+          average_speed: Unit.Speed.t(),
+          zero_emission_distance: Unit.Distance.t(),
+          average_fuel_consumption: Unit.Consumption.Fuel.t(),
+          average_energy_consumption: Unit.Consumption.Energy.t()
+        }
 end

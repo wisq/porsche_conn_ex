@@ -61,6 +61,23 @@ defmodule PorscheConnEx.Struct.Vehicle do
     field(:pending_relationship_termination_at, :any, key: "pendingRelationshipTerminationAt")
   end
 
+  @type t :: %__MODULE__{
+          vin: binary,
+          pcc?: boolean,
+          relationship: binary,
+          model_description: binary,
+          model_type: binary,
+          model_year: integer,
+          exterior_color: binary,
+          exterior_color_hex: binary,
+          spin_enabled?: boolean,
+          login_method: binary,
+          ota_active?: boolean,
+          valid_from: DateTime.t(),
+          attributes: %{optional(binary) => binary},
+          pending_relationship_termination_at: any
+        }
+
   def load(data) do
     with {:ok, vehicle} <- super(data) do
       {:ok,

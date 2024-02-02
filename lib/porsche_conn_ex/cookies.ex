@@ -1,6 +1,12 @@
 defmodule PorscheConnEx.Cookies do
   @moduledoc false
 
+  # Dunno why I'm getting `no_return` errors on `CookieJar.to_string/2`.
+  @dialyzer {:no_return, {:load, 2}}
+  @dialyzer {:no_return, {:using_jar, 2}}
+
+  @spec using_jar(Req.Request.t(), GenServer.server()) :: Req.Request.t()
+
   def using_jar(%Req.Request{} = request, jar) do
     request
     |> Req.Request.append_request_steps(load_cookies: &load(jar, &1))

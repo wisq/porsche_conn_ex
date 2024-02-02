@@ -19,6 +19,11 @@ defmodule PorscheConnEx.Struct.Unit.Temperature do
   @enforce_keys [:celsius, :decikelvin]
   defstruct(@enforce_keys)
 
+  @type t :: %__MODULE__{
+          celsius: float,
+          decikelvin: integer
+        }
+
   # Yes, this should technically be 273.15 K, but Porsche seems to use 273K directly.
   @zero_celsius 2730
 

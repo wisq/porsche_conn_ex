@@ -1,9 +1,9 @@
 defmodule PorscheConnEx.Struct.Overview do
   alias PorscheConnEx.Docs
-  alias PorscheConnEx.{Struct, Type}
+  alias PorscheConnEx.Type
   alias PorscheConnEx.Struct.Unit
-  alias __MODULE__, as: O
   alias PorscheConnEx.Struct.Status, as: S
+  alias __MODULE__, as: O
 
   @moduledoc """
   Structure containing overview information about a particular vehicle.
@@ -67,11 +67,15 @@ defmodule PorscheConnEx.Struct.Overview do
     value(:right, key: "RIGHT_ON")
   end
 
+  @type parking_light :: :off | :left | :right
+
   enum ChargingState do
     value(:off, key: "OFF")
     value(:charging, key: "CHARGING")
     value(:completed, key: "COMPLETED")
   end
+
+  @type charging_state :: :off | :charging | :completed
 
   enum ChargingStatus do
     value(:unplugged, key: "NOT_PLUGGED")
@@ -80,11 +84,13 @@ defmodule PorscheConnEx.Struct.Overview do
     value(:completed, key: "CHARGING_COMPLETED")
   end
 
+  @type charging_status :: :unplugged | :init | :charging | :completed
+
   param do
     field(:vin, :string, required: true)
     field(:car_model, :string, key: "carModel")
     field(:engine_type, :string, key: "engineType")
-    field(:mileage, Struct.Unit.Distance, required: true)
+    field(:mileage, Unit.Distance, required: true)
 
     field(:battery_level, Unit.BatteryLevel, key: "batteryLevel", required: true)
     field(:charging_state, ChargingState, key: "chargingState")
@@ -102,12 +108,12 @@ defmodule PorscheConnEx.Struct.Overview do
     field(:parking_light_status, :any, key: "parkingLightStatus")
     field(:parking_time, Type.ReverseUtcDateTime, key: "parkingTime")
 
-    field(:remaining_ranges, Struct.Status.RemainingRanges,
+    field(:remaining_ranges, S.RemainingRanges,
       key: "remainingRanges",
       required: true
     )
 
-    field(:service_intervals, Struct.Status.ServiceIntervalNullMap,
+    field(:service_intervals, S.ServiceIntervalNullMap,
       key: "serviceIntervals",
       required: true
     )
@@ -116,4 +122,27 @@ defmodule PorscheConnEx.Struct.Overview do
     field(:oil_level, :any, key: "oilLevel")
     field(:fuel_level, :any, key: "fuelLevel")
   end
+
+  @type t :: %__MODULE__{
+          vin: binary,
+          car_model: binary,
+          engine_type: binary,
+          mileage: Unit.Distance.t(),
+          battery_level: Unit.BatteryLevel.t(),
+          charging_state: charging_state,
+          charging_status: charging_status,
+          doors: O.Doors.t(),
+          windows: O.Windows.t(),
+          open?: boolean,
+          tires: O.Tires.t(),
+          parking_brake?: boolean,
+          parking_brake_status: any,
+          parking_light: parking_light,
+          parking_light_status: any,
+          parking_time: DateTime.t(),
+          remaining_ranges: S.RemainingRanges.t(),
+          service_intervals: %{optional(binary) => S.ServiceInterval.t() | nil},
+          oil_level: any,
+          fuel_level: any
+        }
 end

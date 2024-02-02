@@ -19,4 +19,9 @@ defmodule PorscheConnEx.Struct.Status.RemainingRanges do
     field(:electric, Range, key: "electricalRange", required: true)
     field(:conventional, Range, key: "conventionalRange", required: true)
   end
+
+  @type t :: %__MODULE__{
+          electric: Range.t(),
+          conventional: Range.t()
+        }
 end

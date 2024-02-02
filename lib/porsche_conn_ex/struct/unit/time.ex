@@ -22,6 +22,12 @@ defmodule PorscheConnEx.Struct.Unit.Time do
     field(:unit, Unit, required: true)
     field(:value, :integer, required: true)
   end
+
+  @type unit :: :day
+  @type t :: %__MODULE__{
+          unit: unit,
+          value: float
+        }
 end
 
 defimpl Inspect, for: PorscheConnEx.Struct.Unit.Time do

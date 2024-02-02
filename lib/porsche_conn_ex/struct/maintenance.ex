@@ -32,4 +32,9 @@ defmodule PorscheConnEx.Struct.Maintenance do
     field(:schedule, TaskList, key: "data", required: true)
     field(:service_access?, ServiceAccess, key: "serviceAccess", required: true)
   end
+
+  @type t :: %__MODULE__{
+          schedule: [Task.t()],
+          service_access?: boolean
+        }
 end

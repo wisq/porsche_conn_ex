@@ -28,10 +28,19 @@ defmodule PorscheConnEx.Struct.Overview.TirePressure do
     value(:divergent, key: "DIVERGENT")
   end
 
+  @type status :: :divergent
+
   param do
     field(:current, Unit.Pressure, key: "currentPressure")
     field(:optimal, Unit.Pressure, key: "optimalPressure")
     field(:difference, Unit.Pressure, key: "differencePressure")
     field(:status, Status, key: "tirePressureDifferenceStatus", required: true)
   end
+
+  @type t :: %__MODULE__{
+          current: Unit.Pressure.t() | nil,
+          optimal: Unit.Pressure.t() | nil,
+          difference: Unit.Pressure.t() | nil,
+          status: status | nil
+        }
 end

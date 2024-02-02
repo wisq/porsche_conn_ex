@@ -30,11 +30,19 @@ defmodule PorscheConnEx.Struct.Unit.Consumption.Fuel do
     value(:miles_per_gallon, key: "MILES_PER_GALLON_US")
   end
 
+  @type unit :: :litres_per_100km | :miles_per_gallon
+
   param do
     field(:unit, Unit, required: true)
     field(:value, :float, required: true)
     field(:litres_per_100km, :float, key: "valueInLitersPer100Km", required: true)
   end
+
+  @type t :: %__MODULE__{
+          unit: unit,
+          value: float,
+          litres_per_100km: float
+        }
 end
 
 defimpl Inspect, for: PorscheConnEx.Struct.Unit.Consumption.Fuel do

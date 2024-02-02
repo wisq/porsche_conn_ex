@@ -35,6 +35,14 @@ defmodule PorscheConnEx.Session do
       password: nil
     )
 
+    @type t :: %__MODULE__{
+            username: binary,
+            password: binary
+          }
+
+    @type key :: :username | :password
+    @spec new(Keyword.t() | %{key => any}) :: t()
+
     def new(opts) do
       struct!(__MODULE__, opts)
     end
@@ -57,6 +65,14 @@ defmodule PorscheConnEx.Session do
     @moduledoc false
     @enforce_keys [:authorization, :api_key, :expires_at]
     defstruct(@enforce_keys)
+
+    @type t :: %__MODULE__{
+            authorization: binary,
+            api_key: binary,
+            expires_at: DateTime.t()
+          }
+
+    @spec from_body(%{binary => term}, DateTime.t()) :: t()
 
     def from_body(
           %{
@@ -102,7 +118,14 @@ defmodule PorscheConnEx.Session do
     """
     @enforce_keys [:config, :headers]
     defstruct(@enforce_keys)
+
+    @type t :: %__MODULE__{
+            config: Config.t(),
+            headers: %{binary => binary}
+          }
   end
+
+  @type t :: GenServer.server() | RequestData.t()
 
   @doc """
   Starts a session and authenticates with the API.
@@ -122,6 +145,7 @@ defmodule PorscheConnEx.Session do
   Same as `GenServer.start_link/3`.  Note that this function will block until
   the initial API authentication is complete.
   """
+  @spec start_link(Keyword.t()) :: GenServer.on_start()
   def start_link(opts) do
     {config, opts} = Keyword.pop(opts, :config, [])
     {creds, opts} = Keyword.pop!(opts, :credentials)
@@ -153,6 +177,7 @@ defmodule PorscheConnEx.Session do
   Beware that authentication tokens do expire, and you should not use a given
   `RequestData` structure for more than a few minutes before fetching another.
   """
+  @spec request_data(GenServer.server() | RequestData.t()) :: RequestData.t()
   def request_data(pid_or_rdata)
 
   def request_data(%RequestData{} = rdata), do: rdata

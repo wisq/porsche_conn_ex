@@ -34,4 +34,14 @@ defmodule PorscheConnEx.Struct.Maintenance.Task do
     field(:remaining_km, :any, key: "remainingLifeTimeInKm")
     field(:remaining_percent, :any, key: "remainingLifeTimePercentage")
   end
+
+  @type t :: %__MODULE__{
+          id: binary,
+          criticality: integer,
+          description: T.Description.t(),
+          values: T.Values.t(),
+          remaining_days: any,
+          remaining_km: any,
+          remaining_percent: any
+        }
 end

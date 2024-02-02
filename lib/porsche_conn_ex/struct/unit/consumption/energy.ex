@@ -29,11 +29,19 @@ defmodule PorscheConnEx.Struct.Unit.Consumption.Energy do
     value(:miles_per_kwh, key: "MILES_PER_KWH")
   end
 
+  @type unit :: :kwh_per_100km | :miles_per_kwh
+
   param do
     field(:unit, Unit, required: true)
     field(:value, :float, required: true)
     field(:kwh_per_100km, :float, key: "valueKwhPer100Km", required: true)
   end
+
+  @type t :: %__MODULE__{
+          unit: unit,
+          value: float,
+          kwh_per_100km: float
+        }
 end
 
 defimpl Inspect, for: PorscheConnEx.Struct.Unit.Consumption.Energy do

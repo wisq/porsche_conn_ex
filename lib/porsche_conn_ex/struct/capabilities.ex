@@ -25,6 +25,8 @@ defmodule PorscheConnEx.Struct.Capabilities do
     value(:right, key: "RIGHT")
   end
 
+  @type steering_wheel_position :: :left | :right
+
   defmodule Heating do
     @moduledoc false
     use PorscheConnEx.Struct
@@ -33,6 +35,11 @@ defmodule PorscheConnEx.Struct.Capabilities do
       field(:front_seat?, :boolean, key: "frontSeatHeatingAvailable", required: true)
       field(:rear_seat?, :boolean, key: "rearSeatHeatingAvailable", required: true)
     end
+
+    @type t :: %__MODULE__{
+            front_seat?: boolean,
+            rear_seat?: boolean
+          }
   end
 
   param do
@@ -45,4 +52,15 @@ defmodule PorscheConnEx.Struct.Capabilities do
     field(:steering_wheel, SteeringWheelPosition, key: "steeringWheelPosition", required: true)
     field(:heating, Heating, key: "heatingCapabilities", required: true)
   end
+
+  @type t :: %__MODULE__{
+          car_model: binary,
+          engine_type: binary,
+          has_rdk?: boolean,
+          has_dx1?: boolean,
+          needs_spin?: boolean,
+          display_parking_brake?: boolean,
+          steering_wheel: steering_wheel_position,
+          heating: Heating.t()
+        }
 end

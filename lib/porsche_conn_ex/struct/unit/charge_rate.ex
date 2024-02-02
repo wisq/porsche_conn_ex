@@ -21,11 +21,19 @@ defmodule PorscheConnEx.Struct.Unit.ChargeRate do
     value(:mi_per_minute, key: "MILES_PER_MIN")
   end
 
+  @type unit :: :km_per_minute | :mi_per_minute
+
   param do
     field(:unit, Unit, required: true)
     field(:value, :float, required: true)
     field(:km_per_hour, :float, key: "valueInKmPerHour", required: true)
   end
+
+  @type t :: %__MODULE__{
+          unit: unit,
+          value: float,
+          km_per_hour: float
+        }
 end
 
 defimpl Inspect, for: PorscheConnEx.Struct.Unit.ChargeRate do

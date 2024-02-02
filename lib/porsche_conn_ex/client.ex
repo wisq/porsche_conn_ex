@@ -29,10 +29,11 @@ defmodule PorscheConnEx.Client do
 
   ## Error values
 
-  The Porsche Connect API tends to be fairly opaque with errors, generating the
-  same "unknown error" result for most errors.  As a result, the most common
-  error value from this module will be `{:error, :unknown}`.  Hopefully, the
-  cause of the error will be reasonably obvious based on context.
+  The Porsche Connect API tends to be fairly opaque with server-side errors,
+  generating the same "unknown error" result for most errors.  As a result, the
+  most common error value from this module will be `{:error, :unknown}`.
+  Hopefully, the cause of the error will be reasonably obvious based on
+  context.
 
   Lower-level errors will tend to be more descriptive.  These may include, but
   are not limited to, the following:
@@ -41,6 +42,19 @@ defmodule PorscheConnEx.Client do
   - `{:error, :not_found}` - any "404 Not Found" HTTP error
     - usually caused by choosing an unknown locale in your configuration
   - `{:error, :timeout}` - the HTTP request timed out
+
+  Higher-level errors occur when the API call is successful, but this library
+  receives data that it cannot parse.  These are represented by `{:error,
+  map}`, where `map` is a nested map structure indicating which fields failed
+  to parse and why.  Typically this falls into one of two categories: 
+
+  - An enum (atom) field received a value we haven't seen before
+  - A value is marked as `required` but is unexpectedly `nil`
+
+  In these cases, I highly encourage users of this library to add the missing
+  enum or remove the `required` and submit a pull request.  (We use these
+  strict data rules specifically so that we know the full range of values the
+  API might return.)
   """
   require Logger
 
@@ -110,7 +124,19 @@ defmodule PorscheConnEx.Client do
       final_url: nil,
       final_handler: nil
     )
+
+    @type handler :: (map -> {:ok, any} | {:error, any})
+
+    @type t :: %__MODULE__{
+            id: integer,
+            poll_url: binary,
+            final_url: binary,
+            final_handler: handler
+          }
   end
+
+  @type vin :: binary
+  @type model :: binary
 
   @doc """
   Returns a list of vehicles assigned to the current account.
@@ -129,6 +155,7 @@ defmodule PorscheConnEx.Client do
 
   On error, returns `{:error, _}`.
   """
+  @spec vehicles(Session.t()) :: {:ok, [Struct.Vehicle.t()]} | {:error, any}
   def vehicles(session) do
     rdata = Session.request_data(session)
 
@@ -152,6 +179,7 @@ defmodule PorscheConnEx.Client do
 
   On error, returns `{:error, _}`.
   """
+  @spec status(Session.t(), vin) :: {:ok, Struct.Status.t()} | {:error, any}
   def status(session, vin) do
     rdata = Session.request_data(session)
 
@@ -175,6 +203,7 @@ defmodule PorscheConnEx.Client do
 
   On error, returns `{:error, _}`.
   """
+  @spec summary(Session.t(), vin) :: {:ok, Struct.Summary.t()} | {:error, any}
   def summary(session, vin) do
     rdata = Session.request_data(session)
 
@@ -201,6 +230,7 @@ defmodule PorscheConnEx.Client do
 
   On error, returns `{:error, _}`.
   """
+  @spec stored_overview(Session.t(), vin) :: {:ok, Struct.Overview.t()} | {:error, any}
   def stored_overview(session, vin) do
     rdata = Session.request_data(session)
 
@@ -232,6 +262,7 @@ defmodule PorscheConnEx.Client do
 
   On error, returns `{:error, _}`.
   """
+  @spec current_overview(Session.t(), vin) :: {:ok, Struct.Overview.t()} | {:error, any}
   def current_overview(session, vin) do
     rdata = Session.request_data(session)
     url = "/service-vehicle/#{Config.url(rdata.config)}/vehicle-data/#{vin}/current/request"
@@ -268,6 +299,7 @@ defmodule PorscheConnEx.Client do
 
   On error, returns `{:error, _}`.
   """
+  @spec capabilities(Session.t(), vin) :: {:ok, Struct.Capabilities.t()} | {:error, any}
   def capabilities(session, vin) do
     rdata = Session.request_data(session)
 
@@ -291,6 +323,7 @@ defmodule PorscheConnEx.Client do
 
   On error, returns `{:error, _}`.
   """
+  @spec maintenance(Session.t(), vin) :: {:ok, Struct.Maintenance.t()} | {:error, any}
   def maintenance(session, vin) do
     rdata = Session.request_data(session)
 
@@ -316,6 +349,7 @@ defmodule PorscheConnEx.Client do
 
   On error, returns `{:error, _}`.
   """
+  @spec emobility(Session.t(), vin, model) :: {:ok, Struct.Emobility.t()} | {:error, any}
   def emobility(session, vin, model) do
     rdata = Session.request_data(session)
 
@@ -343,6 +377,7 @@ defmodule PorscheConnEx.Client do
 
   On error, returns `{:error, _}`.
   """
+  @spec position(Session.t(), vin) :: {:ok, Struct.Position.t()} | {:error, any}
   def position(session, vin) do
     rdata = Session.request_data(session)
 
@@ -369,6 +404,7 @@ defmodule PorscheConnEx.Client do
 
   On error, returns `{:error, _}`.
   """
+  @spec trips_short_term(Session.t(), vin) :: {:ok, [Struct.Trip.t()]} | {:error, any}
   def trips_short_term(session, vin) do
     rdata = Session.request_data(session)
 
@@ -395,6 +431,7 @@ defmodule PorscheConnEx.Client do
 
   On error, returns `{:error, _}`.
   """
+  @spec trips_long_term(Session.t(), vin) :: {:ok, [Struct.Trip.t()]} | {:error, any}
   def trips_long_term(session, vin) do
     rdata = Session.request_data(session)
 
@@ -432,6 +469,8 @@ defmodule PorscheConnEx.Client do
 
   On error, returns `{:error, _}`.
   """
+  @spec put_timer(Session.t(), vin, model, Timer.t()) ::
+          {:ok, PendingRequest.t()} | {:error, any}
   def put_timer(session, vin, model, timer) do
     rdata = Session.request_data(session)
     base = "/e-mobility/#{Config.url(rdata.config)}/#{model}/#{vin}"
@@ -466,6 +505,8 @@ defmodule PorscheConnEx.Client do
 
   On error, returns `{:error, _}`.
   """
+  @spec delete_timer(Session.t(), vin, model, Timer.id()) ::
+          {:ok, PendingRequest.t()} | {:error, any}
   def delete_timer(session, vin, model, timer_id) do
     rdata = Session.request_data(session)
     base = "/e-mobility/#{Config.url(rdata.config)}/#{model}/#{vin}"
@@ -511,6 +552,8 @@ defmodule PorscheConnEx.Client do
 
   On error, returns `{:error, _}`.
   """
+  @spec put_charging_profile(Session.t(), vin, model, ChargingProfile.t()) ::
+          {:ok, PendingRequest.t()} | {:error, any}
   def put_charging_profile(session, vin, model, profile) do
     rdata = Session.request_data(session)
     base = "/e-mobility/#{Config.url(rdata.config)}/#{model}/#{vin}"
@@ -550,6 +593,8 @@ defmodule PorscheConnEx.Client do
 
   On error, returns `{:error, _}`.
   """
+  @spec delete_charging_profile(Session.t(), vin, model, ChargingProfile.id()) ::
+          {:ok, PendingRequest.t()} | {:error, any}
   def delete_charging_profile(session, vin, model, profile_id) do
     rdata = Session.request_data(session)
     base = "/e-mobility/#{Config.url(rdata.config)}/#{model}/#{vin}"
@@ -584,6 +629,8 @@ defmodule PorscheConnEx.Client do
 
   On error, returns `{:error, _}`.
   """
+  @spec set_climate(Session.t(), vin, boolean()) ::
+          {:ok, PendingRequest.t()} | {:error, any}
   def set_climate(session, vin, on_off) when is_boolean(on_off) do
     rdata = Session.request_data(session)
     base = "/e-mobility/#{Config.url(rdata.config)}/#{vin}/toggle-direct-climatisation"
@@ -721,6 +768,8 @@ defmodule PorscheConnEx.Client do
   - Returns `{:error, :failed}` if the request failed.
   - Returns `{:error, _}` on other errors.
   """
+  @spec poll(Session.t(), PendingRequest.t()) ::
+          {:ok, :success | :in_progress} | {:error, any}
   def poll(session, %PendingRequest{} = pending) do
     rdata = Session.request_data(session)
 
@@ -768,6 +817,7 @@ defmodule PorscheConnEx.Client do
 
   On error, returns `{:error, _}`.
   """
+  @spec complete(Session.t(), PendingRequest.t()) :: {:ok, any} | {:error, any}
   def complete(session, %PendingRequest{final_url: final_url, final_handler: final_handler})
       when not is_nil(final_url) and not is_nil(final_handler) do
     rdata = Session.request_data(session)
@@ -808,6 +858,9 @@ defmodule PorscheConnEx.Client do
 
   On other errors, returns `{:error, _}`.
   """
+  @type wait_option :: {:count, integer} | {:delay, integer}
+  @type wait_options :: [wait_option]
+  @spec wait(Session.t(), PendingRequest.t(), wait_options) :: {:ok, any} | {:error, any}
   def wait(session, %PendingRequest{} = pending, opts \\ []) do
     rdata = Session.request_data(session)
     wait_count = Keyword.get(opts, :count, @default_wait_count)

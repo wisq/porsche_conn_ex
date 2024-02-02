@@ -1,6 +1,7 @@
 defmodule PorscheConnEx.Struct.Emobility.ChargeStatus do
   alias PorscheConnEx.Docs
   alias PorscheConnEx.Struct.Unit
+  alias PorscheConnEx.Struct.Emobility.Timer
 
   @moduledoc """
   Structure containing information about the electric charging status of a
@@ -38,6 +39,7 @@ defmodule PorscheConnEx.Struct.Emobility.ChargeStatus do
   - `target_time_opl_enforced` (unknown) — has always been `nil` in testing
     - Sounds like it may be a boolean?
   """
+
   use PorscheConnEx.Struct
 
   def field_docs, do: @moduledoc |> Docs.section("Fields")
@@ -52,15 +54,21 @@ defmodule PorscheConnEx.Struct.Emobility.ChargeStatus do
     value(:unknown, key: "UNKNOWN")
   end
 
+  @type mode :: :off | :ac | :dc | :unknown
+
   enum Plug do
     value(:connected, key: "CONNECTED")
     value(:disconnected, key: "DISCONNECTED")
   end
 
+  @type plug :: :connected | :disconnected
+
   enum PlugLock do
     value(:locked, key: "LOCKED")
     value(:unlocked, key: "UNLOCKED")
   end
+
+  @type plug_lock :: :locked | :unlocked
 
   enum State do
     value(:off, key: "OFF")
@@ -68,6 +76,8 @@ defmodule PorscheConnEx.Struct.Emobility.ChargeStatus do
     value(:completed, key: "COMPLETED")
     value(:error, key: "ERROR")
   end
+
+  @type state :: :off | :charging | :completed | :error
 
   defmodule Reason do
     @moduledoc false
@@ -88,11 +98,15 @@ defmodule PorscheConnEx.Struct.Emobility.ChargeStatus do
     def load(other), do: {:error, "Unknown charge reason: #{inspect(other)}"}
   end
 
+  @type reason :: :immediate | :invalid | {:timer, Timer.id()}
+
   enum ExternalPower do
     value(:station_connected, key: "STATION_CONNECTED")
     value(:available, key: "AVAILABLE")
     value(:unavailable, key: "UNAVAILABLE")
   end
+
+  @type external_power :: :station_connected | :available | :unavailable
 
   enum LedColor do
     value(:white, key: "WHITE")
@@ -102,6 +116,8 @@ defmodule PorscheConnEx.Struct.Emobility.ChargeStatus do
     value(nil, key: "NONE")
   end
 
+  @type led_color :: :white | :green | :blue | :red | nil
+
   enum LedState do
     value(:flashing, key: "FLASH")
     value(:blinking, key: "BLINK")
@@ -109,6 +125,8 @@ defmodule PorscheConnEx.Struct.Emobility.ChargeStatus do
     value(:solid, key: "PERMANENT_ON")
     value(:off, key: "OFF")
   end
+
+  @type led_state :: :flashing | :blinking | :pulsing | :solid | :off
 
   defmodule TargetTime do
     @moduledoc false
@@ -136,4 +154,24 @@ defmodule PorscheConnEx.Struct.Emobility.ChargeStatus do
     # No idea what this is.  Always nil for me.
     field(:target_time_opl_enforced, :any, key: "chargingTargetDateTimeOplEnforced")
   end
+
+  @type t :: %__MODULE__{
+          mode: mode,
+          plug: plug,
+          plug_lock: plug_lock,
+          state: state,
+          reason: reason,
+          external_power: external_power,
+          led_color: led_color,
+          led_state: led_state,
+          percent: 0..100,
+          minutes_to_full: integer,
+          remaining_electric_range: Unit.Distance.t(),
+          remaining_conventional_range: Unit.Distance.t(),
+          rate: Unit.ChargeRate.t(),
+          kilowatts: float,
+          dc_mode?: boolean,
+          target_time: NaiveDateTime.t(),
+          target_time_opl_enforced: any
+        }
 end

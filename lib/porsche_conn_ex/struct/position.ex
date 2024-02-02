@@ -17,23 +17,35 @@ defmodule PorscheConnEx.Struct.Position do
 
   use PorscheConnEx.Struct
 
-  enum ReferenceSystem do
-    value(:wgs84, key: "WGS84")
-  end
-
   defmodule Coordinates do
     @moduledoc false
     use PorscheConnEx.Struct
+
+    enum ReferenceSystem do
+      value(:wgs84, key: "WGS84")
+    end
 
     param do
       field(:latitude, :float, required: true)
       field(:longitude, :float, required: true)
       field(:reference_system, ReferenceSystem, key: "geoCoordinateSystem", required: true)
     end
+
+    @type ref_system :: :wgs84
+    @type t :: %__MODULE__{
+            latitude: float,
+            longitude: float,
+            reference_system: ref_system
+          }
   end
 
   param do
     field(:coordinates, Coordinates, key: "carCoordinate", required: true)
     field(:heading, :integer, required: true)
   end
+
+  @type t :: %__MODULE__{
+          coordinates: Coordinates.t(),
+          heading: 0..360
+        }
 end

@@ -15,4 +15,9 @@ defmodule PorscheConnEx.Struct.Summary do
     field(:model_description, :string, key: "modelDescription", required: true)
     field(:nickname, :string, key: "nickName")
   end
+
+  @type t :: %__MODULE__{
+          model_description: binary,
+          nickname: binary
+        }
 end

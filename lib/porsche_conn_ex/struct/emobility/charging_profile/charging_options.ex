@@ -87,6 +87,14 @@ defmodule PorscheConnEx.Struct.Emobility.ChargingProfile.ChargingOptions do
     # field(:target_charge, :integer, key: "targetChargeLevel", required: true)
   end
 
+  @type mode :: :smart | :preferred_time
+  @type t :: %__MODULE__{
+          minimum_charge: 0..100,
+          mode: mode,
+          preferred_time_start: Time.t(),
+          preferred_time_end: Time.t()
+        }
+
   def load(params) when is_map(params) do
     smart = Map.get(params, "smartChargingEnabled")
     preferred = Map.get(params, "preferredChargingEnabled")

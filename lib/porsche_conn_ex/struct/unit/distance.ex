@@ -21,11 +21,19 @@ defmodule PorscheConnEx.Struct.Unit.Distance do
     value(:mi, key: "MILES")
   end
 
+  @type unit :: :km | :mi
+
   param do
     field(:unit, Unit, required: true)
     field(:value, :float, required: true)
     field(:km, :float, key: "valueInKilometers", required: true)
   end
+
+  @type t :: %__MODULE__{
+          unit: unit,
+          value: float,
+          km: float
+        }
 end
 
 defimpl Inspect, for: PorscheConnEx.Struct.Unit.Distance do

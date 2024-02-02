@@ -27,9 +27,13 @@ defmodule PorscheConnEx.Struct.Emobility.DirectClimate do
     value(:on, key: "ON")
   end
 
+  @type state :: :on | :off
+
   enum HeaterSource do
     value(:electric, key: "electric")
   end
+
+  @type heater_source :: :electric
 
   param do
     field(:state, State, key: "climatisationState", required: true)
@@ -43,4 +47,12 @@ defmodule PorscheConnEx.Struct.Emobility.DirectClimate do
     field(:heater_source, HeaterSource, key: "heaterSource", required: true)
     field(:without_hv_power?, :boolean, key: "climatisationWithoutHVpower", required: true)
   end
+
+  @type t :: %__MODULE__{
+          state: state,
+          remaining_minutes: integer,
+          target_temperature: Unit.Temperature.t(),
+          heater_source: heater_source,
+          without_hv_power?: boolean
+        }
 end

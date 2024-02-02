@@ -34,4 +34,11 @@ defmodule PorscheConnEx.Struct.Status.Range do
     field(:primary?, :boolean, key: "isPrimary", required: false)
     field(:distance, Unit.Distance, required: false)
   end
+
+  @type engine_type :: :electric
+  @type t :: %__MODULE__{
+          engine_type: engine_type | nil,
+          primary?: boolean | nil,
+          distance: Unit.Distance.t() | nil
+        }
 end
