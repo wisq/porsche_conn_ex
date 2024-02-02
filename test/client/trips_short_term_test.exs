@@ -26,13 +26,13 @@ defmodule PorscheConnEx.ClientTripsShortTermTest do
       assert Enum.count(trips) == trip_count
 
       assert first = trips |> Enum.at(0)
-      assert first.end_mileage == Unit.distance_km_to_km(9001.0)
+      assert first.end_mileage == Unit.distance_km(9001.0)
 
       assert trips |> Enum.all?(&(&1.type == :short_term))
       total_distance = trips |> Enum.map(& &1.distance.km) |> Enum.sum()
 
       assert last = trips |> Enum.at(-1)
-      assert last.start_mileage == Unit.distance_km_to_km(9001.0 - total_distance)
+      assert last.start_mileage == Unit.distance_km(9001.0 - total_distance)
 
       assert last.id < first.id
       assert DateTime.compare(last.timestamp, first.timestamp) == :lt

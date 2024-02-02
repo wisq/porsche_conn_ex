@@ -13,9 +13,9 @@ defmodule PorscheConnEx.Struct.Unit.Pressure do
   Like most units in this API, a normalised value (`bar`) is included,
   regardless of locale settings.
 
-  While there is no `original_unit` field provided for this unit, it's pretty
-  clear from the numbers that the values are stored in bar (with one decimal of
-  precision), and are converted to PSI for imperial locales.
+  Given the numbers returned by the API, it's pretty clear that the values are
+  are stored in bar (with one decimal of precision), and are converted to PSI
+  for imperial locales.
   """
   use PorscheConnEx.Struct
 

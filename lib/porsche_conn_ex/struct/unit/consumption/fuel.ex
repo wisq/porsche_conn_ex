@@ -18,11 +18,10 @@ defmodule PorscheConnEx.Struct.Unit.Consumption.Fuel do
   Like most units in this API, a normalised value (`litres_per_100km`) is
   included, regardless of locale settings.
 
-  There is no `original_unit` field provided for this unit, and since my car
-  does not use fuel, I cannot report on the original unit or the expected
-  precision of fuel consumption values.  However, if this unit follows the
-  trend of other units in this API, it's likely that the metric value is the
-  original precise value, and the imperial value is a conversion of that.
+  Since my car does not use fuel, I cannot report on the original unit or the
+  expected precision of fuel consumption values.  However, if this unit follows
+  the trend of other units in this API, it's likely that the metric value is
+  the original precise value, and the imperial value is a conversion of that.
   """
   use PorscheConnEx.Struct
 

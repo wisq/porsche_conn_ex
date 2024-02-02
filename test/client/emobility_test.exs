@@ -43,7 +43,7 @@ defmodule PorscheConnEx.ClientEmobliityTest do
       assert charging.led_state == :solid
       assert charging.percent == 80
       assert charging.minutes_to_full == 0
-      assert charging.remaining_electric_range == Unit.distance_km_to_km(248)
+      assert charging.remaining_electric_range == Unit.distance_km(248)
       assert charging.remaining_conventional_range == nil
       assert charging.target_time == ~N[2024-01-17 19:55:00]
       assert charging.target_time_opl_enforced == nil
@@ -129,7 +129,7 @@ defmodule PorscheConnEx.ClientEmobliityTest do
       assert charging.led_state == :solid
       assert charging.percent == 80
       assert charging.minutes_to_full == 0
-      assert charging.remaining_electric_range == Unit.distance_km_to_miles(257, 159.6924)
+      assert charging.remaining_electric_range == Unit.distance_miles(159.6924, 257)
       assert charging.remaining_conventional_range == nil
       assert charging.target_time == ~N[2024-01-28 03:10:00]
       assert charging.target_time_opl_enforced == nil

@@ -2,32 +2,18 @@ defmodule PorscheConnEx.Test.UnitFactory do
   alias PorscheConnEx.Struct
   alias PorscheConnEx.Struct.Unit
 
-  def distance_km_to_km(value) do
+  def distance_km(value) do
     %Unit.Distance{
       value: value,
       unit: :km,
-      original_value: value,
-      original_unit: :km,
       km: value
     }
   end
 
-  def distance_km_to_miles(km, mi) do
+  def distance_miles(mi, km) do
     %Unit.Distance{
       value: mi,
       unit: :mi,
-      original_value: km,
-      original_unit: :km,
-      km: km
-    }
-  end
-
-  def distance_miles(km, mi) do
-    %Unit.Distance{
-      value: mi,
-      unit: :mi,
-      original_value: mi,
-      original_unit: :mi,
       km: km
     }
   end

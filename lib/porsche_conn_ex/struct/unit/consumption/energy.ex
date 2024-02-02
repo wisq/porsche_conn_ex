@@ -18,9 +18,9 @@ defmodule PorscheConnEx.Struct.Unit.Consumption.Energy do
   Like most units in this API, a normalised value (`kwh_per_100km`) is
   included, regardless of locale settings.
 
-  While there is no `original_unit` field provided for this unit, it's pretty
-  clear from the numbers that the values are stored in kWh/100km (rounded to
-  one decimal of precision), and are converted to mi/kWh for imperial locales.
+  Given the numbers returned by the API, it's pretty clear that the values are
+  stored in kWh/100km (rounded to one decimal of precision), and are converted
+  to mi/kWh for imperial locales.
   """
   use PorscheConnEx.Struct
 

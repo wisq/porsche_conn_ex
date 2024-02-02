@@ -27,7 +27,7 @@ defmodule PorscheConnEx.ClientStoredOverviewTest do
       assert overview.vin == vin
       assert overview.car_model == "J1"
       assert overview.engine_type == "BEV"
-      assert overview.mileage == Unit.distance_km_to_km(9001.0)
+      assert overview.mileage == Unit.distance_km(9001.0)
       assert overview.battery_level == Unit.battery_level(80)
       assert overview.charging_state == :completed
       assert overview.charging_status == :completed
@@ -62,7 +62,7 @@ defmodule PorscheConnEx.ClientStoredOverviewTest do
       assert overview.parking_time == ~U[2024-01-17 21:48:10Z]
 
       assert %{electric: elec, conventional: conv} = overview.remaining_ranges
-      assert elec.distance == Unit.distance_km_to_km(247.0)
+      assert elec.distance == Unit.distance_km(247.0)
       assert elec.engine_type == :electric
       assert elec.primary? == true
       assert conv.distance == nil
@@ -70,7 +70,7 @@ defmodule PorscheConnEx.ClientStoredOverviewTest do
       assert conv.primary? == false
 
       assert %{"inspection" => inspect, "oilService" => nil} = overview.service_intervals
-      assert inspect.distance == Unit.distance_km_to_km(-21300.0)
+      assert inspect.distance == Unit.distance_km(-21300.0)
       assert inspect.time == Unit.time(-113, :day)
 
       assert overview.oil_level == nil
@@ -124,7 +124,7 @@ defmodule PorscheConnEx.ClientStoredOverviewTest do
       assert overview.vin == vin
       assert overview.car_model == "J1"
       assert overview.engine_type == "BEV"
-      assert overview.mileage == Unit.distance_km_to_miles(8905.0, 5533.31)
+      assert overview.mileage == Unit.distance_miles(5533.31, 8905.0)
       assert overview.battery_level == Unit.battery_level(80)
       assert overview.charging_state == :completed
       assert overview.charging_status == :completed
@@ -160,7 +160,7 @@ defmodule PorscheConnEx.ClientStoredOverviewTest do
       assert overview.parking_time == ~U[2024-01-28 08:42:37Z]
 
       assert %{electric: elec, conventional: conv} = overview.remaining_ranges
-      assert elec.distance == Unit.distance_miles(257.0, 159.6924)
+      assert elec.distance == Unit.distance_miles(159.6924, 257.0)
       assert elec.engine_type == :electric
       assert elec.primary? == true
       assert conv.distance == nil
@@ -168,7 +168,7 @@ defmodule PorscheConnEx.ClientStoredOverviewTest do
       assert conv.primary? == false
 
       assert %{"inspection" => inspect, "oilService" => nil} = overview.service_intervals
-      assert inspect.distance == Unit.distance_km_to_miles(-21200.0, -13173.07)
+      assert inspect.distance == Unit.distance_miles(-13173.07, -21200.0)
       assert inspect.time == Unit.time(-103, :day)
 
       assert overview.oil_level == nil

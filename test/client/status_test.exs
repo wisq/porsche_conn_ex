@@ -20,12 +20,12 @@ defmodule PorscheConnEx.ClientStatusTest do
 
       assert status.vin == vin
       assert status.battery_level == Unit.battery_level(80)
-      assert status.mileage == Unit.distance_km_to_km(9001.0)
+      assert status.mileage == Unit.distance_km(9001.0)
       assert status.doors.open? == false
       assert status.doors.locked? == true
 
       assert %{electric: elec, conventional: conv} = status.remaining_ranges
-      assert elec.distance == Unit.distance_km_to_km(247.0)
+      assert elec.distance == Unit.distance_km(247.0)
       assert elec.engine_type == :electric
       assert elec.primary? == nil
       assert conv.distance == nil
@@ -33,7 +33,7 @@ defmodule PorscheConnEx.ClientStatusTest do
       assert conv.primary? == nil
 
       assert %{"inspection" => inspect, "oilService" => oilserv} = status.service_intervals
-      assert inspect.distance == Unit.distance_km_to_km(-21300.0)
+      assert inspect.distance == Unit.distance_km(-21300.0)
       assert inspect.time == Unit.time(-113, :day)
       assert oilserv.distance == nil
       assert oilserv.time == nil

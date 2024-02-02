@@ -5,17 +5,17 @@ defmodule PorscheConnEx.Struct.Unit.Speed do
   ## Fields
 
   - `celsius` (atom) — units used, depends on locale
-    - `:km_per_hour` — kilometres per hour
-    - `:mi_per_hour` — miles per hour
+    - `:km_per_hour` — kilometres per hour (km/h)
+    - `:mi_per_hour` — miles per hour (mph)
   - `value` (float) — value in above units
   - `km_per_hour` (float) — equivalent value in kilometres per hour
 
   Like most units in this API, a normalised value (`km_per_hour`) is included,
   regardless of locale settings.
 
-  While there is no `original_unit` field provided for this unit, it's pretty
-  clear from the numbers that the values are stored in km/h (rounded to whole
-  numbers), and are converted to miles per hour for imperial locales.
+  Given the numbers returned by the API, it's pretty clear that the values are
+  stored in km/h (rounded to whole numbers), and are converted to miles per
+  hour for imperial locales.
   """
 
   use PorscheConnEx.Struct

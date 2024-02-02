@@ -37,7 +37,7 @@ defmodule PorscheConnEx.ClientCurrentOverviewTest do
       assert overview.vin == vin
       assert overview.car_model == "J1"
       assert overview.engine_type == "BEV"
-      assert overview.mileage == Unit.distance_km_to_km(9001.0)
+      assert overview.mileage == Unit.distance_km(9001.0)
       assert overview.battery_level == Unit.battery_level(80)
     end
   end
