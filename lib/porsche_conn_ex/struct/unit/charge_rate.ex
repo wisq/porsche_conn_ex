@@ -1,4 +1,19 @@
 defmodule PorscheConnEx.Struct.Unit.ChargeRate do
+  @moduledoc """
+  Structure representing rate of battery charge in terms of distance gained per unit time.
+
+  ## Fields
+
+  - `unit` (atom) — units used, depends on locale
+    - `:km_per_minute` — kilometres gained per minute of charge
+    - `:mi_per_minute` — miles gained per minute of charge
+  - `value` (float) — value in above units
+  - `km_per_hour` — kilometres gained per hour of charge
+
+  Like most units in this API, a normalised value (`km_per_hour`) is included,
+  regardless of locale settings.
+  """
+
   use PorscheConnEx.Struct
 
   enum Unit do

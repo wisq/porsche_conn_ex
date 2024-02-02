@@ -3,7 +3,7 @@ defmodule PorscheConnEx.Struct.Overview.Doors do
   alias PorscheConnEx.Struct.Status.LockStatus
 
   @moduledoc """
-  Structure containing information about the open/closed and locked/unlocked state of all vehicle doors.
+  Structure detailing the open/closed and locked/unlocked state of all vehicle doors.
 
   ## Fields
 

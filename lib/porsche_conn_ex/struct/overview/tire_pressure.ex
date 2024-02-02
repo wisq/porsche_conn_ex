@@ -3,7 +3,7 @@ defmodule PorscheConnEx.Struct.Overview.TirePressure do
   alias PorscheConnEx.Struct.Unit
 
   @moduledoc """
-  Structure containing information about the pressure and status of all tires.
+  Structure detailing the pressure and status of a single tire.
 
   ## Fields
 

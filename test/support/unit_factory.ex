@@ -48,20 +48,27 @@ defmodule PorscheConnEx.Test.UnitFactory do
 
   def tire_pressure(current, optimal, diff, status) do
     %Struct.Overview.TirePressure{
-      current: %Unit.Pressure{value: current, unit: :bar},
-      optimal: %Unit.Pressure{value: optimal, unit: :bar},
-      difference: %Unit.Pressure{value: diff, unit: :bar},
+      current: %Unit.Pressure{value: current, unit: :bar, bar: current},
+      optimal: %Unit.Pressure{value: optimal, unit: :bar, bar: optimal},
+      difference: %Unit.Pressure{value: diff, unit: :bar, bar: diff},
       status: status
     }
   end
 
   def tire_pressure_psi(current, optimal, diff, status) do
     %Struct.Overview.TirePressure{
-      current: %Unit.Pressure{value: current, unit: :psi},
-      optimal: %Unit.Pressure{value: optimal, unit: :psi},
-      difference: %Unit.Pressure{value: diff, unit: :psi},
+      current: %Unit.Pressure{value: current, unit: :psi, bar: psi_to_bar(current)},
+      optimal: %Unit.Pressure{value: optimal, unit: :psi, bar: psi_to_bar(optimal)},
+      difference: %Unit.Pressure{value: diff, unit: :psi, bar: psi_to_bar(diff)},
       status: status
     }
+  end
+
+  defp psi_to_bar(psi) do
+    # Original storage value is bar with one decimal place.
+    # Normally I'd specify bar equivalents as part of the assertion, but
+    # there's so many values that it's pretty ugly, and this works fine.
+    Float.round(psi * 0.689476) / 10
   end
 
   def charge_rate(km_per_minute, km_per_hour) do

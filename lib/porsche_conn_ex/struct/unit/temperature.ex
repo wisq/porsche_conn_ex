@@ -1,10 +1,28 @@
 defmodule PorscheConnEx.Struct.Unit.Temperature do
+  @moduledoc """
+  Structure representing temperature.
+
+  ## Fields
+
+  - `celsius` (float) — temperature in degrees Celsius (°C) with one decimal precision
+  - `decikelvin` (integer) — temperature in tenths of degrees Kelvin (dK)
+
+  The API only provides `decikelvin`, but this library provides a `celsius`
+  value for convenience, since conversion is simple and precise.  Note that
+  Porsche considers 0°C to be equivalent to 273 K, rather than the more
+  accurate 273.15 K.
+
+  Decikelvin is reportedly a common integer unit for industrial
+  sensors, which is likely why Porsche uses this unit internally.
+  """
+
   @enforce_keys [:celsius, :decikelvin]
   defstruct(@enforce_keys)
 
   # Yes, this should technically be 273.15 K, but Porsche seems to use 273K directly.
   @zero_celsius 2730
 
+  @doc false
   def load(decikelvin) when is_integer(decikelvin) do
     {:ok,
      %__MODULE__{

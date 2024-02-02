@@ -1,4 +1,22 @@
 defmodule PorscheConnEx.Struct.Unit.Pressure do
+  @moduledoc """
+  Structure representing units of pressure.
+
+  ## Fields
+
+  - `unit` (atom) — units used, depends on locale
+    - `:bar` — bar
+    - `:psi` — pounds per square inch
+  - `value` (float) — value in above units
+  - `bar` (float) — equivalent value in bar
+
+  Like most units in this API, a normalised value (`bar`) is included,
+  regardless of locale settings.
+
+  While there is no `original_unit` field provided for this unit, it's pretty
+  clear from the numbers that the values are stored in bar (with one decimal of
+  precision), and are converted to PSI for imperial locales.
+  """
   use PorscheConnEx.Struct
 
   enum Unit do
@@ -9,6 +27,7 @@ defmodule PorscheConnEx.Struct.Unit.Pressure do
   param do
     field(:unit, Unit, required: true)
     field(:value, :float, required: true)
+    field(:bar, :float, key: "valueInBar", required: true)
   end
 end
 

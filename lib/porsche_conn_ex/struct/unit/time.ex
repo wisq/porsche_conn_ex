@@ -1,4 +1,16 @@
 defmodule PorscheConnEx.Struct.Unit.Time do
+  @moduledoc """
+  Structure representing time.
+
+  Currently only used in `PorscheConnEx.Struct.Status.ServiceInterval`.
+
+  ## Fields
+
+  - `unit` (atom) — unit of time
+    - only known value is `:day`
+  - `value` (integer) — number of above units
+  """
+
   use PorscheConnEx.Struct
 
   enum Unit do

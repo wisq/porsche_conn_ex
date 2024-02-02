@@ -3,7 +3,7 @@ defmodule PorscheConnEx.Struct.Emobility.ChargingProfile do
   alias __MODULE__, as: CP
 
   @moduledoc """
-  Structure containing information about vehicle charging profiles.
+  Structure describing a vehicle charging profile.
 
   Charging profiles define basic charging parameters, such as charging targets,
   preferred charging hours, etc.  They can also be tied to a specific

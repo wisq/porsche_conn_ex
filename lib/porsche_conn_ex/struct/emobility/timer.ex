@@ -1,6 +1,6 @@
 defmodule PorscheConnEx.Struct.Emobility.Timer do
   @moduledoc """
-  Structure containing information about vehicle timers.
+  Structure describing a vehicle timer.
 
   Timers are used to schedule charging, and/or to climatise (preheat/cool) the
   vehicle, e.g. in preparation for an upcoming trip.
