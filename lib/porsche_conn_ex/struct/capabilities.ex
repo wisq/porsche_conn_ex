@@ -35,12 +35,12 @@ defmodule PorscheConnEx.Struct.Capabilities do
       field(:front_seat?, :boolean, key: "frontSeatHeatingAvailable", required: true)
       field(:rear_seat?, :boolean, key: "rearSeatHeatingAvailable", required: true)
     end
-
-    @type t :: %__MODULE__{
-            front_seat?: boolean,
-            rear_seat?: boolean
-          }
   end
+
+  @type heating :: %Heating{
+          front_seat?: boolean,
+          rear_seat?: boolean
+        }
 
   param do
     field(:car_model, :string, key: "carModel", required: true)

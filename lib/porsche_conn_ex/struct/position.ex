@@ -30,14 +30,14 @@ defmodule PorscheConnEx.Struct.Position do
       field(:longitude, :float, required: true)
       field(:reference_system, ReferenceSystem, key: "geoCoordinateSystem", required: true)
     end
-
-    @type ref_system :: :wgs84
-    @type t :: %__MODULE__{
-            latitude: float,
-            longitude: float,
-            reference_system: ref_system
-          }
   end
+
+  @type ref_system :: :wgs84
+  @type coordinates :: %Coordinates{
+          latitude: float,
+          longitude: float,
+          reference_system: ref_system
+        }
 
   param do
     field(:coordinates, Coordinates, key: "carCoordinate", required: true)
