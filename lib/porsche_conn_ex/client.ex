@@ -892,14 +892,13 @@ defmodule PorscheConnEx.Client do
   end
 
   defp maybe_add_debug(req) do
-    if Application.get_env(:porsche_conn_ex, :debug_http, false) do
-      add_debug(req)
-    else
-      req
+    case Application.fetch_env(:porsche_conn_ex, :debug_http) do
+      {:ok, path} -> add_debug(req, path)
+      :error -> req
     end
   end
 
-  defp add_debug(req) do
+  defp add_debug(req, path) do
     [decompress | other_steps] =
       req.response_steps
       |> Enum.with_index()
@@ -909,12 +908,15 @@ defmodule PorscheConnEx.Client do
       end)
       |> Enum.map(fn {step, _} -> step end)
 
-    %Req.Request{req | response_steps: [decompress, {:debug, &debug_dump/1} | other_steps]}
+    %Req.Request{
+      req
+      | response_steps: [decompress, {:debug, &debug_dump(&1, path)} | other_steps]
+    }
   end
 
-  defp debug_dump({request, response}) do
+  defp debug_dump({request, response}, path) do
     file = DateTime.utc_now() |> DateTime.to_unix(:microsecond)
-    path = "/tmp/pcx/#{file}.txt"
+    path = Path.join(path, "#{file}.txt")
 
     File.write(path, [
       inspect(request, pretty: true),

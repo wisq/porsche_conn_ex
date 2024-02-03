@@ -1,3 +1,4 @@
 import Config
 
-config :porsche_conn_ex, debug_http: true
+# Uncomment to write request/response dumps for debugging:
+# config :porsche_conn_ex, debug_http: "/tmp/pcx"
