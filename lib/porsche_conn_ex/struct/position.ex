@@ -12,7 +12,7 @@ defmodule PorscheConnEx.Struct.Position do
     - `reference_system` (atom) — the coordinate reference system
       - `:wgs84` is the only known value so far.
   - `heading` (integer) — the vehicle's compass heading
-    - Range is presumed to be 0 to 359.
+    - Not currently known whether range would be 0 to 359, or 1 to 360.
   """
 
   use PorscheConnEx.Struct

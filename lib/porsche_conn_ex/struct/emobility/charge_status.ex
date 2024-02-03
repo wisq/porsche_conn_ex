@@ -42,8 +42,6 @@ defmodule PorscheConnEx.Struct.Emobility.ChargeStatus do
 
   use PorscheConnEx.Struct
 
-  def field_docs, do: @moduledoc |> Docs.section("Fields")
-
   enum Mode do
     value(:off, key: "OFF")
     value(:ac, key: "AC")

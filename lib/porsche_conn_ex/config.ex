@@ -62,6 +62,7 @@ defmodule PorscheConnEx.Config do
   It can also be an existing `PorscheConnEx.Config` structure, which will be
   returned verbatim.
   """
+  @spec new(Keyword.t() | %{optional(atom) => any} | t) :: t
   def new(opts)
   def new(%Config{} = config), do: config
   def new(opts), do: struct!(__MODULE__, opts)

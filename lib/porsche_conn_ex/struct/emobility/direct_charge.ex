@@ -13,10 +13,6 @@ defmodule PorscheConnEx.Struct.Emobility.DirectCharge do
   """
 
   use PorscheConnEx.Struct
-  alias PorscheConnEx.Docs
-
-  @doc false
-  def field_docs, do: @moduledoc |> Docs.section("Fields")
 
   param do
     field(:disabled?, :boolean, key: "disabled", required: true)

@@ -24,6 +24,7 @@ defmodule PorscheConnEx.Struct.Maintenance do
   end
 
   defmodule ServiceAccess do
+    @moduledoc false
     def load(%{"access" => bool}) when is_boolean(bool), do: {:ok, bool}
     def load(v), do: {:error, "unknown ServiceAccess: #{inspect(v)}"}
   end
