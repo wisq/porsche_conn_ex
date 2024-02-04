@@ -76,6 +76,14 @@ Position: %PorscheConnEx.Struct.Position.Coordinates{
 }
 ```
 
+## Limitations
+
+In the spirit of providing a library that is maximally useful to programmers, in many cases where the API returns a string (e.g. `chargingState : "COMPLETED"`), I've elected to map that to an atom instead (e.g. `emobility.charging.state == :completed`), and I've included a list of possible values in the documentation (and typespecs).
+
+This has the inherent limitation that if this library ever sees a value it's not yet familiar with, it will be treated as a parse error.  Doing this allows me to add the new value — possibly renaming it, since the raw API name can be awkward in some cases — and to document the new value and why it might occur.
+
+Since I only have one vehicle to test with (a Taycan BEV model), this library likely does not cover all possible return values, especially for other models of vehicle (which will also have things like fuel and oil to account for).  If you have such a vehicle, I would strongly urge you to test this library with it, and — if you encounter any issues — to take dumps of the responses (see the `debug_http` line in [config/dev.ex](https://github.com/wisq/porsche_conn_ex/blob/main/config/dev.exs)) and send them in as a [Github issue](https://github.com/wisq/porsche_conn_ex/issues).  We can then include them as possible values, and add them to the test suite and documentation.
+
 ## Documentation
 
 Full documentation can be found at <https://hexdocs.pm/porsche_conn_ex>.
