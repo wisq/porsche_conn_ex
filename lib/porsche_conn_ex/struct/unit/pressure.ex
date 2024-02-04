@@ -41,6 +41,6 @@ end
 
 defimpl Inspect, for: PorscheConnEx.Struct.Unit.Pressure do
   def inspect(pressure, _opts) do
-    "#PCX:Pressure<#{pressure.value} #{pressure.unit}>"
+    "#PorscheConnEx.Struct.Unit.Pressure<#{pressure.value} #{pressure.unit}>"
   end
 end

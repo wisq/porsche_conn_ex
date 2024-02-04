@@ -49,7 +49,7 @@ defimpl Inspect, for: PorscheConnEx.Struct.Unit.Speed do
     |> Enum.reject(&is_nil/1)
     |> Enum.uniq()
     |> Enum.join(" / ")
-    |> then(fn inner -> "#PCX:Speed<#{inner}>" end)
+    |> then(fn inner -> "#PorscheConnEx.Struct.Unit.Speed<#{inner}>" end)
   end
 
   defp unit(:km_per_hour), do: "km/h"

@@ -37,6 +37,6 @@ defimpl Inspect, for: PorscheConnEx.Struct.Unit.BatteryLevel do
   alias PorscheConnEx.Struct.Unit.BatteryLevel
 
   def inspect(%BatteryLevel{unit: :percent, value: value}, _opts) do
-    "#PCX:BatteryLevel<#{value}%>"
+    "#PorscheConnEx.Struct.Unit.BatteryLevel<#{value}%>"
   end
 end

@@ -45,6 +45,6 @@ defimpl Inspect, for: PorscheConnEx.Struct.Unit.Distance do
     |> Enum.reject(&is_nil/1)
     |> Enum.uniq()
     |> Enum.join(" / ")
-    |> then(fn inner -> "#PCX:Distance<#{inner}>" end)
+    |> then(fn inner -> "#PorscheConnEx.Struct.Unit.Distance<#{inner}>" end)
   end
 end

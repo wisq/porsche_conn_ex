@@ -1,6 +1,6 @@
 # PorscheConnEx
 
-PorscheConnEx (aka PCX) is a library for connecting to the Porsche Connect API, to monitor and control your Porsche vehicle.
+PorscheConnEx is a library for connecting to the Porsche Connect API, to monitor and control your Porsche vehicle.
 
 ## Installation
 
@@ -62,9 +62,9 @@ Output:
 ```elixir
 Summary: %PorscheConnEx.Struct.Summary{model_description: "Taycan GTS", nickname: nil}
 Percent charged: 80
-Remaining range: #PCX:Distance<261.0 km>
-Status: {#PCX:BatteryLevel<80%>, #PCX:Distance<261.0 km>}
-Overview: {#PCX:BatteryLevel<80%>, #PCX:Distance<261.0 km>}
+Remaining range: #PorscheConnEx.Struct.Unit.Distance<261.0 km>
+Status: {#PorscheConnEx.Struct.Unit.BatteryLevel<80%>, #PorscheConnEx.Struct.Unit.Distance<261.0 km>}
+Overview: {#PorscheConnEx.Struct.Unit.BatteryLevel<80%>, #PorscheConnEx.Struct.Unit.Distance<261.0 km>}
 Position: %PorscheConnEx.Struct.Position.Coordinates{
   latitude: 45.678901,
   longitude: -76.543210,

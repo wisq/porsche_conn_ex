@@ -52,6 +52,6 @@ end
 
 defimpl Inspect, for: PorscheConnEx.Struct.Emobility.Temperature do
   def inspect(dist, _opts) do
-    "#PCX:Temperature<#{inspect(dist.celsius)}°C / #{inspect(dist.decikelvin)} dK>"
+    "#PorscheConnEx.Struct.Unit.Temperature<#{inspect(dist.celsius)}°C / #{inspect(dist.decikelvin)} dK>"
   end
 end

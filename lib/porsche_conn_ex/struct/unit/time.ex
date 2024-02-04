@@ -32,6 +32,6 @@ end
 
 defimpl Inspect, for: PorscheConnEx.Struct.Unit.Time do
   def inspect(time, _opts) do
-    "#PCX:Time<#{time.value} #{time.unit}s>"
+    "#PorscheConnEx.Struct.Unit.Time<#{time.value} #{time.unit}s>"
   end
 end
