@@ -1,6 +1,8 @@
 defmodule PorscheConnEx.MixProject do
   use Mix.Project
 
+  @github_url "https://github.com/wisq/porsche_conn_ex"
+
   def project do
     [
       app: :porsche_conn_ex,
@@ -9,23 +11,11 @@ defmodule PorscheConnEx.MixProject do
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       consolidate_protocols: Mix.env() != :dev,
+      description: description(),
+      package: package(),
+      docs: docs(),
       deps: deps(),
-      docs: [
-        groups_for_modules: [
-          "API client": [
-            PorscheConnEx.Client,
-            PorscheConnEx.Client.PendingRequest,
-            PorscheConnEx.Config,
-            PorscheConnEx.Session,
-            PorscheConnEx.Session.RequestData
-          ],
-          "Data structures": ~r/^PorscheConnEx\.Struct\./
-        ],
-        nest_modules_by_prefix: [
-          PorscheConnEx,
-          PorscheConnEx.Struct
-        ]
-      ]
+      source_url: @github_url
     ]
   end
 
@@ -33,6 +23,46 @@ defmodule PorscheConnEx.MixProject do
   def application do
     [
       extra_applications: [:logger]
+    ]
+  end
+
+  defp description do
+    """
+    PorscheConnEx is a library for connecting to the Porsche Connect API, to
+    monitor and control your Porsche vehicle.
+    """
+  end
+
+  defp package do
+    [
+      files: ["lib", "mix.exs", "README.md", "CHANGELOG.md", "LICENSE"],
+      maintainers: ["Adrian Irving-Beer"],
+      licenses: ["MIT"],
+      links: %{GitHub: @github_url}
+    ]
+  end
+
+  defp docs do
+    [
+      main: "readme",
+      extras: [
+        "README.md",
+        "CHANGELOG.md"
+      ],
+      groups_for_modules: [
+        "API client": [
+          PorscheConnEx.Client,
+          PorscheConnEx.Client.PendingRequest,
+          PorscheConnEx.Config,
+          PorscheConnEx.Session,
+          PorscheConnEx.Session.RequestData
+        ],
+        "Data structures": ~r/^PorscheConnEx\.Struct\./
+      ],
+      nest_modules_by_prefix: [
+        PorscheConnEx,
+        PorscheConnEx.Struct
+      ]
     ]
   end
 
