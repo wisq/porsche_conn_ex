@@ -76,14 +76,14 @@ defmodule PorscheConnEx.MixProject do
       # {:dep_from_hexpm, "~> 0.3.0"},
       # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}
       {:req, "~> 0.4.0"},
-      {:cookie_jar, "~> 1.1.0"},
+      {:cookie_jar, "~> 1.0"},
       {:jason, "~> 1.4"},
       {:parameter, "~> 0.13"},
-      {:timex, "~> 3.7.11"},
+      {:timex, "~> 3.7"},
       {:bypass, "~> 2.1", only: :test},
       {:ex_doc, "~> 0.31", only: :dev, runtime: false},
       {:mix_test_watch, "~> 1.0", only: :dev, runtime: false},
-      {:ex_git_test, "~> 0.1.2", only: [:dev, :test], runtime: false},
+      {:ex_git_test, "~> 0.1", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false}
     ]
   end
