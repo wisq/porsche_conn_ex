@@ -1,5 +1,9 @@
 # PorscheConnEx
 
+[![Module Version](https://img.shields.io/hexpm/v/porsche_conn_ex.svg)](https://hex.pm/packages/porsche_conn_ex)
+[![HexDocs](https://img.shields.io/badge/hex-docs-blue.svg)](https://hexdocs.pm/porsche_conn_ex/)
+[![License](https://img.shields.io/hexpm/l/porsche_conn_ex.svg)](https://github.com/wisq/porsche_conn_ex/blob/master/LICENSE)
+
 PorscheConnEx is a library for connecting to the Porsche Connect API, to monitor and control your Porsche vehicle.
 
 ## Installation
