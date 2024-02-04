@@ -57,7 +57,7 @@ defmodule PorscheConnEx.Test.UnitFactory do
     Float.round(psi * 0.689476) / 10
   end
 
-  def charge_rate(km_per_minute, km_per_hour) do
+  def charge_rate_km(km_per_minute, km_per_hour) do
     %Unit.ChargeRate{
       value: km_per_minute,
       unit: :km_per_minute,

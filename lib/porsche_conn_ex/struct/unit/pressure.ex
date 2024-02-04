@@ -41,6 +41,16 @@ end
 
 defimpl Inspect, for: PorscheConnEx.Struct.Unit.Pressure do
   def inspect(pressure, _opts) do
-    "#PorscheConnEx.Struct.Unit.Pressure<#{pressure.value} #{pressure.unit}>"
+    [
+      "#{inspect(pressure.value)} #{unit(pressure.unit)}",
+      "#{inspect(pressure.bar)} #{unit(:bar)}"
+    ]
+    |> Enum.reject(&is_nil/1)
+    |> Enum.uniq()
+    |> Enum.join(" / ")
+    |> then(fn inner -> "#PorscheConnEx.Struct.Unit.Pressure<#{inner}>" end)
   end
+
+  defp unit(:bar), do: "bar"
+  defp unit(:psi), do: "psi"
 end

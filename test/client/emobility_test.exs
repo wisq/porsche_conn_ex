@@ -47,7 +47,7 @@ defmodule PorscheConnEx.ClientEmobliityTest do
       assert charging.remaining_conventional_range == nil
       assert charging.target_time == ~N[2024-01-17 19:55:00]
       assert charging.target_time_opl_enforced == nil
-      assert charging.rate == Unit.charge_rate(0, 0)
+      assert charging.rate == Unit.charge_rate_km(0, 0)
       assert charging.kilowatts == 0
       assert charging.dc_mode? == false
 

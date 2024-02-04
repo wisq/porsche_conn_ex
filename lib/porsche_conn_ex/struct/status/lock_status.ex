@@ -52,6 +52,6 @@ defimpl Inspect, for: PorscheConnEx.Struct.Status.LockStatus do
       ]
       |> Enum.join(",")
 
-    "#PorscheConnEx.Struct.Unit.LockStatus<#{inner}>"
+    "#PorscheConnEx.Struct.Status.LockStatus<#{inner}>"
   end
 end

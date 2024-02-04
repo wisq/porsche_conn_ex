@@ -47,8 +47,8 @@ defimpl Inspect, for: PorscheConnEx.Struct.Unit.ChargeRate do
     |> then(fn inner -> "#PorscheConnEx.Struct.Unit.ChargeRate<#{inner}>" end)
   end
 
-  defp unit(:km_per_minute), do: "km/m"
+  defp unit(:km_per_minute), do: "km/min"
   defp unit(:km_per_hour), do: "km/h"
-  defp unit(:mi_per_minute), do: "mi/m"
+  defp unit(:mi_per_minute), do: "mi/min"
   defp unit(other), do: inspect(other)
 end

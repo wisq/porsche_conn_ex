@@ -32,6 +32,10 @@ end
 
 defimpl Inspect, for: PorscheConnEx.Struct.Unit.Time do
   def inspect(time, _opts) do
-    "#PorscheConnEx.Struct.Unit.Time<#{time.value} #{time.unit}s>"
+    "#PorscheConnEx.Struct.Unit.Time<#{time.value} #{unit(time.unit, time.value)}>"
   end
+
+  def unit(:day, 1), do: "day"
+  def unit(:day, _), do: "days"
+  def unit(other, _), do: inspect(other)
 end

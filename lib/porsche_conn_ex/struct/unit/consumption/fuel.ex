@@ -53,7 +53,7 @@ defimpl Inspect, for: PorscheConnEx.Struct.Unit.Consumption.Fuel do
     ]
     |> Enum.uniq()
     |> Enum.join(" / ")
-    |> then(fn inner -> "#PorscheConnEx.Struct.Unit.FuelConsumption<#{inner}>" end)
+    |> then(fn inner -> "#PorscheConnEx.Struct.Unit.Consumption.Fuel<#{inner}>" end)
   end
 
   defp unit(:litres_per_100km), do: "L/100km"
