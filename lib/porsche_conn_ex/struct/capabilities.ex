@@ -61,6 +61,6 @@ defmodule PorscheConnEx.Struct.Capabilities do
           needs_spin?: boolean,
           display_parking_brake?: boolean,
           steering_wheel: steering_wheel_position,
-          heating: Heating.t()
+          heating: heating
         }
 end

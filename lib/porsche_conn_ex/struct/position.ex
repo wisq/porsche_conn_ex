@@ -45,7 +45,7 @@ defmodule PorscheConnEx.Struct.Position do
   end
 
   @type t :: %__MODULE__{
-          coordinates: Coordinates.t(),
+          coordinates: coordinates,
           heading: 0..360
         }
 end
