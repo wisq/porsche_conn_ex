@@ -8,7 +8,8 @@ defmodule PorscheConnEx.Struct.Emobility.DirectClimate do
 
   ## Fields
 
-  - `state` (atom) — the current climatisation state — `:on` or `:off`
+  - `state` (atom) — the current climatisation state — `:on`, `:off`, or `:unknown`
+    - if `:unknown`, then all other fields will be `nil`
   - `remaining_minutes` — the remaining time before climatisation will shut down
     - When triggered by a timer, this will be the minutes until the timer is reached.
     - When manually enabled by the user, this will start at 60 minutes.
@@ -25,9 +26,10 @@ defmodule PorscheConnEx.Struct.Emobility.DirectClimate do
   enum State do
     value(:off, key: "OFF")
     value(:on, key: "ON")
+    value(:unknown, key: "UNKNOWN")
   end
 
-  @type state :: :on | :off
+  @type state :: :on | :off | :unknown
 
   enum HeaterSource do
     value(:electric, key: "electric")
@@ -55,4 +57,13 @@ defmodule PorscheConnEx.Struct.Emobility.DirectClimate do
           heater_source: heater_source,
           without_hv_power?: boolean
         }
+
+  def load(%{"climatisationState" => "UNKNOWN"}) do
+    # Deliberately bypasses validation.
+    {:ok, %__MODULE__{state: :unknown}}
+  end
+
+  def load(params) do
+    super(params)
+  end
 end

@@ -192,6 +192,26 @@ defmodule PorscheConnEx.ClientEmobliityTest do
       assert profile5.position.radius == 250
     end
 
+    test "handles unknown climatisation", %{session: session, bypass: bypass, tz: tz} do
+      vin = Data.random_vin()
+      model = Data.random_model()
+
+      Bypass.expect_once(bypass, "GET", "/e-mobility/de/de_DE/#{model}/#{vin}", fn conn ->
+        assert %{"timezone" => ^tz} = conn.query_params
+        resp_json(conn, ServerResponses.emobility(:null_climate))
+      end)
+
+      assert {:ok, emobility} = Client.emobility(session, vin, model)
+      assert MockSession.count(session) == 1
+
+      assert climate = emobility.direct_climate
+      assert climate.state == :unknown
+      assert climate.remaining_minutes == nil
+      assert climate.target_temperature == nil
+      assert climate.without_hv_power? == nil
+      assert climate.heater_source == nil
+    end
+
     test "handles timeout", %{session: session, bypass: bypass} do
       vin = Data.random_vin()
       model = Data.random_model()

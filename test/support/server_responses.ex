@@ -933,7 +933,7 @@ defmodule PorscheConnEx.Test.ServerResponses do
     """
   end
 
-  def emobility do
+  def emobility(mutator \\ nil) do
     """
     {
       "batteryChargeStatus" : {
@@ -974,13 +974,7 @@ defmodule PorscheConnEx.Test.ServerResponses do
         "disabled" : false,
         "isActive" : false
       },
-      "directClimatisation" : {
-        "climatisationState" : "OFF",
-        "remainingClimatisationTime" : null,
-        "targetTemperature" : "2930",
-        "climatisationWithoutHVpower" : "false",
-        "heaterSource" : "electric"
-      },
+      #{emobility_direct_climatisation(mutator)}
       "timers" : [ {
         "timerID" : "1",
         "departureDateTime" : "2024-01-20T18:41:00.000Z",
@@ -1121,6 +1115,30 @@ defmodule PorscheConnEx.Test.ServerResponses do
       "departureInformation" : null,
       "errorInfo" : [ ]
     }
+    """
+  end
+
+  defp emobility_direct_climatisation(:null_climate) do
+    """
+    "directClimatisation" : {
+      "climatisationState" : "UNKNOWN",
+      "remainingClimatisationTime" : null,
+      "targetTemperature" : null,
+      "climatisationWithoutHVpower" : null,
+      "heaterSource" : null
+    },
+    """
+  end
+
+  defp emobility_direct_climatisation(_) do
+    """
+    "directClimatisation" : {
+      "climatisationState" : "OFF",
+      "remainingClimatisationTime" : null,
+      "targetTemperature" : "2930",
+      "climatisationWithoutHVpower" : "false",
+      "heaterSource" : "electric"
+    },
     """
   end
 
